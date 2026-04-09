@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Print System — Admin</title>
+<style>
+*,::before,::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fff;--bg2:#f7f7f5;--bg3:#f0efe9;
+  --bd:rgba(0,0,0,.1);--bd2:rgba(0,0,0,.2);
+  --tx:#1a1a18;--tx2:#6b6b67;--tx3:#9b9b96;
+  --blue:#185FA5;--blue-bg:#e6f1fb;--blue-bd:rgba(24,95,165,.3);
+  --green:#0F6E56;--green-bg:#e1f5ee;
+  --amber:#854F0B;--amber-bg:#faeeda;
+  --red:#A32D2D;--red-bg:#fcebeb;--red-bd:rgba(163,45,45,.3);
+  --r:8px;--rl:12px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+     font-size:14px;color:var(--tx);background:var(--bg3)}
+
+/* ── Layout ── */
+.topbar{background:#1e1e1c;color:#fff;padding:0 20px;height:48px;
+        display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:200}
+.topbar h1{font-size:14px;font-weight:600;flex:1}
+.topbar .api-badge{font-size:11px;padding:3px 8px;border-radius:20px;
+                   background:rgba(255,255,255,.1);color:rgba(255,255,255,.7)}
+.topbar .api-badge.ok{background:rgba(15,110,86,.3);color:#4ade9e}
+.topbar .api-badge.err{background:rgba(163,45,45,.3);color:#f87171}
+.layout{display:grid;grid-template-columns:252px 1fr;height:calc(100vh - 48px)}
+
+/* ── Sidebar ── */
+.sidebar{background:var(--bg);border-right:1px solid var(--bd);
+         display:flex;flex-direction:column;overflow:hidden}
+.sb-head{padding:12px 14px 8px;border-bottom:1px solid var(--bd)}
+.sb-head h2{font-size:11px;font-weight:700;color:var(--tx3);
+            text-transform:uppercase;letter-spacing:.06em}
+.tpl-list{flex:1;overflow-y:auto;padding:6px}
+.tpl-item{display:flex;align-items:center;gap:9px;padding:8px 9px;
+          border-radius:var(--r);cursor:pointer;border:1px solid transparent;
+          transition:all .13s;margin-bottom:1px}
+.tpl-item:hover{background:var(--bg2)}
+.tpl-item.active{background:var(--blue-bg);border-color:var(--blue-bd)}
+.tpl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tpl-info{flex:1;min-width:0}
+.tpl-info .nm{font-size:13px;font-weight:500;white-space:nowrap;
+              overflow:hidden;text-overflow:ellipsis}
+.tpl-info .mt{font-size:11px;color:var(--tx3)}
+.type-pill{font-size:10px;padding:2px 6px;border-radius:10px;
+           background:var(--bg3);color:var(--tx2);flex-shrink:0}
+.sb-foot{padding:10px;border-top:1px solid var(--bd)}
+.btn-add{width:100%;padding:8px;border-radius:var(--r);
+         border:1px dashed var(--bd2);background:none;cursor:pointer;
+         font-size:13px;color:var(--tx2);transition:all .15s}
+.btn-add:hover{background:var(--bg2);color:var(--tx)}
+
+/* ── Main ── */
+.main{overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.card{background:var(--bg);border:1px solid var(--bd);border-radius:var(--rl);padding:18px 20px}
+.card-hd{font-size:11px;font-weight:700;color:var(--tx2);text-transform:uppercase;
+         letter-spacing:.06em;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-hd .hint{font-weight:400;text-transform:none;letter-spacing:0;
+               color:var(--tx3);font-size:11px}
+
+/* ── Form ── */
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:12px;font-weight:500;color:var(--tx2)}
+.fg input,.fg select,.fg textarea{
+  padding:7px 10px;border:1px solid var(--bd2);border-radius:var(--r);
+  font-size:13px;color:var(--tx);background:var(--bg);
+  font-family:inherit;transition:border-color .15s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{
+  outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,.08)}
+.fg.full{grid-column:1/-1}
+.fg textarea{resize:vertical;line-height:1.5}
+
+/* ── Type selector ── */
+.type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.type-opt{border:1px solid var(--bd);border-radius:var(--r);padding:10px 8px;
+          cursor:pointer;text-align:center;transition:all .13s}
+.type-opt:hover{border-color:var(--bd2);background:var(--bg2)}
+.type-opt.active{border-color:var(--blue);background:var(--blue-bg)}
+.type-opt .ico{font-size:20px;margin-bottom:4px}
+.type-opt .lbl{font-size:11px;font-weight:600}
+.type-opt .dsc{font-size:10px;color:var(--tx2);margin-top:2px}
+
+/* ── Columns ── */
+.cols-wrap{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.col-panel{border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
+.col-ph{background:var(--bg2);padding:7px 10px;font-size:11px;font-weight:700;
+        color:var(--tx2);border-bottom:1px solid var(--bd);
+        display:flex;justify-content:space-between;align-items:center;text-transform:uppercase;letter-spacing:.05em}
+.col-ph .cnt{font-weight:400;text-transform:none;letter-spacing:0;color:var(--tx3)}
+.col-list{max-height:240px;overflow-y:auto;padding:5px}
+.col-item{display:flex;align-items:center;gap:7px;padding:5px 7px;border-radius:6px;
+          cursor:pointer;font-size:12px;border:1px solid transparent;transition:all .12s;user-select:none}
+.col-item:hover{background:var(--bg2)}
+.col-item.on{background:var(--blue-bg)}
+.col-ck{width:14px;height:14px;border-radius:3px;border:1px solid var(--bd2);
+        display:flex;align-items:center;justify-content:center;
+        flex-shrink:0;font-size:10px;color:var(--tx3)}
+.col-ck.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.drag-h{color:var(--tx3);cursor:grab;font-size:11px;line-height:1}
+.rm-col{margin-left:auto;color:var(--tx3);cursor:pointer;font-size:11px;
+        opacity:0;transition:opacity .13s}
+.col-item:hover .rm-col{opacity:1}
+.rm-col:hover{color:var(--red)}
+.empty-h{padding:16px;text-align:center;font-size:12px;color:var(--tx3)}
+
+/* ── Data Sources (multi-sheet) ── */
+.ds-list{display:flex;flex-direction:column;gap:8px}
+.ds-item{border:1px solid var(--bd);border-radius:var(--r);padding:10px 12px;
+         background:var(--bg2);position:relative}
+.ds-item-hd{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ds-badge{font-size:10px;padding:2px 7px;border-radius:10px;
+          background:var(--blue-bg);color:var(--blue);font-weight:600}
+.ds-rm{margin-left:auto;font-size:12px;color:var(--tx3);cursor:pointer;background:none;border:none}
+.ds-rm:hover{color:var(--red)}
+.ds-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.ds-cols-wrap{margin-top:8px}
+.add-ds{font-size:12px;color:var(--blue);cursor:pointer;border:1px dashed var(--blue-bd);
+        background:none;padding:6px 12px;border-radius:var(--r);width:100%;transition:background .13s}
+.add-ds:hover{background:var(--blue-bg)}
+
+/* ── Custom fields ── */
+.cf-list{display:flex;flex-direction:column;gap:6px}
+.cf-row{display:grid;grid-template-columns:1fr 2fr auto;gap:8px;align-items:center}
+.cf-row input{padding:6px 8px;border:1px solid var(--bd2);border-radius:var(--r);
+              font-size:12px;color:var(--tx);background:var(--bg);font-family:inherit}
+.cf-rm{background:none;border:none;cursor:pointer;color:var(--tx3);font-size:14px}
+.cf-rm:hover{color:var(--red)}
+.add-cf{font-size:12px;color:var(--tx2);cursor:pointer;border:1px dashed var(--bd);
+        background:none;padding:5px 10px;border-radius:var(--r);transition:background .13s}
+.add-cf:hover{background:var(--bg2)}
+
+/* ── URL box ── */
+.url-box{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);
+         padding:9px 12px;font-size:11px;font-family:"Courier New",monospace;
+         color:var(--tx2);word-break:break-all;line-height:1.7;position:relative}
+.url-box .p{color:var(--blue)}.url-box .v{color:var(--green)}
+.copy-btn{position:absolute;top:8px;right:8px;font-size:11px;padding:3px 8px;
+          border-radius:5px;border:1px solid var(--bd2);background:var(--bg);
+          cursor:pointer;transition:all .13s}
+.copy-btn:hover{background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue)}
+
+/* ── Action bar ── */
+.act-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{padding:7px 15px;border-radius:var(--r);border:1px solid var(--bd2);
+     background:none;cursor:pointer;font-size:13px;color:var(--tx);
+     transition:all .13s;font-family:inherit}
+.btn:hover{background:var(--bg2)}
+.btn-primary{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+.btn-primary:hover{opacity:.85;background:var(--tx)}
+.btn-preview{color:var(--green);border-color:var(--green-bg)}
+.btn-preview:hover{background:var(--green-bg)}
+.btn-danger{color:var(--red);border-color:var(--red-bd)}
+.btn-danger:hover{background:var(--red-bg)}
+.status-pill{font-size:11px;padding:4px 10px;border-radius:20px}
+.status-pill.saved{background:var(--green-bg);color:var(--green)}
+.status-pill.unsaved{background:var(--amber-bg);color:var(--amber)}
+.status-pill.saving{background:var(--blue-bg);color:var(--blue)}
+
+/* ── Empty / Loading ── */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;
+             height:100%;gap:14px;color:var(--tx3);padding:40px;text-align:center}
+.empty-state h3{font-size:16px;color:var(--tx2)}
+.spin{width:18px;height:18px;border:2px solid var(--bd2);border-top-color:var(--blue);
+      border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-row{display:flex;align-items:center;gap:8px;color:var(--tx2);
+             font-size:12px;padding:12px;justify-content:center}
+
+/* ── Tabs (print options) ── */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--bd);margin-bottom:14px}
+.tab{padding:7px 14px;font-size:12px;cursor:pointer;color:var(--tx2);
+     border-bottom:2px solid transparent;transition:all .13s;margin-bottom:-1px}
+.tab:hover{color:var(--tx)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:500}
+.tab-pane{display:none}.tab-pane.active{display:block}
+
+/* ── Responsive ── */
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{height:200px;border-right:none;border-bottom:1px solid var(--bd)}
+  .type-grid{grid-template-columns:1fr 1fr}
+  .cols-wrap{grid-template-columns:1fr}
+  .ds-row{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <h1>&#9881; AppSheet Print System — Admin</h1>
+  <span class="api-badge" id="api-badge">Đang kết nối...</span>
+</div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-head"><h2>Mẫu báo cáo</h2></div>
+    <div class="tpl-list" id="tpl-list">
+      <div class="loading-row"><span class="spin"></span> Đang tải...</div>
+    </div>
+    <div class="sb-foot">
+      <button class="btn-add" onclick="newTpl()">+ Thêm mẫu mới</button>
+    </div>
+  </div>
+
+  <!-- MAIN PANEL -->
+  <div class="main" id="main">
+    <div class="empty-state" id="empty-state">
+      <h3>Chưa có mẫu nào</h3>
+      <p>Nhấn "Thêm mẫu mới" để bắt đầu tạo báo cáo đầu tiên.</p>
+      <button class="btn btn-primary" onclick="newTpl()">Tạo mẫu đầu tiên</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     FORM TEMPLATE — nhân bản bởi JS
+══════════════════════════════════════════════════════════════ -->
+<template id="T">
+
+<!-- 1. Thông tin cơ bản -->
+<div class="card">
+  <div class="card-hd">Thông tin mẫu báo cáo</div>
+  <div class="frow">
+    <div class="fg">
+      <label>Tên mẫu <span style="color:var(--red)">*</span></label>
+      <input id="f-name" type="text" placeholder="Vd: Hóa đơn bán hàng">
+    </div>
+    <div class="fg">
+      <label>ID mẫu (không dấu, không khoảng trắng) <span style="color:var(--red)">*</span></label>
+      <input id="f-id" type="text" placeholder="Vd: hoa-don" oninput="slugify(this)">
+    </div>
+    <div class="fg">
+      <label>Sheet dữ liệu chính <span style="color:var(--red)">*</span></label>
+      <select id="f-sheet" onchange="onMainSheetChange()">
+        <option value="">-- Chọn sheet --</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Màu nhận diện</label>
+      <input id="f-color" type="color" value="#185FA5"
+             style="height:36px;padding:2px 5px;cursor:pointer">
+    </div>
+    <div class="fg full">
+      <label>Tiêu đề in trên báo cáo</label>
+      <input id="f-title" type="text" placeholder="Vd: CÔNG TY ABC — HÓA ĐƠN BÁN HÀNG">
+    </div>
+  </div>
+</div>
+
+<!-- 2. Loại báo cáo -->
+<div class="card">
+  <div class="card-hd">Loại báo cáo</div>
+  <div class="type-grid">
+    <div class="type-opt active" data-t="invoice" onclick="pickType(this)">
+      <div class="ico">&#128203;</div>
+      <div class="lbl">Hóa đơn / Phiếu thu</div>
+      <div class="dsc">Header + bảng + chữ ký</div>
+    </div>
+    <div class="type-opt" data-t="table" onclick="pickType(this)">
+      <div class="ico">&#128200;</div>
+      <div class="lbl">Bảng danh sách</div>
+      <div class="dsc">Nhiều dòng dạng bảng</div>
+    </div>
+    <div class="type-opt" data-t="warehouse" onclick="pickType(this)">
+      <div class="ico">&#128230;</div>
+      <div class="lbl">Phiếu xuất / nhập kho</div>
+      <div class="dsc">Kho, số lô, hạn dùng</div>
+    </div>
+    <div class="type-opt" data-t="summary" onclick="pickType(this)">
+      <div class="ico">&#128202;</div>
+      <div class="lbl">Tổng hợp nhiều sheet</div>
+      <div class="dsc">Join data từ nhiều bảng</div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Cột hiển thị -->
+<div class="card">
+  <div class="card-hd">
+    Cột hiển thị
+    <span class="hint">— tick chọn · kéo thả để sắp thứ tự</span>
+  </div>
+  <div class="cols-wrap">
+    <div class="col-panel">
+      <div class="col-ph">Tất cả cột <span class="cnt" id="cnt-all">—</span></div>
+      <div class="col-list" id="all-cols">
+        <div class="empty-h">Chọn sheet để tải danh sách cột</div>
+      </div>
+    </div>
+    <div class="col-panel">
+      <div class="col-ph">Cột in trong báo cáo <span class="cnt" id="cnt-sel">—</span></div>
+      <div class="col-list" id="sel-cols"
+           ondragover="ev.preventDefault()"
+           ondrop="dropCol(event)">
+        <div class="empty-h">Tick cột bên trái để thêm</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. Nguồn dữ liệu phụ (chỉ hiện với summary) -->
+<div class="card" id="ds-card" style="display:none">
+  <div class="card-hd">
+    Nguồn dữ liệu phụ (join từ sheet khác)
+    <span class="hint">— dùng cho báo cáo tổng hợp nhiều bảng</span>
+  </div>
+  <div class="ds-list" id="ds-list"></div>
+  <button class="add-ds" onclick="addDS()" style="margin-top:8px">
+    + Thêm sheet dữ liệu phụ
+  </button>
+</div>
+
+<!-- 5. Cột tính toán -->
+<div class="card">
+  <div class="card-hd">
+    Cột tính toán / tuỳ chỉnh
+    <span class="hint">— thêm cột công thức (không có trong Google Sheet)</span>
+  </div>
+  <div class="cf-list" id="cf-list"></div>
+  <button class="add-cf" onclick="addCF()" style="margin-top:8px">
+    + Thêm cột tính toán
+  </button>
+  <div style="margin-top:8px;font-size:11px;color:var(--tx3)">
+    Dùng <code>{TenCot}</code> để tham chiếu giá trị cột. Vd: <code>{SoLuong} * {DonGia}</code>
+  </div>
+</div>
+
+<!-- 6. Tùy chọn in -->
+<div class="card">
+  <div class="card-hd">Tuỳ chọn in</div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab(this,'tab-page')">Trang in</div>
+    <div class="tab" onclick="switchTab(this,'tab-layout')">Bố cục</div>
+    <div class="tab" onclick="switchTab(this,'tab-extra')">Nâng cao</div>
+  </div>
+  <div id="tab-page" class="tab-pane active">
+    <div class="frow">
+      <div class="fg"><label>Khổ giấy</label>
+        <select id="f-paper">
+          <option value="A4">A4 (210 × 297mm)</option>
+          <option value="A5">A5 (148 × 210mm)</option>
+          <option value="letter">Letter (216 × 279mm)</option>
+          <option value="80mm">Khổ nhiệt 80mm</option>
+          <option value="K57">Khổ nhiệt K57</option>
+        </select>
+      </div>
+      <div class="fg"><label>Hướng giấy</label>
+        <select id="f-orient">
+          <option value="portrait">Dọc (Portrait)</option>
+          <option value="landscape">Ngang (Landscape)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div id="tab-layout" class="tab-pane">
+    <div class="frow">
+      <div class="fg full"><label>Footer (hiện cuối trang in)</label>
+        <input id="f-footer" type="text" placeholder="Vd: Cảm ơn quý khách! ĐT: 0901 234 567">
+      </div>
+      <div class="fg"><label>Ngắt trang theo cột</label>
+        <input id="f-pagebreak" type="text" placeholder="Vd: MaDonHang (để trống = không ngắt)">
+      </div>
+      <div class="fg"><label>Hiển thị chữ ký</label>
+        <select id="f-sign">
+          <option value="3">3 ô (Người lập / Duyệt / Nhận)</option>
+          <option value="2">2 ô (Người lập / Duyệt)</option>
+          <option value="0">Không hiện</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div id="tab-extra" class="tab-pane">
+    <div class="frow">
+      <div class="fg"><label>Keystone Col (cột ID dòng trong sheet)</label>
+        <input id="f-keycol" type="text" placeholder="Mặc định: cột đầu tiên">
+      </div>
+      <div class="fg"><label>Auto-print khi mở</label>
+        <select id="f-autoprint">
+          <option value="0">Không (người dùng tự nhấn In)</option>
+          <option value="1">Có (tự mở hộp thoại in)</option>
+        </select>
+      </div>
+      <div class="fg full"><label>CSS tuỳ chỉnh (ghi đè style mặc định)</label>
+        <textarea id="f-css" rows="3" placeholder=".rpt-table th { background: #1e3a5f; }"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 7. URL AppSheet Action -->
+<div class="card">
+  <div class="card-hd">URL dùng trong AppSheet Action</div>
+  <div class="url-box" id="url-preview">
+    —
+    <button class="copy-btn" onclick="copyURL()">Copy</button>
+  </div>
+  <div style="margin-top:8px;font-size:11px;color:var(--tx3)">
+    AppSheet → chọn Table → Actions → "Open a link" → dán URL trên.
+    <code>[_UNIQUEID]</code> là biểu thức AppSheet tự điền ID dòng.
+  </div>
+</div>
+
+<!-- 8. Action bar -->
+<div class="act-bar">
+  <button class="btn btn-primary" onclick="saveTpl()">&#128190; Lưu cấu hình</button>
+  <button class="btn btn-preview" onclick="previewTpl()">&#128065; Xem thử</button>
+  <button class="btn" onclick="syncFromSheets()">&#8635; Đồng bộ từ Sheets</button>
+  <button class="btn btn-danger" onclick="deleteTpl()">&#128465; Xoá mẫu</button>
+  <span class="status-pill unsaved" id="status-pill">Chưa lưu</span>
+</div>
+
+</template>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════════════════ -->
+<script>
+// ┌─────────────────────────────────────────────────────────────┐
+// │  ★  KHAI BÁO DUY NHẤT — sửa 2 dòng này  ★                │
+// └─────────────────────────────────────────────────────────────┘
+const API_URL       = "https://script.google.com/macros/s/AKfycbwqwRgBqKmL5yGY8YD0MrJi-iQUusgQPplEOfqzWsXHpDf-HZus900DueXzxYIe9V-i/exec";
+const PRINT_APP_URL = "https://dohuuduy.github.io/appsheet-print/print.html";
+// ──────────────────────────────────────────────────────────────
+
+const COLORS = ["#185FA5","#0F6E56","#D85A30","#D4537E","#854F0B","#534AB7","#1D9E75","#A32D2D"];
+const LS_KEY = "ps_templates_v2";
+
+// ── State ──
+let templates  = [];   // master từ Sheets
+let currentId  = null;
+let allCols    = [];   // cột của mainSheet
+let selCols    = [];   // cột đã chọn
+let rptType    = "invoice";
+let dataSources= [];   // [{sheet,keyCol,joinOn,as,cols:[]}]
+let customFields= [];  // [{label,formula}]
+let dirty      = false;
+let dragIdx    = null;
+let sheetsList = [];   // tất cả tên sheet
+
+// ════════════════════════════════════════════════════════════════
+//  API HELPERS
+// ════════════════════════════════════════════════════════════════
+async function api(params) {
+  const url = API_URL + "?" + new URLSearchParams(params);
+  const r   = await fetch(url);
+  const d   = await r.json();
+  if (d.error) throw new Error(d.error);
+  return d;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════════════
+async function init() {
+  // Tải từ localStorage trước (nhanh)
+  const cached = loadLS();
+  if (cached.length) { templates = cached; renderSidebar(); }
+
+  // Ping API
+  try {
+    await api({ action:"ping" });
+    setBadge("ok", "&#10003; API OK");
+    // Load Sheets (fresh data)
+    await Promise.all([loadSheetsList(), syncFromSheets()]);
+  } catch(e) {
+    setBadge("err", "Lỗi API");
+    console.warn("API error:", e.message);
+    if (!cached.length) setBadge("err", "Không có cache — kiểm tra API_URL");
+  }
+}
+
+function setBadge(cls, html) {
+  const el = document.getElementById("api-badge");
+  el.className = "api-badge " + cls;
+  el.innerHTML = html;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  LOCAL STORAGE
+// ════════════════════════════════════════════════════════════════
+function saveLS()  { try { localStorage.setItem(LS_KEY, JSON.stringify(templates)); } catch(e){} }
+function loadLS()  { try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch(e){ return []; } }
+
+// ════════════════════════════════════════════════════════════════
+//  SYNC từ Google Sheets → localStorage + UI
+// ════════════════════════════════════════════════════════════════
+async function syncFromSheets() {
+  try {
+    const d = await api({ action:"getConfig" });
+    templates = d.templates || [];
+    saveLS();
+    renderSidebar();
+    // Re-render form nếu đang xem template
+    if (currentId) {
+      const t = templates.find(x => x.tplId === currentId);
+      if (t) renderForm(t);
+    }
+  } catch(e) { console.warn("Sync failed:", e.message); }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  SHEETS LIST
+// ════════════════════════════════════════════════════════════════
+async function loadSheetsList() {
+  try {
+    const d  = await api({ action:"getSheets" });
+    sheetsList = d.sheets || [];
+    refreshSheetSelects();
+  } catch(e) {}
+}
+
+function refreshSheetSelects() {
+  // Cập nhật select mainSheet
+  const ms = document.getElementById("f-sheet");
+  if (!ms) return;
+  const cur = ms.value;
+  ms.innerHTML = '<option value="">-- Chọn sheet --</option>' +
+    sheetsList.map(s => `<option value="${s}" ${s===cur?"selected":""}>${s}</option>`).join("");
+  // Cập nhật tất cả select trong dataSources
+  document.querySelectorAll(".ds-sheet-sel").forEach(sel => {
+    const v = sel.value;
+    sel.innerHTML = '<option value="">-- Chọn --</option>' +
+      sheetsList.map(s => `<option value="${s}" ${s===v?"selected":""}>${s}</option>`).join("");
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+//  SIDEBAR
+// ════════════════════════════════════════════════════════════════
+function renderSidebar() {
+  const el = document.getElementById("tpl-list");
+  if (!templates.length) {
+    el.innerHTML = '<div class="empty-h">Chưa có mẫu nào</div>';
+    return;
+  }
+  const typeLabel = {invoice:"Hóa đơn",table:"Bảng",warehouse:"Phiếu kho",summary:"Tổng hợp"};
+  el.innerHTML = templates.map(t => `
+    <div class="tpl-item ${t.tplId===currentId?"active":""}" onclick="selectTpl('${t.tplId}')">
+      <span class="tpl-dot" style="background:${t.color||"#999"}"></span>
+      <div class="tpl-info">
+        <div class="nm">${esc(t.tplName||"(chưa tên)")}</div>
+        <div class="mt">${esc(t.mainSheet||"")} · ${(t.columns||[]).length} cột</div>
+      </div>
+      <span class="type-pill">${typeLabel[t.reportType]||t.reportType||"—"}</span>
+    </div>`).join("");
+}
+
+// ════════════════════════════════════════════════════════════════
+//  SELECT TEMPLATE
+// ════════════════════════════════════════════════════════════════
+function selectTpl(id) {
+  if (dirty && !confirm("Có thay đổi chưa lưu. Tiếp tục?")) return;
+  currentId = id;
+  const t = templates.find(x => x.tplId === id);
+  if (t) { renderForm(t); renderSidebar(); }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  NEW TEMPLATE
+// ════════════════════════════════════════════════════════════════
+function newTpl() {
+  if (dirty && !confirm("Có thay đổi chưa lưu. Tiếp tục?")) return;
+  const id    = "tpl-" + Date.now();
+  const color = COLORS[templates.length % COLORS.length];
+  const blank = {
+    tplId:"", tplName:"", reportType:"invoice", color,
+    mainSheet:"", columns:[], dataSources:null, printOptions:null, customFields:null
+  };
+  currentId = null;
+  renderForm(blank);
+  document.getElementById("f-id").value = id;
+  renderSidebar();
+  markDirty();
+  setTimeout(() => document.getElementById("f-name")?.focus(), 80);
+}
+
+// ════════════════════════════════════════════════════════════════
+//  RENDER FORM
+// ════════════════════════════════════════════════════════════════
+function renderForm(t) {
+  document.getElementById("empty-state")?.remove();
+  const main = document.getElementById("main");
+  const frag = document.getElementById("T").content.cloneNode(true);
+  main.innerHTML = "";
+  main.appendChild(frag);
+
+  // Điền giá trị
+  v("f-id",         t.tplId    || "");
+  v("f-name",       t.tplName  || "");
+  v("f-color",      t.color    || "#185FA5");
+  const po = t.printOptions || {};
+  v("f-title",      po.title   || "");
+  v("f-footer",     po.footer  || "");
+  v("f-paper",      po.paper   || "A4");
+  v("f-orient",     po.orient  || "portrait");
+  v("f-sign",       po.sign    !== undefined ? String(po.sign) : "3");
+  v("f-pagebreak",  po.pageBreakCol || "");
+  v("f-keycol",     po.keyCol  || "");
+  v("f-autoprint",  po.autoprint ? "1" : "0");
+  v("f-css",        po.css     || "");
+
+  // Report type
+  rptType = t.reportType || "invoice";
+  document.querySelectorAll(".type-opt").forEach(el =>
+    el.classList.toggle("active", el.dataset.t === rptType));
+  toggleDsCard();
+
+  // Cột đã chọn
+  selCols      = Array.isArray(t.columns) ? [...t.columns] : [];
+  dataSources  = Array.isArray(t.dataSources) ? t.dataSources.map(ds=>({...ds})) : [];
+  customFields = Array.isArray(t.customFields) ? t.customFields.map(cf=>({...cf})) : [];
+
+  // Gắn listeners
+  ["f-id","f-name","f-color","f-title","f-footer","f-paper",
+   "f-orient","f-sign","f-pagebreak","f-keycol","f-autoprint","f-css"]
+    .forEach(id => document.getElementById(id)
+      ?.addEventListener("input", () => { markDirty(); updateURL(); }));
+
+  // Load sheet list vào select
+  refreshSheetSelects();
+  if (t.mainSheet) {
+    const ms = document.getElementById("f-sheet");
+    if (ms) ms.value = t.mainSheet;
+    loadMainCols().then(() => {
+      selCols.forEach(c => { if (!allCols.includes(c)) allCols.unshift(c); });
+      renderAllCols(); renderSelCols();
+    });
+  } else {
+    allCols = []; renderAllCols(); renderSelCols();
+  }
+
+  renderDS();
+  renderCF();
+  updateURL();
+  dirty = false; updateStatus();
+}
+
+// ════════════════════════════════════════════════════════════════
+//  COLUMNS
+// ════════════════════════════════════════════════════════════════
+async function onMainSheetChange() {
+  markDirty(); updateURL();
+  await loadMainCols();
+}
+
+async function loadMainCols() {
+  const sheet = document.getElementById("f-sheet")?.value;
+  if (!sheet) return;
+  try {
+    const d = await api({ action:"getColumns", sheet });
+    allCols = d.columns || [];
+    renderAllCols(); renderSelCols();
+  } catch(e) { allCols = []; }
+}
+
+function renderAllCols() {
+  const el = document.getElementById("all-cols"); if (!el) return;
+  if (!allCols.length) { el.innerHTML='<div class="empty-h">Chọn sheet để tải cột</div>'; return; }
+  el.innerHTML = allCols.map(c => {
+    const on = selCols.includes(c);
+    return `<div class="col-item ${on?"on":""}" onclick="toggleCol('${esc(c)}')">
+      <span class="col-ck ${on?"on":""}">${on?"✓":""}</span>
+      <span>${esc(c)}</span></div>`;
+  }).join("");
+  document.getElementById("cnt-all").textContent = allCols.length + " cột";
+}
+
+function renderSelCols() {
+  const el = document.getElementById("sel-cols"); if (!el) return;
+  if (!selCols.length) { el.innerHTML='<div class="empty-h">Tick cột bên trái để thêm</div>'; return; }
+  el.innerHTML = selCols.map((c,i) => `
+    <div class="col-item on" draggable="true"
+         ondragstart="dragIdx=${i}" ondragend="renderSelCols()">
+      <span class="drag-h">&#8942;&#8942;</span>
+      <span style="flex:1">${esc(c)}</span>
+      <span class="rm-col" onclick="rmCol('${esc(c)}')">&#10005;</span>
+    </div>`).join("");
+  document.getElementById("cnt-sel").textContent = selCols.length + " đã chọn";
+}
+
+function dropCol(e) {
+  e.preventDefault();
+  if (dragIdx === null) return;
+  const items = e.currentTarget.querySelectorAll(".col-item");
+  let ti = selCols.length;
+  items.forEach((el,i) => {
+    const r = el.getBoundingClientRect();
+    if (e.clientY < r.top + r.height/2) ti = Math.min(ti, i);
+  });
+  const moved = selCols.splice(dragIdx, 1)[0];
+  selCols.splice(ti > dragIdx ? ti-1 : ti, 0, moved);
+  dragIdx = null; markDirty(); renderSelCols(); renderAllCols(); updateURL();
+}
+
+function toggleCol(c) {
+  if (selCols.includes(c)) rmCol(c);
+  else { selCols.push(c); markDirty(); renderAllCols(); renderSelCols(); updateURL(); }
+}
+
+function rmCol(c) {
+  selCols = selCols.filter(x => x !== c);
+  markDirty(); renderAllCols(); renderSelCols(); updateURL();
+}
+
+// ════════════════════════════════════════════════════════════════
+//  TYPE SELECTOR
+// ════════════════════════════════════════════════════════════════
+function pickType(el) {
+  rptType = el.dataset.t;
+  document.querySelectorAll(".type-opt").forEach(x => x.classList.toggle("active", x===el));
+  toggleDsCard(); markDirty(); updateURL();
+}
+
+function toggleDsCard() {
+  const card = document.getElementById("ds-card"); if (!card) return;
+  card.style.display = rptType === "summary" ? "" : "none";
+}
+
+// ════════════════════════════════════════════════════════════════
+//  DATA SOURCES (multi-sheet)
+// ════════════════════════════════════════════════════════════════
+function renderDS() {
+  const el = document.getElementById("ds-list"); if (!el) return;
+  el.innerHTML = dataSources.map((ds,i) => `
+    <div class="ds-item">
+      <div class="ds-item-hd">
+        <span class="ds-badge">Sheet phụ #${i+1}</span>
+        <span style="font-size:12px;color:var(--tx2);font-weight:500">${esc(ds.as||"")}</span>
+        <button class="ds-rm" onclick="rmDS(${i})">&#10005;</button>
+      </div>
+      <div class="ds-row">
+        <div class="fg">
+          <label>Sheet</label>
+          <select class="ds-sheet-sel" data-idx="${i}" onchange="dsChanged(${i},'sheet',this.value)">
+            <option value="">-- Chọn --</option>
+            ${sheetsList.map(s=>`<option value="${s}" ${s===ds.sheet?"selected":""}>${s}</option>`).join("")}
+          </select>
+        </div>
+        <div class="fg">
+          <label>Join theo cột (khớp với sheet chính)</label>
+          <input type="text" value="${esc(ds.joinOn||"")}" placeholder="Vd: MaKhachHang"
+                 oninput="dsChanged(${i},'joinOn',this.value)">
+        </div>
+        <div class="fg">
+          <label>Alias (tên tham chiếu)</label>
+          <input type="text" value="${esc(ds.as||"")}" placeholder="Vd: customer"
+                 oninput="dsChanged(${i},'as',this.value)">
+        </div>
+      </div>
+      <div class="ds-cols-wrap">
+        <label style="font-size:11px;font-weight:500;color:var(--tx2)">Cột lấy từ sheet này</label>
+        <input type="text" value="${esc((ds.cols||[]).join(","))}"
+               placeholder="Vd: TenKhachHang,DiaChi,SoDienThoai (để trống = lấy tất cả)"
+               style="margin-top:4px;width:100%;padding:6px 8px;border:1px solid var(--bd2);
+                      border-radius:6px;font-size:12px;font-family:inherit"
+               oninput="dsChanged(${i},'cols',this.value.split(',').map(s=>s.trim()).filter(Boolean))">
+      </div>
+    </div>`).join("");
+}
+
+function addDS() {
+  dataSources.push({ sheet:"", joinOn:"", as:"ds"+(dataSources.length+1), cols:[] });
+  markDirty(); renderDS();
+}
+
+function rmDS(i) {
+  dataSources.splice(i,1); markDirty(); renderDS();
+}
+
+function dsChanged(i, key, val) {
+  dataSources[i][key] = val; markDirty();
+}
+
+// ════════════════════════════════════════════════════════════════
+//  CUSTOM FIELDS
+// ════════════════════════════════════════════════════════════════
+function renderCF() {
+  const el = document.getElementById("cf-list"); if (!el) return;
+  el.innerHTML = customFields.map((cf,i) => `
+    <div class="cf-row">
+      <input type="text" value="${esc(cf.label||"")}" placeholder="Tên cột"
+             oninput="cfChanged(${i},'label',this.value)">
+      <input type="text" value="${esc(cf.formula||"")}" placeholder="Công thức: {SoLuong} * {DonGia}"
+             oninput="cfChanged(${i},'formula',this.value)">
+      <button class="cf-rm" onclick="rmCF(${i})">&#10005;</button>
+    </div>`).join("");
+}
+
+function addCF() {
+  customFields.push({ label:"", formula:"" }); markDirty(); renderCF();
+}
+
+function rmCF(i) {
+  customFields.splice(i,1); markDirty(); renderCF();
+}
+
+function cfChanged(i, key, val) {
+  customFields[i][key] = val; markDirty();
+}
+
+// ════════════════════════════════════════════════════════════════
+//  URL PREVIEW
+// ════════════════════════════════════════════════════════════════
+function updateURL() {
+  const el = document.getElementById("url-preview"); if (!el) return;
+  const id     = document.getElementById("f-id")?.value    || "YOUR_TPL_ID";
+  const sheet  = document.getElementById("f-sheet")?.value || "YOUR_SHEET";
+  const cols   = encodeURIComponent(selCols.join(","));
+  el.innerHTML =
+    `${PRINT_APP_URL}?` +
+    `<span class="p">id</span>=<span class="v">[_UNIQUEID]</span>` +
+    `&<span class="p">tpl</span>=<span class="v">${esc(id)}</span>` +
+    `&<span class="p">sheet</span>=<span class="v">${esc(sheet)}</span>` +
+    `&<span class="p">cols</span>=<span class="v">${cols}</span>` +
+    `<button class="copy-btn" onclick="copyURL()">Copy</button>`;
+}
+
+function copyURL() {
+  const id    = document.getElementById("f-id")?.value    || "";
+  const sheet = document.getElementById("f-sheet")?.value || "";
+  const cols  = encodeURIComponent(selCols.join(","));
+  const url   = `${PRINT_APP_URL}?id=[_UNIQUEID]&tpl=${id}&sheet=${sheet}&cols=${cols}`;
+  navigator.clipboard?.writeText(url).then(() => alert("Đã copy URL!")).catch(() => prompt("Copy URL:", url));
+}
+
+// ════════════════════════════════════════════════════════════════
+//  SAVE
+// ════════════════════════════════════════════════════════════════
+async function saveTpl() {
+  const id    = document.getElementById("f-id")?.value?.trim();
+  const name  = document.getElementById("f-name")?.value?.trim();
+  const sheet = document.getElementById("f-sheet")?.value;
+  if (!id)    { alert("Vui lòng nhập ID mẫu");       return; }
+  if (!name)  { alert("Vui lòng nhập tên mẫu");       return; }
+  if (!sheet) { alert("Vui lòng chọn sheet dữ liệu"); return; }
+  if (!selCols.length && rptType !== "summary") {
+    if (!confirm("Chưa chọn cột nào. Tiếp tục lưu?")) return;
+  }
+
+  const po = {
+    title:      document.getElementById("f-title")?.value     || "",
+    footer:     document.getElementById("f-footer")?.value    || "",
+    paper:      document.getElementById("f-paper")?.value     || "A4",
+    orient:     document.getElementById("f-orient")?.value    || "portrait",
+    sign:       parseInt(document.getElementById("f-sign")?.value ?? "3"),
+    pageBreakCol: document.getElementById("f-pagebreak")?.value || "",
+    keyCol:     document.getElementById("f-keycol")?.value     || "",
+    autoprint:  document.getElementById("f-autoprint")?.value === "1",
+    css:        document.getElementById("f-css")?.value        || "",
+  };
+  const color = document.getElementById("f-color")?.value || "#185FA5";
+
+  setStatus("saving", "Đang lưu...");
+  try {
+    // Lưu lên Sheets
+    await api({
+      action      : "saveConfig",
+      tplId       : id,
+      tplName     : name,
+      reportType  : rptType,
+      color,
+      mainSheet   : sheet,
+      columns     : JSON.stringify(selCols),
+      dataSources : JSON.stringify(dataSources),
+      printOptions: JSON.stringify(po),
+      customFields: JSON.stringify(customFields),
+    });
+
+    // Cập nhật local state
+    const updated = {
+      tplId:id, tplName:name, reportType:rptType, color,
+      mainSheet:sheet, columns:[...selCols],
+      dataSources:[...dataSources], printOptions:po, customFields:[...customFields]
+    };
+    const idx = templates.findIndex(t => t.tplId === id);
+    if (idx >= 0) templates[idx] = updated; else templates.push(updated);
+    currentId = id;
+    saveLS();
+    dirty = false;
+    setStatus("saved", "Đã lưu");
+    renderSidebar();
+  } catch(e) {
+    setStatus("unsaved", "Lỗi lưu");
+    alert("Lỗi: " + e.message);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  DELETE
+// ════════════════════════════════════════════════════════════════
+async function deleteTpl() {
+  const id = document.getElementById("f-id")?.value;
+  if (!id) { alert("Không xác định ID"); return; }
+  if (!confirm(`Xoá mẫu "${id}"? Không thể khôi phục.`)) return;
+  try {
+    await api({ action:"deleteConfig", tplId:id });
+    templates = templates.filter(t => t.tplId !== id);
+    saveLS();
+    currentId = null; dirty = false;
+    document.getElementById("main").innerHTML =
+      `<div class="empty-state"><h3>Đã xoá mẫu</h3>
+       <button class="btn btn-primary" onclick="newTpl()">Tạo mẫu mới</button></div>`;
+    renderSidebar();
+  } catch(e) { alert("Lỗi: " + e.message); }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  PREVIEW
+// ════════════════════════════════════════════════════════════════
+function previewTpl() {
+  const id    = document.getElementById("f-id")?.value;
+  const sheet = document.getElementById("f-sheet")?.value;
+  if (!id || !sheet) { alert("Điền ID và sheet trước"); return; }
+  const url = `${PRINT_APP_URL}?id=DEMO&tpl=${id}&sheet=${sheet}&cols=${encodeURIComponent(selCols.join(","))}&preview=1`;
+  window.open(url, "_blank");
+}
+
+// ════════════════════════════════════════════════════════════════
+//  MISC HELPERS
+// ════════════════════════════════════════════════════════════════
+function switchTab(el, pane) {
+  el.closest(".card").querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  el.closest(".card").querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+  el.classList.add("active");
+  document.getElementById(pane).classList.add("active");
+}
+
+function slugify(inp) {
+  inp.value = inp.value.toLowerCase()
+    .replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g,"a")
+    .replace(/[èéẹẻẽêềếệểễ]/g,"e")
+    .replace(/[ìíịỉĩ]/g,"i")
+    .replace(/[òóọỏõôồốộổỗơờớợởỡ]/g,"o")
+    .replace(/[ùúụủũưừứựửữ]/g,"u")
+    .replace(/[ỳýỵỷỹ]/g,"y")
+    .replace(/đ/g,"d")
+    .replace(/[^a-z0-9-]/g,"-").replace(/-+/g,"-");
+}
+
+function markDirty()  { dirty = true;  updateStatus(); }
+function updateStatus() {
+  const el = document.getElementById("status-pill"); if (!el) return;
+  el.textContent = dirty ? "Chưa lưu" : "Đã lưu";
+  el.className   = "status-pill " + (dirty ? "unsaved" : "saved");
+}
+function setStatus(cls, text) {
+  const el = document.getElementById("status-pill"); if (!el) return;
+  el.textContent = text; el.className = "status-pill " + cls;
+}
+
+function v(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.value = val;
+}
+
+function esc(s) {
+  return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+init();
+</script>
+</body>
+</html>
