@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Báo cáo</title>
+<style>
+/* ══════════════════════════════════════════════════════════════
+   BASE
+══════════════════════════════════════════════════════════════ */
+*,::before,::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --tx:#1a1a18;--tx2:#6b6b67;--tx3:#9b9b96;
+  --bg:#fff;--bg2:#f7f7f5;--bd:rgba(0,0,0,.1);--bd2:rgba(0,0,0,.2);
+  --blue:#185FA5;--blue-bg:#e6f1fb;
+  --red-bg:#fcebeb;--red:#A32D2D;
+  --r:8px;
+}
+body{font-family:"Times New Roman",Georgia,serif;font-size:14px;
+     color:var(--tx);background:#e0e0db}
+
+/* ══════════════════════════════════════════════════════════════
+   TOOLBAR (ẩn khi in)
+══════════════════════════════════════════════════════════════ */
+.toolbar{background:#1e1e1c;color:#fff;padding:0 20px;height:46px;
+         display:flex;align-items:center;gap:10px;
+         font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.toolbar h1{font-size:13px;font-weight:500;flex:1;white-space:nowrap;
+            overflow:hidden;text-overflow:ellipsis}
+.tb-btn{padding:6px 13px;border-radius:6px;border:1px solid rgba(255,255,255,.2);
+        background:none;color:#fff;cursor:pointer;font-size:12px;
+        transition:background .15s;white-space:nowrap}
+.tb-btn:hover{background:rgba(255,255,255,.1)}
+.tb-btn.primary{background:var(--blue);border-color:var(--blue)}
+.tb-btn.primary:hover{opacity:.9;background:var(--blue)}
+.preview-badge{font-size:11px;padding:3px 8px;border-radius:12px;
+               background:rgba(239,159,39,.3);color:#fbbf24}
+
+/* ══════════════════════════════════════════════════════════════
+   PAGE WRAPPER & PAPER
+══════════════════════════════════════════════════════════════ */
+.pw{padding:24px;display:flex;flex-direction:column;align-items:center;gap:20px}
+
+/* Paper size defaults — overridden by JS <style> inject */
+.paper{background:#fff;width:210mm;padding:16mm 18mm;
+       box-shadow:0 3px 24px rgba(0,0,0,.14);position:relative}
+
+/* ══════════════════════════════════════════════════════════════
+   LOADING / ERROR
+══════════════════════════════════════════════════════════════ */
+.spin{width:22px;height:22px;border:3px solid var(--bd2);
+      border-top-color:var(--blue);border-radius:50%;
+      animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.state{display:flex;flex-direction:column;align-items:center;gap:14px;
+       padding:60px 20px;text-align:center;color:var(--tx2)}
+.state h3{font-size:16px;color:var(--tx)}
+.err-box{background:var(--red-bg);border:1px solid rgba(163,45,45,.2);
+         border-radius:var(--r);padding:14px 16px;color:var(--red);
+         font-size:13px;font-family:-apple-system,sans-serif;
+         margin:20px;line-height:1.7}
+
+/* ══════════════════════════════════════════════════════════════
+   SHARED ELEMENTS (dùng chung tất cả layout)
+══════════════════════════════════════════════════════════════ */
+.rpt-title{font-size:18px;font-weight:700;text-align:center;
+           margin-bottom:4px;letter-spacing:.02em;text-transform:uppercase}
+.rpt-subtitle{font-size:11px;text-align:center;color:var(--tx2);margin-bottom:18px}
+.rpt-footer{margin-top:18px;padding-top:10px;border-top:1px solid var(--bd);
+            font-size:10px;color:var(--tx3);text-align:center;line-height:1.9}
+
+/* Bảng chung */
+.tbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px}
+.tbl th{background:var(--tx);color:#fff;padding:7px 9px;text-align:left;
+        font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.tbl td{padding:6px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+.tbl tbody tr:nth-child(even) td{background:var(--bg2)}
+.tbl tfoot td{background:var(--bg2);font-weight:700;border-top:2px solid var(--bd2)}
+
+/* ══════════════════════════════════════════════════════════════
+   INVOICE LAYOUT
+══════════════════════════════════════════════════════════════ */
+.inv-hd{display:flex;justify-content:space-between;align-items:flex-start;
+        margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid var(--tx)}
+.inv-brand{font-size:11px;color:var(--tx2);line-height:1.8}
+.inv-brand strong{font-size:17px;font-weight:700;color:var(--tx);display:block;margin-bottom:2px}
+.inv-meta{text-align:right;font-size:11px;color:var(--tx2);line-height:1.9}
+.inv-meta strong{font-size:19px;font-weight:700;color:var(--tx);display:block;letter-spacing:.03em}
+.inv-info{display:grid;grid-template-columns:1fr 1fr;gap:0 22px;margin-bottom:18px}
+.inv-info dt{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+             color:var(--tx3);margin-top:8px}
+.inv-info dd{font-size:13px;font-weight:500;color:var(--tx)}
+.amt-row{display:flex;justify-content:flex-end;margin-top:10px}
+.amt-box{border:1px solid var(--bd2);border-radius:var(--r);padding:10px 16px;text-align:right}
+.amt-box .lbl{font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:.05em}
+.amt-box .val{font-size:20px;font-weight:700}
+.amt-box .chu{font-size:10px;color:var(--tx2);margin-top:2px;font-style:italic}
+
+/* ══════════════════════════════════════════════════════════════
+   WAREHOUSE LAYOUT
+══════════════════════════════════════════════════════════════ */
+.wh-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;
+         margin-bottom:16px;padding:10px 14px;
+         background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r)}
+.wh-meta dt{font-size:10px;font-weight:700;text-transform:uppercase;
+            letter-spacing:.05em;color:var(--tx3)}
+.wh-meta dd{font-size:13px;font-weight:500}
+
+/* ══════════════════════════════════════════════════════════════
+   SUMMARY LAYOUT (multi-sheet)
+══════════════════════════════════════════════════════════════ */
+.sec-title{font-size:13px;font-weight:700;color:var(--tx);
+           margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--bd2)}
+.kv-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0;
+         border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:12px}
+.kv-label{padding:7px 10px;font-size:10px;font-weight:700;text-transform:uppercase;
+          letter-spacing:.04em;background:var(--bg2);color:var(--tx2);
+          border-bottom:1px solid var(--bd)}
+.kv-value{padding:7px 10px;font-size:12px;border-bottom:1px solid var(--bd);
+          border-left:1px solid var(--bd)}
+
+/* ══════════════════════════════════════════════════════════════
+   SIGNATURES
+══════════════════════════════════════════════════════════════ */
+.sig-row{display:flex;justify-content:space-around;margin-top:30px}
+.sig{text-align:center;font-size:11px;color:var(--tx2)}
+.sig .sig-line{width:110px;border-bottom:1px solid var(--bd2);
+               margin:0 auto 4px;height:36px}
+.sig .sig-name{font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+
+/* ══════════════════════════════════════════════════════════════
+   PRINT STYLES
+══════════════════════════════════════════════════════════════ */
+@media print{
+  body{background:#fff}
+  .toolbar,.no-print{display:none!important}
+  .pw{padding:0}
+  .paper{box-shadow:none;width:100%;padding:0;margin:0}
+  .tbl tr{page-break-inside:avoid}
+  .tbl thead{display:table-header-group}
+  .inv-hd{page-break-after:avoid}
+  .sec-title{page-break-after:avoid}
+}
+</style>
+</head>
+<body>
+
+<!-- TOOLBAR -->
+<div class="toolbar no-print">
+  <h1 id="tb-title">Đang tải...</h1>
+  <span id="preview-badge" style="display:none" class="preview-badge">&#128065; XEM THỬ</span>
+  <button class="tb-btn" onclick="window.close()">&#10005; Đóng</button>
+  <button class="tb-btn primary" onclick="window.print()">&#128438; In / PDF</button>
+</div>
+
+<div class="pw" id="pw">
+  <div class="paper" id="paper">
+    <div class="state">
+      <div class="spin"></div>
+      <p>Đang tải dữ liệu...</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ┌─────────────────────────────────────────────────────────────┐
+// │  ★  KHAI BÁO DUY NHẤT  ★                                  │
+// └─────────────────────────────────────────────────────────────┘
+const API_URL       = "https://script.google.com/macros/s/AKfycbwqwRgBqKmL5yGY8YD0MrJi-iQUusgQPplEOfqzWsXHpDf-HZus900DueXzxYIe9V-i/exec";
+
+// ──────────────────────────────────────────────────────────────
+
+// ── URL Params ──
+const Q          = new URLSearchParams(location.search);
+const ROW_ID     = Q.get("id")       || "";
+const TPL_ID     = Q.get("tpl")      || "";
+const SHEET      = Q.get("sheet")    || "";
+const COLS_PARAM = Q.get("cols")     || "";
+const PREVIEW    = Q.get("preview")  === "1";
+const AUTOPRINT  = Q.get("autoprint")=== "1";
+
+// ════════════════════════════════════════════════════════════════
+//  DEMO DATA (preview mode)
+// ════════════════════════════════════════════════════════════════
+const DEMO = {
+  MaDonHang:"DH-20240412", NgayTao:"12/04/2024",
+  TenKhachHang:"Nguyễn Văn An", SoDienThoai:"0901 234 567",
+  DiaChi:"123 Lê Lợi, Quận 1, TP.HCM",
+  TenSanPham:"Laptop Dell XPS 15", SoLuong:"2",
+  DonGia:"28500000", ThanhTien:"57000000",
+  TrangThai:"Đã thanh toán", NguoiPhuTrach:"Trần Thị Bình",
+  GhiChu:"Giao trước 5pm", NgayGiaoHang:"15/04/2024",
+  PhuongThucThanhToan:"Chuyển khoản",
+  MaKho:"KHO-01", LoSanXuat:"L2024Q1", HanSuDung:"31/12/2025",
+  SoLuongNhap:"100", SoLuongXuat:"50", TonKho:"50",
+};
+
+// ════════════════════════════════════════════════════════════════
+//  API HELPER
+// ════════════════════════════════════════════════════════════════
+async function api(params) {
+  const r = await fetch(API_URL + "?" + new URLSearchParams(params));
+  const d = await r.json();
+  if (d.error) throw new Error(d.error);
+  return d;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  MAIN
+// ════════════════════════════════════════════════════════════════
+async function main() {
+  try {
+    // 1. Load config template
+    let cfg = null;
+    if (TPL_ID) {
+      try {
+        const d = await api({ action:"getConfig", tplId:TPL_ID });
+        cfg = d.template || null;
+      } catch(e) {}
+    }
+
+    const po       = cfg?.printOptions || {};
+    const rptType  = cfg?.reportType   || "invoice";
+    let   cols     = COLS_PARAM ? COLS_PARAM.split(",").filter(Boolean)
+                                : (cfg?.columns || []);
+    const cfs      = cfg?.customFields || [];  // cột tính toán
+    const dss      = cfg?.dataSources  || [];  // sheet phụ
+
+    // 2. Lấy dữ liệu
+    let row        = null;
+    let extraData  = {};  // alias → row/rows từ sheet phụ
+
+    if (PREVIEW) {
+      row = { ...DEMO };
+      // Demo data cho sheet phụ
+      dss.forEach(ds => { extraData[ds.as] = [{ ...DEMO }]; });
+    } else {
+      // Sheet chính
+      if (!ROW_ID || !SHEET) throw new Error("Thiếu tham số id hoặc sheet trong URL");
+      const d = await api({ action:"getData", sheet:SHEET, id:ROW_ID, keyCol:po.keyCol||"" });
+      row = d.row;
+      if (!row) throw new Error("Không tìm thấy dữ liệu");
+
+      // Sheet phụ (multi-sheet)
+      if (dss.length) {
+        const queries = dss.map(ds => ({
+          sheet : ds.sheet,
+          keyCol: ds.joinOn,
+          id    : row[ds.joinOn] || ROW_ID,
+          as    : ds.as,
+          cols  : ds.cols?.length ? ds.cols : undefined,
+        }));
+        try {
+          const md = await api({ action:"getMultiData", queries:JSON.stringify(queries) });
+          extraData = md.datasets || {};
+        } catch(e) {}
+      }
+    }
+
+    // Fallback cols
+    if (!cols.length) cols = Object.keys(row);
+
+    // 3. Tính custom fields
+    row = applyCustomFields(row, cfs);
+
+    // 4. Áp dụng CSS trang in
+    applyPageStyle(po);
+
+    // 5. Render
+    const title  = po.title || cfg?.tplName || "BÁO CÁO";
+    const footer = po.footer || "";
+    const sign   = po.sign !== undefined ? Number(po.sign) : 3;
+
+    let html = "";
+    if      (rptType === "invoice")   html = renderInvoice(row, cols, title, sign, po);
+    else if (rptType === "table")     html = renderTable([row], cols, title, po);
+    else if (rptType === "warehouse") html = renderWarehouse(row, cols, title, sign, po);
+    else if (rptType === "summary")   html = renderSummary(row, cols, extraData, dss, cfg, title, sign, po);
+    else                              html = renderTable([row], cols, title, po);
+
+    html += renderFooter(footer, PREVIEW);
+
+    document.getElementById("paper").innerHTML = html;
+    document.title = title;
+    document.getElementById("tb-title").textContent =
+      (PREVIEW ? "[XEM THỬ] " : "") + title;
+    if (PREVIEW) document.getElementById("preview-badge").style.display = "";
+
+    if (AUTOPRINT || po.autoprint) setTimeout(() => window.print(), 800);
+
+  } catch(e) {
+    document.getElementById("paper").innerHTML =
+      `<div class="err-box"><strong>Lỗi tải báo cáo:</strong><br>${e.message}</div>
+       <div class="state"><p>Kiểm tra lại URL · cấu hình API · tên sheet.</p></div>`;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  APPLY CUSTOM FIELDS
+// ════════════════════════════════════════════════════════════════
+function applyCustomFields(row, cfs) {
+  if (!cfs?.length) return row;
+  const r = { ...row };
+  for (const cf of cfs) {
+    if (!cf.label || !cf.formula) continue;
+    try {
+      // Thay {TenCot} → giá trị số (bỏ dấu phẩy)
+      let expr = cf.formula.replace(/\{([^}]+)\}/g, (_, key) => {
+        const v = String(r[key] || "0").replace(/[^0-9.\-]/g, "");
+        return isNaN(v) ? 0 : v;
+      });
+      // eslint-disable-next-line no-new-func
+      const val = Function('"use strict"; return (' + expr + ')')();
+      r[cf.label] = isNaN(val) ? cf.formula : fmtNum(val);
+    } catch(e) { r[cf.label] = "Lỗi công thức"; }
+  }
+  return r;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  PAGE STYLE
+// ════════════════════════════════════════════════════════════════
+function applyPageStyle(po) {
+  const paper  = po.paper  || "A4";
+  const orient = po.orient || "portrait";
+  const sizes  = {
+    A4     : "210mm 297mm",
+    A5     : "148mm 210mm",
+    letter : "216mm 279mm",
+    "80mm" : "80mm auto",
+    K57    : "57mm auto",
+  };
+  const widths = {
+    A4     : orient==="landscape" ? "267mm" : "210mm",
+    A5     : orient==="landscape" ? "187mm" : "148mm",
+    letter : orient==="landscape" ? "266mm" : "216mm",
+    "80mm" : "74mm",
+    K57    : "51mm",
+  };
+  const s = document.createElement("style");
+  s.textContent = `
+    @page { size:${sizes[paper]||sizes.A4} ${paper.includes("mm")?"":orient}; margin:10mm 12mm; }
+    .paper { width:${widths[paper]||widths.A4}; }
+  `;
+  if (paper === "80mm" || paper === "K57") {
+    s.textContent += `.paper{padding:4mm 3mm;font-size:11px}
+      .tbl th,.tbl td{padding:3px 4px;font-size:10px}
+      .rpt-title{font-size:14px} .inv-hd{flex-direction:column;gap:6px}`;
+  }
+  // Custom CSS từ admin
+  if (po.css) s.textContent += "\n" + po.css;
+  document.head.appendChild(s);
+}
+
+// ════════════════════════════════════════════════════════════════
+//  RENDER: INVOICE (Hóa đơn / Phiếu thu)
+// ════════════════════════════════════════════════════════════════
+function renderInvoice(row, cols, title, sign, po) {
+  // Tách: nửa đầu → info header (≤10 cột), nửa còn lại → bảng chi tiết
+  const half     = Math.ceil(cols.length * 0.55);
+  const infoCols = cols.slice(0, Math.min(half, 10));
+  const tblCols  = cols.slice(infoCols.length);
+  const amtCol   = findAmtCol(cols);
+
+  const infoDl = infoCols.map(c =>
+    `<dt>${esc(c)}</dt><dd>${esc(fv(row[c]))}</dd>`).join("");
+
+  const tblHtml = tblCols.length
+    ? `<table class="tbl">
+         <thead><tr>${tblCols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr></thead>
+         <tbody><tr>${tblCols.map(c=>`<td>${esc(fv(row[c]))}</td>`).join("")}</tr></tbody>
+       </table>` : "";
+
+  const amtHtml = amtCol
+    ? `<div class="amt-row">
+         <div class="amt-box">
+           <div class="lbl">Tổng cộng</div>
+           <div class="val">${fmtMoney(row[amtCol])} ₫</div>
+           <div class="chu">(${soThanhChu(row[amtCol])})</div>
+         </div>
+       </div>` : "";
+
+  return `
+    <div class="inv-hd">
+      <div class="inv-brand">
+        <strong>${esc(title)}</strong>
+        ${new Date().toLocaleDateString("vi-VN",{year:"numeric",month:"long",day:"numeric"})}
+      </div>
+      <div class="inv-meta">
+        <strong>${esc(fv(row[cols[0]]))}</strong>
+        Ngày in: ${new Date().toLocaleDateString("vi-VN")}
+      </div>
+    </div>
+    <dl class="inv-info">${infoDl}</dl>
+    ${tblHtml}
+    ${amtHtml}
+    ${renderSig(sign, ["Người lập phiếu","Người phê duyệt","Người nhận"])}`;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  RENDER: TABLE (Bảng danh sách)
+// ════════════════════════════════════════════════════════════════
+function renderTable(rows, cols, title, po) {
+  const thead = cols.map(c => `<th>${esc(c)}</th>`).join("");
+  const tbody = rows.map(r =>
+    `<tr>${cols.map(c=>`<td>${esc(fv(r[c]))}</td>`).join("")}</tr>`).join("");
+  // Tổng cột số
+  const sums = cols.map(c => {
+    const vals = rows.map(r => parseNum(r[c]));
+    return vals.some(v=>v!==null) ? fmtMoney(vals.reduce((a,b)=>a+(b||0),0)) : null;
+  });
+  const hasSums = sums.some(s => s !== null);
+  const tfoot   = hasSums
+    ? `<tfoot><tr>${sums.map((s,i)=>`<td>${i===0?"Tổng":s||""}</td>`).join("")}</tr></tfoot>` : "";
+
+  return `
+    <div class="rpt-title">${esc(title)}</div>
+    <div class="rpt-subtitle">
+      Ngày in: ${new Date().toLocaleDateString("vi-VN")} &nbsp;·&nbsp; Tổng: ${rows.length} dòng
+    </div>
+    <table class="tbl">
+      <thead><tr>${thead}</tr></thead>
+      <tbody>${tbody}</tbody>
+      ${tfoot}
+    </table>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  RENDER: WAREHOUSE (Phiếu xuất / nhập kho)
+// ════════════════════════════════════════════════════════════════
+function renderWarehouse(row, cols, title, sign, po) {
+  // Cột ưu tiên hiển thị trong phần thông tin phiếu
+  const headerKeys = cols.filter(c =>
+    /ngay|date|ma|so phieu|kho|loai|nguoi|ly do/i.test(c));
+  const tableKeys  = cols.filter(c => !headerKeys.includes(c));
+
+  const metaDl = headerKeys.map(c =>
+    `<dt>${esc(c)}</dt><dd>${esc(fv(row[c]))}</dd>`).join("");
+
+  const tblHtml = tableKeys.length
+    ? `<table class="tbl">
+         <thead><tr>${tableKeys.map(c=>`<th>${esc(c)}</th>`).join("")}</tr></thead>
+         <tbody><tr>${tableKeys.map(c=>`<td>${esc(fv(row[c]))}</td>`).join("")}</tr></tbody>
+       </table>` : "";
+
+  return `
+    <div class="rpt-title">${esc(title)}</div>
+    <div class="rpt-subtitle">Ngày in: ${new Date().toLocaleDateString("vi-VN")}</div>
+    <dl class="wh-meta">${metaDl}</dl>
+    ${tblHtml}
+    ${renderSig(sign, ["Thủ kho","Kế toán","Người nhận/giao"])}`;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  RENDER: SUMMARY (Tổng hợp nhiều sheet)
+// ════════════════════════════════════════════════════════════════
+function renderSummary(row, cols, extraData, dss, cfg, title, sign, po) {
+  let html = `
+    <div class="rpt-title">${esc(title)}</div>
+    <div class="rpt-subtitle">Ngày in: ${new Date().toLocaleDateString("vi-VN")}</div>`;
+
+  // Phần 1: Thông tin chính (dạng key-value grid)
+  if (cols.length) {
+    html += `<div class="sec-title">Thông tin chính</div>
+      <div class="kv-grid">
+        ${cols.map(c=>`
+          <span class="kv-label">${esc(c)}</span>
+          <span class="kv-value">${esc(fv(row[c]))}</span>`).join("")}
+      </div>`;
+  }
+
+  // Phần 2: Mỗi data source → 1 section riêng
+  for (const ds of (dss || [])) {
+    const alias   = ds.as || ds.sheet;
+    const dsData  = extraData[alias];
+    const headers = extraData[alias + "__headers"];
+    if (!dsData) continue;
+
+    const rows   = Array.isArray(dsData) ? dsData : [dsData];
+    const dsCols = ds.cols?.length
+      ? ds.cols
+      : (headers || (rows[0] ? Object.keys(rows[0]) : []));
+
+    html += `<div class="sec-title">${esc(ds.as || ds.sheet)}</div>`;
+    html += `<table class="tbl">
+      <thead><tr>${dsCols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr></thead>
+      <tbody>${rows.map(r=>`<tr>${dsCols.map(c=>`<td>${esc(fv(r[c]))}</td>`).join("")}</tr>`).join("")}</tbody>
+    </table>`;
+  }
+
+  html += renderSig(sign, ["Người lập","Người duyệt","Xác nhận"]);
+  return html;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  SHARED: Footer + Signatures
+// ════════════════════════════════════════════════════════════════
+function renderFooter(footer, isPreview) {
+  return `<div class="rpt-footer">
+    ${footer ? esc(footer) + "<br>" : ""}
+    In lúc: ${new Date().toLocaleString("vi-VN")}
+    ${isPreview ? ' &nbsp;·&nbsp; <strong style="color:#b45309">[DỮ LIỆU XEM THỬ]</strong>' : ""}
+  </div>`;
+}
+
+function renderSig(count, labels) {
+  if (!count) return "";
+  const n   = Math.min(Number(count) || 3, labels.length);
+  const sigs = labels.slice(0, n).map(l =>
+    `<div class="sig"><div class="sig-line"></div>
+     <div class="sig-name">${esc(l)}</div>
+     <div style="font-size:10px;color:var(--tx3);margin-top:2px">(Ký, ghi rõ họ tên)</div></div>`
+  ).join("");
+  return `<div class="sig-row">${sigs}</div>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════════════════════════
+function fv(v)    { return (v === null || v === undefined || v === "") ? "—" : String(v); }
+function esc(s)   { return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function parseNum(v) {
+  const n = parseFloat(String(v||"").replace(/[^0-9.\-]/g,""));
+  return isNaN(n) ? null : n;
+}
+function fmtNum(n)   { return Number(n).toLocaleString("vi-VN"); }
+function fmtMoney(v) { const n = parseFloat(String(v||"").replace(/[^0-9.\-]/g,"")); return isNaN(n)?fv(v):n.toLocaleString("vi-VN"); }
+function findAmtCol(cols) {
+  return cols.find(c => /t[oổ]ng|ti[eề]n|amount|total|gi[aá]/i.test(c));
+}
+
+// ── Số thành chữ (tiếng Việt) ──
+const _dv = ["","một","hai","ba","bốn","năm","sáu","bảy","tám","chín"];
+const _h  = ["","nghìn","triệu","tỷ"];
+function _doc3(n) {
+  if (!n) return "";
+  const t=Math.floor(n/100), c=Math.floor((n%100)/10), d=n%10;
+  let s="";
+  if(t) s+=_dv[t]+" trăm ";
+  if(c>1) s+=_dv[c]+" mươi ";
+  else if(c===1) s+="mười ";
+  if(d&&c>1) s+=(d===1?"mốt":_dv[d])+" ";
+  else if(d) s+=_dv[d]+" ";
+  return s.trim();
+}
+function soThanhChu(raw) {
+  let n = parseInt(String(raw||"0").replace(/[^0-9]/g,"")) || 0;
+  if(!n) return "không đồng";
+  let res="", i=0;
+  while(n>0){ const p=n%1000; if(p) res=_doc3(p)+(_h[i]?" "+_h[i]+" ":"")+res; n=Math.floor(n/1000); i++; }
+  res = res.trim();
+  return res.charAt(0).toUpperCase()+res.slice(1)+" đồng";
+}
+
+main();
+</script>
+</body>
+</html>
