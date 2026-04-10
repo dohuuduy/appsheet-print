@@ -808,27 +808,88 @@ function cfChanged(i, key, val) {
 
 // ════════════════════════════════════════════════════════════════
 //  URL PREVIEW
+//  - summary / multi-sheet: chỉ dùng tpl= (print.html tự load config)
+//  - các loại khác: thêm cols= để ghi đè nhanh không cần load config
 // ════════════════════════════════════════════════════════════════
+function buildURL(forAppSheet) {
+  const id    = document.getElementById("f-id")?.value?.trim()    || "YOUR_TPL_ID";
+  const sheet = document.getElementById("f-sheet")?.value?.trim() || "YOUR_SHEET";
+  // AppSheet dùng biểu thức nối chuỗi, trình duyệt dùng giá trị thật để test
+  const idExpr = forAppSheet ? `"&[${sheet==="YOUR_SHEET"?"MaDonHang":sheet.replace(/[^a-zA-Z0-9]/g,"")||"MaDonHang"}]&"` : "[_UNIQUEID]";
+
+  if (rptType === "summary") {
+    // Báo cáo tổng hợp: KHÔNG truyền cols — print.html load toàn bộ config từ API
+    // AppSheet: dùng công thức nối chuỗi để tránh encode sai
+    if (forAppSheet) {
+      return `"${PRINT_APP_URL}?id="&[MaDonHang]&"&tpl=${id}&sheet=${sheet}"`;
+    }
+    return `${PRINT_APP_URL}?id=[_UNIQUEID]&tpl=${id}&sheet=${sheet}`;
+  }
+
+  // Các loại khác: truyền cols để override nhanh
+  const cols = selCols.join(",");
+  if (forAppSheet) {
+    return `"${PRINT_APP_URL}?id="&[MaDonHang]&"&tpl=${id}&sheet=${sheet}&cols=${cols}"`;
+  }
+  return `${PRINT_APP_URL}?id=[_UNIQUEID]&tpl=${id}&sheet=${sheet}&cols=${encodeURIComponent(cols)}`;
+}
+
 function updateURL() {
   const el = document.getElementById("url-preview"); if (!el) return;
-  const id     = document.getElementById("f-id")?.value    || "YOUR_TPL_ID";
-  const sheet  = document.getElementById("f-sheet")?.value || "YOUR_SHEET";
-  const cols   = encodeURIComponent(selCols.join(","));
-  el.innerHTML =
-    `${PRINT_APP_URL}?` +
-    `<span class="p">id</span>=<span class="v">[_UNIQUEID]</span>` +
-    `&<span class="p">tpl</span>=<span class="v">${esc(id)}</span>` +
-    `&<span class="p">sheet</span>=<span class="v">${esc(sheet)}</span>` +
-    `&<span class="p">cols</span>=<span class="v">${cols}</span>` +
-    `<button class="copy-btn" onclick="copyURL()">Copy</button>`;
+  const id    = document.getElementById("f-id")?.value?.trim()    || "YOUR_TPL_ID";
+  const sheet = document.getElementById("f-sheet")?.value?.trim() || "YOUR_SHEET";
+
+  let html = "";
+  if (rptType === "summary") {
+    // Hiển thị 2 dòng: URL test trình duyệt + công thức AppSheet
+    html =
+      `<div style="margin-bottom:6px">` +
+      `<span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3)">URL test trình duyệt:</span><br>` +
+      `${PRINT_APP_URL}?<span class="p">id</span>=<span class="v">[_UNIQUEID]</span>` +
+      `&<span class="p">tpl</span>=<span class="v">${esc(id)}</span>` +
+      `&<span class="p">sheet</span>=<span class="v">${esc(sheet)}</span>` +
+      `</div>` +
+      `<div style="border-top:1px solid var(--bd);padding-top:6px;margin-top:4px">` +
+      `<span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3)">Công thức dán vào AppSheet Action:</span><br>` +
+      `<span style="color:var(--green)">"${PRINT_APP_URL}?id="</span>` +
+      `&amp;<span style="color:#c586c0">[MaDonHang]</span>` +
+      `&amp;<span style="color:var(--green)">"&amp;tpl=${esc(id)}&amp;sheet=${esc(sheet)}"</span>` +
+      `</div>`;
+  } else {
+    const cols = encodeURIComponent(selCols.join(","));
+    html =
+      `<div style="margin-bottom:6px">` +
+      `<span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3)">URL test trình duyệt:</span><br>` +
+      `${PRINT_APP_URL}?<span class="p">id</span>=<span class="v">[_UNIQUEID]</span>` +
+      `&<span class="p">tpl</span>=<span class="v">${esc(id)}</span>` +
+      `&<span class="p">sheet</span>=<span class="v">${esc(sheet)}</span>` +
+      `&<span class="p">cols</span>=<span class="v">${cols}</span>` +
+      `</div>` +
+      `<div style="border-top:1px solid var(--bd);padding-top:6px;margin-top:4px">` +
+      `<span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3)">Công thức dán vào AppSheet Action:</span><br>` +
+      `<span style="color:var(--green)">"${PRINT_APP_URL}?id="</span>` +
+      `&amp;<span style="color:#c586c0">[MaDonHang]</span>` +
+      `&amp;<span style="color:var(--green)">"&amp;tpl=${esc(id)}&amp;sheet=${esc(sheet)}&amp;cols=${selCols.join(",")}"</span>` +
+      `</div>`;
+  }
+  el.innerHTML = html + `<button class="copy-btn" onclick="copyURL()">Copy công thức</button>`;
 }
 
 function copyURL() {
-  const id    = document.getElementById("f-id")?.value    || "";
-  const sheet = document.getElementById("f-sheet")?.value || "";
-  const cols  = encodeURIComponent(selCols.join(","));
-  const url   = `${PRINT_APP_URL}?id=[_UNIQUEID]&tpl=${id}&sheet=${sheet}&cols=${cols}`;
-  navigator.clipboard?.writeText(url).then(() => alert("Đã copy URL!")).catch(() => prompt("Copy URL:", url));
+  // Luôn copy CÔNG THỨC dán vào AppSheet (không phải URL test)
+  const id    = document.getElementById("f-id")?.value?.trim()    || "";
+  const sheet = document.getElementById("f-sheet")?.value?.trim() || "";
+
+  let formula = "";
+  if (rptType === "summary") {
+    formula = `"${PRINT_APP_URL}?id="&[MaDonHang]&"&tpl=${id}&sheet=${sheet}"`;
+  } else {
+    const cols = selCols.join(",");
+    formula = `"${PRINT_APP_URL}?id="&[MaDonHang]&"&tpl=${id}&sheet=${sheet}&cols=${cols}"`;
+  }
+  navigator.clipboard?.writeText(formula)
+    .then(() => alert("Đã copy công thức AppSheet!\n\nDán vào ô URL trong AppSheet Action."))
+    .catch(() => prompt("Copy công thức này vào AppSheet Action:", formula));
 }
 
 // ════════════════════════════════════════════════════════════════
