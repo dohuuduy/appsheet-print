@@ -167,7 +167,6 @@ body{font-family:"Times New Roman",Georgia,serif;font-size:14px;
 // │  ★  KHAI BÁO DUY NHẤT  ★                                  │
 // └─────────────────────────────────────────────────────────────┘
 const API_URL       = "https://script.google.com/macros/s/AKfycbwqwRgBqKmL5yGY8YD0MrJi-iQUusgQPplEOfqzWsXHpDf-HZus900DueXzxYIe9V-i/exec";
-
 // ──────────────────────────────────────────────────────────────
 
 // ── URL Params ──
@@ -257,11 +256,20 @@ async function main() {
       }
     }
 
-    // Fallback cols
+    // 3. Tính custom fields TRƯỚC để CF có trong row
+    row = applyCustomFields(row, cfs);
+
+    // Fallback cols: lấy tất cả key của row (đã bao gồm CF)
     if (!cols.length) cols = Object.keys(row);
 
-    // 3. Tính custom fields
-    row = applyCustomFields(row, cfs);
+    // Bổ sung tên custom fields vào cuối cols nếu chưa có
+    if (cfs?.length) {
+      for (const cf of cfs) {
+        if (cf.label && !cols.includes(cf.label)) {
+          cols = [...cols, cf.label];
+        }
+      }
+    }
 
     // 4. Áp dụng CSS trang in
     applyPageStyle(po);
@@ -304,10 +312,12 @@ function applyCustomFields(row, cfs) {
   for (const cf of cfs) {
     if (!cf.label || !cf.formula) continue;
     try {
-      // Thay {TenCot} → giá trị số (bỏ dấu phẩy)
-      let expr = cf.formula.replace(/\{([^}]+)\}/g, (_, key) => {
+      // Chuẩn hoá công thức: thay dấu phẩy thập phân → dấu chấm (0,1 → 0.1)
+      let formula = cf.formula.replace(/([0-9]),([0-9])/g, "$1.$2");
+      // Thay {TenCot} → giá trị số (bỏ dấu phẩy phân cách hàng nghìn)
+      let expr = formula.replace(/\{([^}]+)\}/g, (_, key) => {
         const v = String(r[key] || "0").replace(/[^0-9.\-]/g, "");
-        return isNaN(v) ? 0 : v;
+        return isNaN(v) || v === "" ? 0 : Number(v);
       });
       // eslint-disable-next-line no-new-func
       const val = Function('"use strict"; return (' + expr + ')')();
