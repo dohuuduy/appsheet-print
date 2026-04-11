@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Báo cáo</title>
+<style>
+*,::before,::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Times New Roman",Georgia,serif;font-size:14px;color:#1a1a18;background:#e0e0db}
+.toolbar{background:#1e1e1c;color:#fff;padding:0 20px;height:46px;display:flex;
+         align-items:center;gap:10px;font-family:-apple-system,sans-serif}
+.toolbar h1{font-size:13px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tb-btn{padding:6px 13px;border-radius:6px;border:1px solid rgba(255,255,255,.2);
+        background:none;color:#fff;cursor:pointer;font-size:12px}
+.tb-btn:hover{background:rgba(255,255,255,.1)}
+.tb-btn.primary{background:#185FA5;border-color:#185FA5}
+.pw{padding:24px;display:flex;flex-direction:column;align-items:center;gap:20px}
+.paper{background:#fff;width:210mm;padding:16mm 18mm;box-shadow:0 3px 24px rgba(0,0,0,.14)}
+.spin{width:20px;height:20px;border:2px solid #ddd;border-top-color:#185FA5;
+      border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.state{display:flex;flex-direction:column;align-items:center;gap:14px;padding:60px 20px;
+       text-align:center;color:#6b6b67}
+.err{background:#fcebeb;border:1px solid rgba(163,45,45,.2);border-radius:8px;
+     padding:14px;color:#A32D2D;font-size:13px;font-family:-apple-system,sans-serif;margin:20px}
+
+/* ── BLOCK PRINT STYLES ── */
+.bp-heading{font-size:20px;font-weight:700;line-height:1.3;margin:4px 0}
+.bp-subheading{font-size:15px;font-weight:600;line-height:1.4;margin:3px 0}
+.bp-text{font-size:13px;line-height:1.7;margin:2px 0;white-space:pre-wrap}
+.bp-field{font-size:13px;margin:2px 0}
+.bp-field .fl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9b9b96;margin-right:6px}
+.bp-field .fv{font-weight:500}
+
+.bp-fieldrow{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:12px;margin:2px 0;align-items:baseline}
+.bp-fieldrow .fr-l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9b9b96;white-space:nowrap}
+.bp-fieldrow .fr-v{font-weight:500}
+
+.bp-infogrid{display:grid;grid-template-columns:1fr 1fr;gap:0 22px;margin:6px 0}
+.bp-infogrid dt{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9b9b96;margin-top:7px}
+.bp-infogrid dd{font-size:13px;font-weight:500}
+
+.bp-docheader{display:flex;justify-content:space-between;align-items:flex-start;
+              margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid #1a1a18}
+.bp-docheader .dh-l{font-size:11px;color:#6b6b67;line-height:1.8}
+.bp-docheader .dh-l strong{font-size:17px;font-weight:700;color:#1a1a18;display:block;margin-bottom:2px}
+.bp-docheader .dh-r{text-align:right;font-size:11px;color:#6b6b67;line-height:1.8}
+.bp-docheader .dh-r strong{font-size:18px;font-weight:700;color:#1a1a18;display:block;letter-spacing:.02em}
+
+.bp-logo{display:flex;align-items:center;gap:12px;margin:4px 0}
+.bp-logo .lo-box{width:60px;height:60px;border:2px solid #eee;border-radius:8px;
+                 display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa}
+.bp-logo .lo-name{font-size:16px;font-weight:700}
+.bp-logo .lo-sub{font-size:11px;color:#6b6b67}
+
+.bp-table{width:100%;border-collapse:collapse;font-size:12px;margin:4px 0}
+.bp-table th{background:#1a1a18;color:#fff;padding:6px 8px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.bp-table td{padding:5px 8px;border-bottom:1px solid rgba(0,0,0,.1)}
+.bp-table tr:nth-child(even) td{background:#f7f7f5}
+.bp-table tfoot td{font-weight:700;background:#f7f7f5;border-top:2px solid rgba(0,0,0,.2)}
+
+.bp-amount{display:flex;justify-content:flex-end;margin:6px 0}
+.bp-amount-inner{border:1px solid rgba(0,0,0,.2);border-radius:8px;padding:8px 16px;text-align:right}
+.bp-amount-inner .am-l{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#6b6b67}
+.bp-amount-inner .am-v{font-size:18px;font-weight:700}
+.bp-amount-inner .am-w{font-size:10px;color:#9b9b96;font-style:italic;margin-top:2px}
+
+.bp-sign{display:flex;justify-content:space-around;margin:20px 0 4px}
+.bp-sign .sc{text-align:center;font-size:11px;color:#6b6b67}
+.bp-sign .sc .sl{width:100px;border-bottom:1px solid rgba(0,0,0,.2);height:32px;margin:0 auto 4px}
+.bp-sign .sc .sn{font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+
+.bp-divider{border:none;border-top:2px solid #1a1a18;margin:6px 0}
+.bp-divider-light{border:none;border-top:1px solid rgba(0,0,0,.1);margin:4px 0}
+.bp-footer{margin-top:16px;padding-top:10px;border-top:1px solid rgba(0,0,0,.1);
+           font-size:10px;color:#9b9b96;text-align:center;line-height:1.9}
+
+@media print{
+  body{background:#fff}
+  .toolbar,.no-print{display:none!important}
+  .pw{padding:0}
+  .paper{box-shadow:none;width:100%;padding:0;margin:0}
+  @page{margin:12mm 14mm}
+}
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <h1 id="tb-title">Đang tải báo cáo...</h1>
+  <button class="tb-btn" onclick="window.close()">&#10005; Đóng</button>
+  <button class="tb-btn primary" onclick="window.print()">&#128438; In / PDF</button>
+</div>
+
+<div class="pw">
+  <div class="paper" id="paper">
+    <div class="state"><div class="spin"></div><p>Đang tải...</p></div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG (sửa duy nhất dòng này) ───
+const API_URL = "PASTE_APPS_SCRIPT_URL_HERE";
+// ──────────────────────────────────────
+
+const Q          = new URLSearchParams(location.search);
+const ROW_ID     = Q.get("id")      || "";
+const TPL_ID     = Q.get("tpl")     || "";
+const SHEET      = Q.get("sheet")   || "";
+const PREVIEW    = Q.get("preview") === "1";
+const USE_BLOCKS = Q.get("useBlockTemplate") === "1";
+const LS_KEY     = "ps_templates_editor_v1";
+
+const DEMO = {
+  MaDonHang:"DH-001",NgayTao:"15/04/2024",NgayDat:"15/04/2024",
+  TenKhachHang:"Nguyễn Văn An",SoDienThoai:"0901 234 567",
+  DiaChi:"123 Lê Lợi, Q.1, TP.HCM",Email:"an@email.com",
+  TenSanPham:"Laptop Dell XPS 15",SoLuong:"2",DonGia:"28500000",
+  ThanhTien:"57000000",TongTien:"57000000",
+  TrangThai:"Đã thanh toán",GhiChu:"Giao trước 5pm",
+  NguoiPhuTrach:"Trần Thị Bình",PhuongThucThanhToan:"Chuyển khoản",
+};
+
+async function api(params) {
+  const r = await fetch(API_URL+"?"+new URLSearchParams(params));
+  const d = await r.json();
+  if (d.error) throw new Error(d.error);
+  return d;
+}
+
+async function main() {
+  try {
+    // 1. Load block template
+    let blocks = null;
+    let tplName = "BÁO CÁO";
+
+    // Thử localStorage trước (nhanh)
+    if (TPL_ID) {
+      try {
+        const ls = JSON.parse(localStorage.getItem(LS_KEY)||"{}");
+        if (ls[TPL_ID]) {
+          blocks = ls[TPL_ID].blocks || [];
+          tplName = ls[TPL_ID].name || tplName;
+        }
+      } catch(e){}
+    }
+
+    // Fallback: load từ API
+    if (!blocks && TPL_ID) {
+      try {
+        const d = await api({action:"getConfig",tplId:TPL_ID});
+        const cfg = d.template;
+        if (cfg?.printOptions?.templateBlocks) {
+          blocks = cfg.printOptions.templateBlocks;
+          tplName = cfg.tplName || tplName;
+        }
+      } catch(e){}
+    }
+
+    if (!blocks || !blocks.length) {
+      throw new Error("Không tìm thấy template hoặc template trống. Kiểm tra lại tplId="+TPL_ID);
+    }
+
+    // 2. Lấy data
+    let row = null;
+    let extraRows = {};  // sheet → rows[] (cho datatable nhiều dòng)
+
+    if (PREVIEW) {
+      row = {...DEMO};
+    } else {
+      if (!ROW_ID || !SHEET) throw new Error("Thiếu tham số id hoặc sheet");
+      const d = await api({action:"getData",sheet:SHEET,id:ROW_ID});
+      row = d.row;
+      if (!row) throw new Error("Không tìm thấy dòng id="+ROW_ID);
+    }
+
+    // 3. Pre-load data bảng (datatable blocks)
+    const dtBlocks = blocks.filter(b=>b.type==="datatable"&&b.sheet&&b.sheet!==SHEET);
+    for (const b of dtBlocks) {
+      if (extraRows[b.sheet]) continue;
+      try {
+        if (PREVIEW) { extraRows[b.sheet]=[{...DEMO}]; }
+        else {
+          const d = await api({action:"getData",sheet:b.sheet,all:"true"});
+          extraRows[b.sheet] = d.rows||[];
+        }
+      } catch(e) { extraRows[b.sheet]=[]; }
+    }
+
+    // 4. Render
+    document.getElementById("paper").innerHTML = renderBlocks(blocks, row, extraRows) +
+      `<div class="bp-footer">In lúc: ${new Date().toLocaleString("vi-VN")}${PREVIEW?' &nbsp;·&nbsp; <strong>[DỮ LIỆU XEM THỬ]</strong>':""}</div>`;
+    document.title = tplName;
+    document.getElementById("tb-title").textContent = (PREVIEW?"[XEM THỬ] ":"")+tplName;
+
+  } catch(e) {
+    document.getElementById("paper").innerHTML =
+      `<div class="err"><strong>Lỗi:</strong> ${e.message}</div>`;
+  }
+}
+
+// ═══════════════ RENDER ENGINE ═══════════════
+function renderBlocks(blocks, row, extraRows) {
+  return blocks.map(b => renderBlock(b, row, extraRows)).join("");
+}
+
+function renderBlock(b, row, extraRows) {
+  const fv = (field) => {
+    if (!field) return "—";
+    // Tính toán nếu có
+    if (field.includes("*")||field.includes("+")||field.includes("-")||field.includes("/")) {
+      return calcFormula(field, row);
+    }
+    return fv2(row[field]);
+  };
+
+  const fv2 = (v) => (v===null||v===undefined||v==="") ? "—" : String(v);
+
+  // Thay {{field}} trong text
+  const tpl = (str) => String(str||"").replace(/\{\{([^}]+)\}\}/g, (_,f) => {
+    if (f.endsWith("_words")) return soThanhChu(row[f.replace("_words","")]);
+    return fv(f.trim());
+  });
+
+  switch(b.type) {
+
+    case "docheader":
+      return `<div class="bp-docheader">
+        <div class="dh-l"><strong>${esc(b.companyName||"")}</strong>${esc(b.companyInfo||"").replace(/\n/g,"<br>")}</div>
+        <div class="dh-r"><strong>${fv(b.docNumField)}</strong>${esc(b.docTitle||"")}<br>Ngày: ${fv(b.dateField)}</div>
+      </div>`;
+
+    case "logo":
+      return `<div class="bp-logo">
+        <div class="lo-box">LOGO</div>
+        <div><div class="lo-name">${esc(b.companyName||"")}</div>
+        <div class="lo-sub">${esc(b.subTitle||"")}</div></div>
+      </div>`;
+
+    case "heading":
+      return `<div class="bp-heading" style="text-align:${b.align||"center"};color:${b.color||"#1a1a18"};font-size:${b.size||20}px">${tpl(b.text)}</div>`;
+
+    case "subheading":
+      return `<div class="bp-subheading" style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||15}px">${tpl(b.text)}</div>`;
+
+    case "text":
+      return `<div class="bp-text" style="text-align:${b.align||"left"};color:${b.color||"#6b6b67"};font-size:${b.size||13}px">${tpl(b.text)}</div>`;
+
+    case "field":
+      return `<div class="bp-field">
+        ${b.showLabel&&b.label?`<span class="fl">${esc(b.label)}:</span>`:""}
+        <span class="fv">${fv(b.fieldName)}</span>
+      </div>`;
+
+    case "fieldrow":
+      return `<div class="bp-fieldrow">
+        <span class="fr-l">${esc(b.label||b.fieldName||"")}:</span>
+        <span class="fr-v">${fv(b.fieldName)}</span>
+      </div>`;
+
+    case "infogrid":
+      const igFields = b.fields||[];
+      return `<dl class="bp-infogrid">${igFields.map(f=>
+        `<div><dt>${esc(f.label||f.field)}</dt><dd>${fv(f.field)}</dd></div>`
+      ).join("")}</dl>`;
+
+    case "datatable":
+      const dtCols = b.columns||[];
+      // Lấy rows từ cùng sheet chính hoặc sheet phụ
+      const dtRows = b.sheet && b.sheet!==SHEET
+        ? (extraRows[b.sheet]||[])
+        : [row];
+      const thead = dtCols.map(c=>`<th>${esc(c)}</th>`).join("");
+      const tbody = dtRows.map(r=>
+        `<tr>${dtCols.map(c=>`<td>${fv2(r[c])}</td>`).join("")}</tr>`
+      ).join("");
+      // Tổng các cột số
+      const sums = dtCols.map(c=>{
+        const nums = dtRows.map(r=>parseFloat(String(r[c]||"").replace(/[^0-9.\-]/g,""))).filter(n=>!isNaN(n));
+        return nums.length ? nums.reduce((a,b)=>a+b,0) : null;
+      });
+      const tfoot = b.showTotal&&sums.some(s=>s!==null)
+        ? `<tfoot><tr>${sums.map((s,i)=>`<td>${i===0?"Tổng":s!==null?fmtMoney(s):""}</td>`).join("")}</tr></tfoot>` : "";
+      return `<table class="bp-table"><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody>${tfoot}</table>`;
+
+    case "amount":
+      const amtRaw = row[b.fieldName]||"0";
+      return `<div class="bp-amount"><div class="bp-amount-inner">
+        <div class="am-l">${esc(b.label||"TỔNG CỘNG")}</div>
+        <div class="am-v">${fmtMoney(amtRaw)} ₫</div>
+        ${b.showWords?`<div class="am-w">(${soThanhChu(amtRaw)})</div>`:""}
+      </div></div>`;
+
+    case "custom":
+      const cfVal = calcFormula(b.formula||"0", row);
+      return `<div class="bp-fieldrow">
+        <span class="fr-l">${esc(b.label||"Tính toán")}:</span>
+        <span class="fr-v">${fmtMoney(cfVal)} ₫</span>
+      </div>`;
+
+    case "sign":
+      const labels = (b.labels||["Người lập","Người duyệt","Người nhận"]).slice(0,b.count||3);
+      return `<div class="bp-sign">${labels.map(l=>`
+        <div class="sc"><div class="sl"></div>
+        <div class="sn">${esc(l)}</div>
+        <div style="font-size:10px;margin-top:2px">(Ký, ghi rõ họ tên)</div></div>`).join("")}</div>`;
+
+    case "divider":      return `<hr class="bp-divider">`;
+    case "dividerlight": return `<hr class="bp-divider-light">`;
+    case "spacer":       return `<div style="height:${b.height||20}px"></div>`;
+    case "pagebreak":    return `<div style="page-break-after:always"></div>`;
+    default:             return "";
+  }
+}
+
+// ═══════════════ HELPERS ═══════════════
+function calcFormula(formula, row) {
+  try {
+    let expr = String(formula).replace(/([0-9]),([0-9])/g,"$1.$2")
+      .replace(/\{([^}]+)\}/g,(_,k)=>{
+        const v=parseFloat(String(row[k.trim()]||"0").replace(/[^0-9.\-]/g,""));
+        return isNaN(v)?0:v;
+      });
+    const val = Function('"use strict";return('+expr+')')();
+    return isNaN(val)?formula:val;
+  } catch(e){ return formula; }
+}
+
+function fmtMoney(v) {
+  const n=parseFloat(String(v||"0").replace(/[^0-9.\-]/g,""));
+  return isNaN(n)?"—":n.toLocaleString("vi-VN");
+}
+
+function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+// Số thành chữ tiếng Việt
+const _dv=["","một","hai","ba","bốn","năm","sáu","bảy","tám","chín"],_h=["","nghìn","triệu","tỷ"];
+function _d3(n){if(!n)return"";const t=Math.floor(n/100),c=Math.floor((n%100)/10),d=n%10;let s="";
+  if(t)s+=_dv[t]+" trăm ";if(c>1)s+=_dv[c]+" mươi ";else if(c===1)s+="mười ";
+  if(d&&c>1)s+=(d===1?"mốt":_dv[d])+" ";else if(d)s+=_dv[d]+" ";return s.trim();}
+function soThanhChu(raw){let n=parseInt(String(raw||"0").replace(/[^0-9]/g,""))||0;
+  if(!n)return"không đồng";let res="",i=0;
+  while(n>0){const p=n%1000;if(p)res=_d3(p)+(_h[i]?" "+_h[i]+" ":"")+res;n=Math.floor(n/1000);i++;}
+  res=res.trim();return res.charAt(0).toUpperCase()+res.slice(1)+" đồng";}
+
+main();
+</script>
+</body>
+</html>
