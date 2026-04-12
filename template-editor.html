@@ -85,20 +85,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
              display:flex;flex-direction:column;align-items:center}
 .page{background:#fff;width:210mm;min-height:297mm;padding:16mm 18mm;
       box-shadow:0 4px 24px rgba(0,0,0,.18);position:relative}
-.block-list{display:flex;flex-direction:column;gap:0;min-height:40px}
+.block-list{display:flex;flex-direction:column;gap:0;min-height:80px;
+             padding-bottom:40px}
 
 /* Drop target line */
-.drop-line{height:3px;border-radius:2px;background:var(--blue);
-           margin:2px 0;opacity:0;transition:opacity .15s}
-.drop-line.active{opacity:1}
+.drop-indicator{height:3px;border-radius:2px;background:var(--blue);
+           margin:0;transition:none;pointer-events:none}
+.block-drag-ghost{position:fixed;pointer-events:none;z-index:9999;
+                  opacity:.85;border-radius:6px;border:2px solid var(--blue);
+                  background:var(--bg);padding:4px 8px;font-size:11px;
+                  color:var(--blue);font-weight:600;white-space:nowrap;
+                  box-shadow:0 4px 20px rgba(0,0,0,.2);max-width:280px;overflow:hidden}
+.block.dragging{opacity:.4;border:2px dashed var(--blue)!important}
+.drag-handle-area{cursor:grab;padding:0 2px}
+.drag-handle-area:active{cursor:grabbing}
 
 /* ── BLOCK styles ── */
 .block{position:relative;padding:6px 8px;border-radius:4px;
-       border:1px solid transparent;transition:border-color .13s;
-       cursor:default;group:block}
+       border:1px solid transparent;transition:border-color .13s,box-shadow .13s;
+       cursor:default}
 .block:hover{border-color:var(--bd2)}
 .block.selected{border-color:var(--blue)!important;
-                box-shadow:0 0 0 3px rgba(24,95,165,.12)}
+                box-shadow:0 0 0 3px rgba(24,95,165,.15),0 0 0 1px var(--blue)!important}
 .block-controls{position:absolute;top:4px;right:4px;display:none;
                 align-items:center;gap:3px;z-index:10}
 .block:hover .block-controls,.block.selected .block-controls{display:flex}
@@ -402,7 +410,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   <div class="canvas-wrap" id="canvas-wrap">
     <div class="page" id="page">
       <div class="block-list" id="block-list"
-           ondragover="onDragOver(event)" ondrop="onDrop(event)">
+           id="block-list-inner">
         <div class="canvas-hint" id="canvas-hint">
           <div style="font-size:32px">&#128203;</div>
           <p>Nhấn vào block bên trái để thêm vào trang</p>
@@ -444,7 +452,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 // ┌─────────────────────────────────────────────────────────────┐
 // │  ★  KHAI BÁO — sửa 2 dòng này  ★                         │
 // └─────────────────────────────────────────────────────────────┘
-
 const API_URL       = "https://script.google.com/macros/s/AKfycbwqwRgBqKmL5yGY8YD0MrJi-iQUusgQPplEOfqzWsXHpDf-HZus900DueXzxYIe9V-i/exec";
 const PRINT_APP_URL = "https://dohuuduy.github.io/appsheet-print/print-block.html";
 // ──────────────────────────────────────────────────────────────
@@ -455,7 +462,6 @@ let currentTplId = null;
 let selectedBlockId = null;
 let blocks       = [];   // array of block objects (current template)
 let sheetColumns = [];   // cột từ sheet đang chọn
-let dragSrcId    = null;
 let dirty        = false;
 
 const COLORS = ["#1a1a18","#185FA5","#0F6E56","#A32D2D","#854F0B","#534AB7","#6b6b67"];
@@ -651,10 +657,15 @@ function addBlock(type) {
   dirty=true; renderBlocks();
   selectBlock(def.id);
   updateBadge();
-  // Scroll xuống block mới
+  // Scroll vào block mới + flash highlight
   setTimeout(()=>{
     const el = document.getElementById("block-"+def.id);
-    el?.scrollIntoView({behavior:"smooth",block:"nearest"});
+    if (el) {
+      el.scrollIntoView({behavior:"smooth",block:"nearest"});
+      el.style.transition = "box-shadow .2s";
+      el.style.boxShadow = "0 0 0 3px rgba(24,95,165,.5)";
+      setTimeout(()=>{ el.style.boxShadow=""; }, 800);
+    }
   },50);
 }
 
@@ -683,22 +694,108 @@ function updateBlockProp(id, key, val) {
   updateBadge();
 }
 
-// ═══════════════ DRAG & DROP ═══════════════
-function onBlockDragStart(e, id) {
-  dragSrcId = id;
-  e.dataTransfer.effectAllowed="move";
+// ═══════════════ DRAG & DROP (mouse-based, ổn định) ═══════════════
+let dragState = null;  // { id, ghost, startY, srcIdx, indicator }
+
+function initDragHandle(el, id) {
+  const handle = el.querySelector(".drag-handle-area");
+  if (!handle) return;
+  handle.addEventListener("mousedown", e => startDrag(e, id));
 }
-function onDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect="move"; }
-function onDrop(e) {
+
+function startDrag(e, id) {
   e.preventDefault();
-  if (!dragSrcId) return;
-  const target = e.target.closest(".block");
-  if (!target || target.id==="block-"+dragSrcId) { dragSrcId=null; return; }
-  const srcIdx = blocks.findIndex(b=>b.id===dragSrcId);
-  const tgtIdx = blocks.findIndex(b=>b.id===target.id.replace("block-",""));
-  const [moved] = blocks.splice(srcIdx,1);
-  blocks.splice(tgtIdx,0,moved);
-  dragSrcId=null; dirty=true; renderBlocks(); updateBadge();
+  e.stopPropagation();
+  const srcEl = document.getElementById("block-"+id);
+  if (!srcEl) return;
+
+  // Tạo ghost element
+  const ghost = document.createElement("div");
+  ghost.className = "block-drag-ghost";
+  ghost.textContent = "⠿ " + (blocks.find(b=>b.id===id)?.type || "block");
+  document.body.appendChild(ghost);
+
+  // Indicator line
+  const indicator = document.createElement("div");
+  indicator.className = "drop-indicator";
+  indicator.style.display = "none";
+
+  srcEl.classList.add("dragging");
+  selectBlock(null);
+
+  dragState = { id, ghost, indicator, srcIdx: blocks.findIndex(b=>b.id===id), dropIdx: -1 };
+
+  document.addEventListener("mousemove", onDragMove);
+  document.addEventListener("mouseup", onDragEnd);
+}
+
+function onDragMove(e) {
+  if (!dragState) return;
+  const { ghost, indicator, id } = dragState;
+
+  // Di chuyển ghost theo chuột
+  ghost.style.left = (e.clientX + 12) + "px";
+  ghost.style.top  = (e.clientY - 12) + "px";
+
+  // Tìm vị trí thả
+  const list = document.getElementById("block-list");
+  const allBlocks = Array.from(list.querySelectorAll(".block:not(.dragging)"));
+
+  let dropIdx = blocks.length;  // mặc định thả cuối
+  let refEl = null;
+  let insertBefore = false;
+
+  for (let i = 0; i < allBlocks.length; i++) {
+    const rect = allBlocks[i].getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    if (e.clientY < midY) {
+      dropIdx = blocks.findIndex(b => b.id === allBlocks[i].id.replace("block-",""));
+      refEl = allBlocks[i];
+      insertBefore = true;
+      break;
+    } else {
+      dropIdx = blocks.findIndex(b => b.id === allBlocks[i].id.replace("block-","")) + 1;
+    }
+  }
+
+  dragState.dropIdx = dropIdx;
+
+  // Hiện indicator
+  if (indicator.parentNode) indicator.parentNode.removeChild(indicator);
+
+  if (refEl && insertBefore) {
+    list.insertBefore(indicator, refEl);
+  } else {
+    // Thả cuối
+    const lastBlock = allBlocks[allBlocks.length-1];
+    if (lastBlock) lastBlock.after(indicator);
+    else list.appendChild(indicator);
+  }
+  indicator.style.display = "block";
+}
+
+function onDragEnd(e) {
+  if (!dragState) return;
+  const { id, ghost, indicator, srcIdx, dropIdx } = dragState;
+
+  // Cleanup
+  ghost.remove();
+  if (indicator.parentNode) indicator.parentNode.removeChild(indicator);
+  document.getElementById("block-"+id)?.classList.remove("dragging");
+  document.removeEventListener("mousemove", onDragMove);
+  document.removeEventListener("mouseup", onDragEnd);
+  dragState = null;
+
+  // Thực hiện reorder nếu dropIdx hợp lệ và khác vị trí cũ
+  if (dropIdx < 0 || dropIdx === srcIdx || dropIdx === srcIdx + 1) return;
+
+  const [moved] = blocks.splice(srcIdx, 1);
+  const newIdx = dropIdx > srcIdx ? dropIdx - 1 : dropIdx;
+  blocks.splice(newIdx, 0, moved);
+  dirty = true;
+  renderBlocks();
+  selectBlock(id);
+  updateBadge();
 }
 
 // ═══════════════ RENDER BLOCKS ═══════════════
@@ -710,15 +807,14 @@ function renderBlocks() {
   }
   hint.style.display="none";
   list.innerHTML = blocks.map(b => renderBlockHTML(b)).join("");
-  // Re-attach event listeners
+  // Re-attach event listeners (mouse-based drag)
   list.querySelectorAll(".block").forEach(el => {
     const id = el.id.replace("block-","");
     el.addEventListener("click", e=>{
-      if (e.target.closest(".bc-btn")) return;
+      if (e.target.closest(".bc-btn,.drag-handle-area")) return;
       selectBlock(id);
     });
-    el.setAttribute("draggable","true");
-    el.addEventListener("dragstart",e=>onBlockDragStart(e,id));
+    initDragHandle(el, id);
   });
   // Re-highlight selected
   if (selectedBlockId) {
@@ -733,9 +829,8 @@ function renderSingleBlock(id) {
   newEl.innerHTML = renderBlockHTML(b);
   const newBlock = newEl.firstElementChild;
   el.replaceWith(newBlock);
-  newBlock.addEventListener("click",e=>{ if(e.target.closest(".bc-btn"))return; selectBlock(id); });
-  newBlock.setAttribute("draggable","true");
-  newBlock.addEventListener("dragstart",e=>onBlockDragStart(e,id));
+  newBlock.addEventListener("click",e=>{ if(e.target.closest(".bc-btn,.drag-handle-area"))return; selectBlock(id); });
+  initDragHandle(newBlock, id);
   if (selectedBlockId===id) newBlock.classList.add("selected");
 }
 
@@ -743,7 +838,7 @@ function renderBlockHTML(b) {
   const id = b.id;
   const ctrl = `
     <div class="block-controls">
-      <button class="bc-btn drag-handle" title="Kéo để di chuyển">&#8597;</button>
+      <span class="drag-handle-area" title="Kéo để di chuyển để thay đổi thứ tự" style="cursor:grab;width:22px;height:22px;border-radius:4px;border:1px solid var(--bd2);background:var(--bg);font-size:11px;display:inline-flex;align-items:center;justify-content:center;color:var(--tx2);flex-shrink:0">&#8597;</span>
       <button class="bc-btn" onclick="moveBlock('${id}',-1)" title="Lên">&#8593;</button>
       <button class="bc-btn" onclick="moveBlock('${id}',1)" title="Xuống">&#8595;</button>
       <button class="bc-btn del" onclick="deleteBlock('${id}')" title="Xoá">&#10005;</button>
