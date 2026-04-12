@@ -3,11 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Template Editor — AppSheet Print System</title>
+<title>Template Editor</title>
 <style>
-/* ═══════════════════════════════════════════════════
-   RESET & BASE
-═══════════════════════════════════════════════════ */
 *,::before,::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#fff;--bg2:#f7f7f5;--bg3:#f0efe9;
@@ -17,411 +14,268 @@
   --green:#0F6E56;--green-bg:#e1f5ee;
   --red:#A32D2D;--red-bg:#fcebeb;--red-bd:rgba(163,45,45,.25);
   --amber:#854F0B;--amber-bg:#faeeda;
-  --purple:#534AB7;--purple-bg:#eeedfe;
   --r:8px;--rl:12px;
 }
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-     font-size:14px;color:var(--tx);background:var(--bg3);overflow:hidden;height:100vh}
-
-/* ═══════════════════════════════════════════════════
-   TOPBAR
-═══════════════════════════════════════════════════ */
+     font-size:14px;color:var(--tx);background:var(--bg3);height:100vh;overflow:hidden}
 .topbar{height:48px;background:#1e1e1c;color:#fff;display:flex;align-items:center;
-        padding:0 16px;gap:10px;position:sticky;top:0;z-index:300}
-.topbar h1{font-size:13px;font-weight:600}
-.tb-sep{width:1px;height:20px;background:rgba(255,255,255,.15)}
+        padding:0 14px;gap:8px;flex-shrink:0}
+.topbar h1{font-size:13px;font-weight:600;white-space:nowrap}
+.tb-sep{width:1px;height:20px;background:rgba(255,255,255,.15);flex-shrink:0}
 .tpl-sel{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
-         color:#fff;padding:4px 10px;border-radius:6px;font-size:12px;
-         cursor:pointer;min-width:180px}
-.tpl-sel option{background:#2c2c2a;color:#fff}
-.tb-btn{padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.2);
-        background:none;color:#fff;cursor:pointer;font-size:12px;
-        transition:background .15s;white-space:nowrap;font-family:inherit}
-.tb-btn:hover{background:rgba(255,255,255,.1)}
+         color:#fff;padding:4px 8px;border-radius:6px;font-size:12px;min-width:160px}
+.tpl-sel option{background:#2c2c2a}
+.tb-btn{padding:5px 11px;border-radius:6px;border:1px solid rgba(255,255,255,.2);
+        background:none;color:#fff;cursor:pointer;font-size:12px;white-space:nowrap;
+        font-family:inherit;transition:background .15s}
+.tb-btn:hover{background:rgba(255,255,255,.12)}
 .tb-btn.save{background:var(--blue);border-color:var(--blue)}
-.tb-btn.save:hover{opacity:.9;background:var(--blue)}
-.tb-btn.preview{background:var(--green);border-color:var(--green)}
-.tb-btn.preview:hover{opacity:.9;background:var(--green)}
-.tb-badge{font-size:10px;padding:2px 7px;border-radius:10px}
-.tb-badge.saved{background:rgba(15,110,86,.3);color:#4ade9e}
-.tb-badge.unsaved{background:rgba(239,159,39,.3);color:#fbbf24}
+.tb-btn.prev{background:var(--green);border-color:var(--green)}
+.tb-badge{font-size:10px;padding:2px 7px;border-radius:10px;white-space:nowrap}
+.tb-badge.saved{background:rgba(15,110,86,.35);color:#4ade9e}
+.tb-badge.unsaved{background:rgba(239,159,39,.35);color:#fcd34d}
 .spacer{flex:1}
-
-/* ═══════════════════════════════════════════════════
-   3-PANEL LAYOUT
-═══════════════════════════════════════════════════ */
-.app{display:grid;grid-template-columns:220px 1fr 260px;
-     height:calc(100vh - 48px);overflow:hidden}
-
-/* ═══════════════════════════════════════════════════
-   LEFT PANEL — BLOCK PALETTE
-═══════════════════════════════════════════════════ */
-.palette{background:var(--bg);border-right:1px solid var(--bd);
-         overflow-y:auto;padding:10px 8px}
-.pal-section{margin-bottom:14px}
-.pal-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
-           color:var(--tx3);padding:0 6px;margin-bottom:6px}
-.pal-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-.pal-item{border:1px solid var(--bd);border-radius:var(--r);padding:8px 6px;
-          text-align:center;cursor:pointer;transition:all .13s;background:var(--bg2);
-          user-select:none}
-.pal-item:hover{border-color:var(--blue-bd);background:var(--blue-bg);color:var(--blue)}
-.pal-item:active{transform:scale(.97)}
-.pal-item .pi-icon{font-size:18px;margin-bottom:3px}
-.pal-item .pi-label{font-size:10px;font-weight:600;color:var(--tx2)}
-.pal-item:hover .pi-label{color:var(--blue)}
-.pal-fields{display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto}
-.field-chip{display:flex;align-items:center;gap:6px;padding:5px 8px;
-            border-radius:6px;border:1px solid var(--bd);background:var(--bg2);
-            cursor:pointer;font-size:11px;font-weight:500;transition:all .13s}
-.field-chip:hover{border-color:var(--blue-bd);background:var(--blue-bg);color:var(--blue)}
-.field-chip .fc-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0}
-.no-fields{font-size:11px;color:var(--tx3);padding:6px;text-align:center}
-
-/* ═══════════════════════════════════════════════════
-   MIDDLE PANEL — CANVAS (A4 page)
-═══════════════════════════════════════════════════ */
-.canvas-wrap{overflow-y:auto;padding:24px;background:#d0cfc9;
+.api-st{font-size:11px;color:rgba(255,255,255,.4)}
+.api-st.ok{color:#4ade9e}.api-st.err{color:#f87171}
+.app{display:grid;grid-template-columns:210px 1fr 256px;height:calc(100vh - 48px)}
+.palette{background:var(--bg);border-right:1px solid var(--bd);overflow-y:auto;padding:8px}
+.pal-sec{margin-bottom:12px}
+.pal-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+         color:var(--tx3);padding:0 4px 5px;display:block}
+.pal-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.pal-item{border:1px solid var(--bd);border-radius:var(--r);padding:7px 5px;text-align:center;
+          cursor:pointer;background:var(--bg2);transition:all .13s;user-select:none}
+.pal-item:hover{border-color:var(--blue-bd);background:var(--blue-bg)}
+.pal-item:hover .pi-lbl{color:var(--blue)}
+.pal-item:active{transform:scale(.96)}
+.pi-icon{font-size:17px;margin-bottom:2px;line-height:1}
+.pi-lbl{font-size:10px;font-weight:600;color:var(--tx2);line-height:1.2}
+.field-list{display:flex;flex-direction:column;gap:3px;max-height:180px;overflow-y:auto}
+.fc{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;
+    border:1px solid var(--bd);background:var(--bg2);cursor:pointer;
+    font-size:11px;font-weight:500;transition:all .13s;user-select:none}
+.fc:hover{border-color:var(--blue-bd);background:var(--blue-bg);color:var(--blue)}
+.fc-dot{width:5px;height:5px;border-radius:50%;background:var(--blue);flex-shrink:0}
+.no-col-hint{font-size:11px;color:var(--tx3);padding:5px 4px;text-align:center}
+.sheet-wrap select{width:100%;padding:5px 7px;border:1px solid var(--bd2);
+                   border-radius:var(--r);font-size:12px;font-family:inherit;background:var(--bg)}
+.canvas-wrap{overflow-y:auto;padding:20px;background:#c8c8c4;
              display:flex;flex-direction:column;align-items:center}
-.page{background:#fff;width:210mm;min-height:297mm;padding:16mm 18mm;
-      box-shadow:0 4px 24px rgba(0,0,0,.18);position:relative}
-.block-list{display:flex;flex-direction:column;gap:0;min-height:80px;
-             padding-bottom:40px}
-
-/* Drop target line */
-.drop-indicator{height:3px;border-radius:2px;background:var(--blue);
-           margin:0;transition:none;pointer-events:none}
-.block-drag-ghost{position:fixed;pointer-events:none;z-index:9999;
-                  opacity:.85;border-radius:6px;border:2px solid var(--blue);
-                  background:var(--bg);padding:4px 8px;font-size:11px;
-                  color:var(--blue);font-weight:600;white-space:nowrap;
-                  box-shadow:0 4px 20px rgba(0,0,0,.2);max-width:280px;overflow:hidden}
-.block.dragging{opacity:.4;border:2px dashed var(--blue)!important}
-.drag-handle-area{cursor:grab;padding:0 2px}
-.drag-handle-area:active{cursor:grabbing}
-
-/* ── BLOCK styles ── */
-.block{position:relative;padding:6px 8px;border-radius:4px;
-       border:1px solid transparent;transition:border-color .13s,box-shadow .13s;
-       cursor:default}
+.page{background:#fff;width:210mm;min-height:297mm;padding:15mm 17mm;
+      box-shadow:0 4px 28px rgba(0,0,0,.2)}
+.block-list{display:flex;flex-direction:column;min-height:120px;padding-bottom:60px}
+.drop-line{height:3px;background:var(--blue);border-radius:2px;
+           pointer-events:none;margin:1px 0;display:none}
+.drag-ghost{position:fixed;pointer-events:none;z-index:9999;background:var(--blue);
+            color:#fff;padding:4px 12px;border-radius:20px;font-size:11px;
+            font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.3);
+            transform:translate(10px,-50%);white-space:nowrap}
+.block{position:relative;border:1.5px solid transparent;border-radius:5px;
+       padding:5px 7px;transition:border-color .12s,box-shadow .12s;cursor:default;min-height:18px}
 .block:hover{border-color:var(--bd2)}
-.block.selected{border-color:var(--blue)!important;
-                box-shadow:0 0 0 3px rgba(24,95,165,.15),0 0 0 1px var(--blue)!important}
-.block-controls{position:absolute;top:4px;right:4px;display:none;
-                align-items:center;gap:3px;z-index:10}
-.block:hover .block-controls,.block.selected .block-controls{display:flex}
-.bc-btn{width:22px;height:22px;border-radius:4px;border:1px solid var(--bd2);
-        background:var(--bg);cursor:pointer;font-size:11px;display:flex;
-        align-items:center;justify-content:center;transition:all .13s;color:var(--tx2)}
-.bc-btn:hover{background:var(--bg2);color:var(--tx)}
-.bc-btn.del:hover{background:var(--red-bg);border-color:var(--red-bd);color:var(--red)}
-.bc-btn.drag-handle{cursor:grab}
-.bc-btn.drag-handle:active{cursor:grabbing}
-
-/* ── Block type renderings ── */
-.b-heading{outline:none;font-size:20px;font-weight:700;line-height:1.3;
-           min-height:1.3em;width:100%;padding:2px 4px}
-.b-subheading{outline:none;font-size:15px;font-weight:600;line-height:1.4;
-              min-height:1.4em;width:100%;padding:2px 4px}
-.b-text{outline:none;font-size:13px;line-height:1.7;min-height:1.7em;
-        width:100%;padding:2px 4px;white-space:pre-wrap}
-.b-field{display:inline-flex;align-items:center;gap:5px;background:var(--blue-bg);
-         border:1px solid var(--blue-bd);border-radius:5px;padding:4px 10px;
-         font-size:12px;font-weight:600;color:var(--blue);cursor:default;
-         max-width:100%}
-.b-field .field-name{font-family:monospace}
-.b-divider{border:none;border-top:2px solid var(--tx);margin:4px 0}
-.b-divider-light{border:none;border-top:1px solid var(--bd);margin:4px 0}
-.b-spacer{height:20px}
-
-/* Field row: label + value side by side */
-.b-fieldrow{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;
-            font-size:12px;align-items:baseline}
-.b-fieldrow .fr-label{color:var(--tx2);font-size:10px;font-weight:700;
-                      text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
-.b-fieldrow .fr-value{font-weight:500}
-
-/* Info grid: 2-col label/value pairs */
-.b-infogrid{display:grid;grid-template-columns:1fr 1fr;gap:2px 20px;font-size:12px}
-.b-infogrid .ig-item dt{font-size:10px;font-weight:700;text-transform:uppercase;
-                         letter-spacing:.05em;color:var(--tx3);margin-top:6px}
-.b-infogrid .ig-item dd{font-weight:500;color:var(--tx)}
-
-/* Data table */
-.b-table{width:100%;border-collapse:collapse;font-size:11px}
-.b-table th{background:var(--tx);color:#fff;padding:6px 8px;text-align:left;
-            font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
-.b-table td{padding:5px 8px;border-bottom:1px solid var(--bd)}
-.b-table tr:nth-child(even) td{background:var(--bg2)}
-.b-table tfoot td{font-weight:700;background:var(--bg2);border-top:2px solid var(--bd2)}
-.b-table .placeholder-row td{color:var(--tx3);font-style:italic;text-align:center}
-
-/* Amount box */
-.b-amount{display:flex;justify-content:flex-end;margin:4px 0}
-.b-amount-inner{border:1px solid var(--bd2);border-radius:var(--r);
-                padding:8px 16px;text-align:right;min-width:200px}
-.b-amount-inner .am-label{font-size:10px;text-transform:uppercase;
-                           letter-spacing:.05em;color:var(--tx2)}
-.b-amount-inner .am-value{font-size:18px;font-weight:700;color:var(--tx)}
-.b-amount-inner .am-words{font-size:10px;color:var(--tx3);font-style:italic;margin-top:2px}
-
-/* Signature row */
-.b-sign{display:flex;justify-content:space-around;margin:8px 0}
-.sign-col{text-align:center;font-size:11px;color:var(--tx2)}
-.sign-line{width:100px;border-bottom:1px solid var(--bd2);height:32px;margin:0 auto 4px}
-.sign-name{font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.04em}
-
-/* Logo placeholder */
-.b-logo{display:flex;align-items:center;gap:12px;padding:4px}
-.logo-box{width:60px;height:60px;border:2px dashed var(--bd2);border-radius:var(--r);
-          display:flex;align-items:center;justify-content:center;
-          font-size:10px;color:var(--tx3);flex-shrink:0}
-.logo-info{flex:1}
-.logo-info .li-name{font-size:16px;font-weight:700}
-.logo-info .li-sub{font-size:11px;color:var(--tx2)}
-
-/* Header 2-col: left info + right doc number */
-.b-docheader{display:flex;justify-content:space-between;align-items:flex-start;
-             padding-bottom:10px;border-bottom:2px solid var(--tx)}
-.dh-left{font-size:11px;color:var(--tx2);line-height:1.8}
-.dh-left strong{font-size:17px;font-weight:700;color:var(--tx);display:block;margin-bottom:2px}
-.dh-right{text-align:right;font-size:11px;color:var(--tx2);line-height:1.8}
-.dh-right strong{font-size:18px;font-weight:700;color:var(--tx);display:block;letter-spacing:.02em}
-
-/* Block placeholder (empty canvas hint) */
-.canvas-hint{display:flex;flex-direction:column;align-items:center;justify-content:center;
-             gap:10px;padding:40px 20px;color:var(--tx3);text-align:center;
-             border:2px dashed var(--bd);border-radius:var(--r);margin:20px 0}
-.canvas-hint p{font-size:13px}
-
-/* ═══════════════════════════════════════════════════
-   RIGHT PANEL — PROPERTIES
-═══════════════════════════════════════════════════ */
-.props{background:var(--bg);border-left:1px solid var(--bd);
-       overflow-y:auto;padding:12px}
-.props-empty{display:flex;flex-direction:column;align-items:center;
-             gap:10px;padding:30px 12px;color:var(--tx3);text-align:center;font-size:12px}
-.prop-section{margin-bottom:16px}
-.prop-section-title{font-size:10px;font-weight:700;text-transform:uppercase;
-                    letter-spacing:.06em;color:var(--tx3);margin-bottom:8px}
-.prop-row{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
-.prop-row label{font-size:11px;font-weight:500;color:var(--tx2)}
-.prop-row input,.prop-row select,.prop-row textarea{
-  padding:6px 8px;border:1px solid var(--bd2);border-radius:var(--r);
-  font-size:12px;color:var(--tx);background:var(--bg);font-family:inherit;
-  transition:border-color .15s}
-.prop-row input:focus,.prop-row select:focus,.prop-row textarea:focus{
-  outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(24,95,165,.08)}
-.prop-row textarea{resize:vertical;min-height:60px;line-height:1.5}
-.prop-row-inline{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
-.prop-row-inline .prop-row{margin-bottom:0}
-.format-btns{display:flex;gap:4px;flex-wrap:wrap}
-.fmt-btn{padding:4px 8px;border:1px solid var(--bd2);border-radius:5px;
-         background:none;cursor:pointer;font-size:12px;color:var(--tx);
-         transition:all .13s;font-family:inherit}
-.fmt-btn:hover{background:var(--bg2)}
-.fmt-btn.active{background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue);font-weight:700}
-.color-row{display:flex;gap:5px;flex-wrap:wrap}
-.clr-swatch{width:20px;height:20px;border-radius:4px;border:2px solid transparent;
-            cursor:pointer;transition:border-color .13s}
-.clr-swatch.active{border-color:var(--tx)}
-.clr-swatch:hover{transform:scale(1.1)}
-.field-select-grid{display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto}
-.fsg-item{padding:5px 8px;border-radius:5px;border:1px solid var(--bd);
-          cursor:pointer;font-size:11px;font-weight:500;transition:all .13s}
-.fsg-item:hover{border-color:var(--blue-bd);background:var(--blue-bg);color:var(--blue)}
-.fsg-item.active{background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue)}
-.delete-block-btn{width:100%;padding:7px;border-radius:var(--r);border:1px solid var(--red-bd);
-                  background:none;cursor:pointer;font-size:12px;color:var(--red);
-                  transition:all .15s;font-family:inherit;margin-top:4px}
-.delete-block-btn:hover{background:var(--red-bg)}
-
-/* ═══════════════════════════════════════════════════
-   MODAL — New/Rename template
-═══════════════════════════════════════════════════ */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
-               z-index:500;align-items:center;justify-content:center}
-.modal-overlay.show{display:flex}
-.modal{background:var(--bg);border-radius:var(--rl);padding:24px;
-       width:380px;max-width:90vw;box-shadow:0 8px 40px rgba(0,0,0,.2)}
-.modal h2{font-size:16px;font-weight:600;margin-bottom:16px}
+.block.selected{border-color:var(--blue)!important;box-shadow:0 0 0 3px rgba(24,95,165,.12)}
+.block.dragging{opacity:.25;border-color:var(--blue)!important;border-style:dashed}
+.blk-ctrl{position:absolute;top:3px;right:3px;display:none;gap:2px;z-index:20;
+          align-items:center;background:var(--bg);border:1px solid var(--bd);
+          border-radius:6px;padding:2px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.block:hover .blk-ctrl,.block.selected .blk-ctrl{display:flex}
+.cc{width:22px;height:22px;border-radius:4px;border:none;background:none;cursor:pointer;
+    font-size:12px;display:flex;align-items:center;justify-content:center;
+    color:var(--tx2);transition:all .12s;flex-shrink:0;font-family:inherit}
+.cc:hover{background:var(--bg2);color:var(--tx)}
+.cc.del:hover{background:var(--red-bg);color:var(--red)}
+.cc.dh{cursor:grab;font-size:14px}
+.cc.dh:active{cursor:grabbing}
+.canvas-hint{border:2px dashed var(--bd);border-radius:var(--r);padding:32px 20px;
+             text-align:center;color:var(--tx3);margin:10px 0}
+.canvas-hint p{font-size:13px;margin-bottom:4px}
+.canvas-hint small{font-size:11px}
+.b-heading{font-size:20px;font-weight:700;line-height:1.3;padding:1px 3px}
+.b-subheading{font-size:15px;font-weight:600;line-height:1.4;padding:1px 3px}
+.b-text{font-size:13px;line-height:1.7;padding:1px 3px;white-space:pre-wrap;color:var(--tx2)}
+.b-fi{display:inline-flex;align-items:center;gap:4px;background:var(--blue-bg);
+      border:1px solid var(--blue-bd);border-radius:5px;padding:3px 9px;
+      font-size:12px;color:var(--blue)}
+.b-fr{display:flex;gap:8px;align-items:baseline;font-size:12px;padding:1px 3px}
+.b-fr .lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+           color:var(--tx3);white-space:nowrap;min-width:80px}
+.b-fr .val{font-weight:500}
+.b-ig{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;padding:1px 3px}
+.b-ig dt{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--tx3);margin-top:5px}
+.b-ig dd{font-size:12px;font-weight:500}
+.b-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.b-tbl th{background:var(--tx);color:#fff;padding:5px 7px;text-align:left;
+          font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.b-tbl td{padding:4px 7px;border-bottom:1px solid var(--bd);color:var(--tx2)}
+.b-tbl tr:nth-child(even) td{background:var(--bg2)}
+.b-tbl .ph td{text-align:center;font-style:italic;color:var(--tx3)}
+.b-tbl tfoot td{font-weight:700;background:var(--bg2);border-top:1.5px solid var(--bd2)}
+.b-dochd{display:flex;justify-content:space-between;align-items:flex-start;
+         padding-bottom:10px;border-bottom:2px solid var(--tx)}
+.dhl{font-size:11px;color:var(--tx2);line-height:1.8}
+.dhl strong{font-size:16px;font-weight:700;color:var(--tx);display:block}
+.dhr{text-align:right;font-size:11px;color:var(--tx2);line-height:1.8}
+.dhr strong{font-size:17px;font-weight:700;color:var(--tx);display:block;letter-spacing:.02em}
+.b-amt{display:flex;justify-content:flex-end}
+.amti{border:1px solid var(--bd2);border-radius:var(--r);padding:7px 14px;text-align:right}
+.aml{font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:.04em}
+.amv{font-size:17px;font-weight:700}
+.amw{font-size:10px;color:var(--tx3);font-style:italic;margin-top:1px}
+.b-sign{display:flex;justify-content:space-around;padding:4px 0}
+.sc{text-align:center;font-size:11px;color:var(--tx2)}
+.sl{width:90px;border-bottom:1px solid var(--bd2);height:28px;margin:0 auto 3px}
+.sn{font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+.b-logo{display:flex;align-items:center;gap:10px;padding:2px}
+.logobox{width:52px;height:52px;border:1.5px dashed var(--bd2);border-radius:var(--r);
+         display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--tx3);flex-shrink:0}
+.b-div{border:none;border-top:2px solid var(--tx);margin:3px 0}
+.b-divl{border:none;border-top:1px solid var(--bd);margin:3px 0}
+.b-cust{display:inline-flex;align-items:center;gap:4px;background:var(--amber-bg);
+        border:1px solid rgba(133,79,11,.2);border-radius:5px;padding:3px 9px;
+        font-size:12px;color:var(--amber)}
+.b-pb{border:1px dashed rgba(0,0,0,.15);text-align:center;padding:3px;font-size:10px;color:var(--tx3)}
+.props-panel{background:var(--bg);border-left:1px solid var(--bd);overflow-y:auto;padding:12px}
+.props-empty{display:flex;flex-direction:column;align-items:center;gap:10px;
+             padding:30px 12px;color:var(--tx3);text-align:center;font-size:12px}
+.ps-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+          color:var(--tx3);margin-bottom:10px}
+.pr{display:flex;flex-direction:column;gap:4px;margin-bottom:9px}
+.pr label{font-size:11px;font-weight:500;color:var(--tx2)}
+.pr input,.pr select,.pr textarea{padding:6px 8px;border:1px solid var(--bd2);
+  border-radius:var(--r);font-size:12px;color:var(--tx);background:var(--bg);font-family:inherit}
+.pr input:focus,.pr select:focus,.pr textarea:focus{
+  outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(24,95,165,.1)}
+.pr textarea{resize:vertical;min-height:55px;line-height:1.5}
+.pr2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:9px}
+.pr2 .pr{margin-bottom:0}
+.fmt-row{display:flex;gap:3px;flex-wrap:wrap}
+.fb{padding:4px 7px;border:1px solid var(--bd2);border-radius:5px;
+    background:none;cursor:pointer;font-size:12px;color:var(--tx);font-family:inherit}
+.fb:hover{background:var(--bg2)}
+.fb.on{background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue);font-weight:700}
+.clr-row{display:flex;gap:4px;flex-wrap:wrap}
+.csw{width:18px;height:18px;border-radius:3px;border:2px solid transparent;cursor:pointer;transition:transform .12s}
+.csw:hover{transform:scale(1.15)}
+.csw.on{border-color:var(--tx)!important}
+.fld-pick{display:flex;flex-direction:column;gap:2px;max-height:120px;overflow-y:auto;
+          border:1px solid var(--bd);border-radius:var(--r);padding:3px}
+.fp{padding:4px 7px;border-radius:5px;font-size:11px;cursor:pointer;transition:all .12s}
+.fp:hover{background:var(--blue-bg);color:var(--blue)}
+.fp.on{background:var(--blue-bg);color:var(--blue);font-weight:600}
+.del-btn{width:100%;padding:6px;border-radius:var(--r);border:1px solid var(--red-bd);
+         background:none;cursor:pointer;font-size:12px;color:var(--red);
+         margin-top:6px;font-family:inherit}
+.del-btn:hover{background:var(--red-bg)}
+.warn-box{background:var(--amber-bg);border:1px solid rgba(133,79,11,.2);border-radius:var(--r);
+          padding:9px 12px;font-size:12px;color:var(--amber);margin-bottom:10px;line-height:1.5}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
+         z-index:500;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.modal{background:var(--bg);border-radius:var(--rl);padding:22px;
+       width:360px;box-shadow:0 8px 40px rgba(0,0,0,.2)}
+.modal h2{font-size:15px;font-weight:600;margin-bottom:14px}
 .modal input{width:100%;padding:8px 10px;border:1px solid var(--bd2);
-             border-radius:var(--r);font-size:13px;margin-bottom:14px;font-family:inherit}
+             border-radius:var(--r);font-size:13px;margin-bottom:12px;font-family:inherit}
 .modal input:focus{outline:none;border-color:var(--blue)}
 .modal-btns{display:flex;gap:8px;justify-content:flex-end}
-.modal-btns button{padding:7px 16px;border-radius:var(--r);border:1px solid var(--bd2);
+.modal-btns button{padding:6px 14px;border-radius:var(--r);border:1px solid var(--bd2);
                    background:none;cursor:pointer;font-size:13px;font-family:inherit}
-.modal-btns button.ok{background:var(--tx);color:var(--bg);border-color:var(--tx)}
-.modal-btns button.ok:hover{opacity:.85}
-.modal-btns button:hover{background:var(--bg2)}
-
-/* ═══════════════════════════════════════════════════
-   PRINT STYLES
-═══════════════════════════════════════════════════ */
+.modal-btns .ok{background:var(--tx);color:var(--bg);border-color:var(--tx)}
 @media print{
-  .topbar,.palette,.props,.block-controls,.canvas-hint{display:none!important}
+  .topbar,.palette,.props-panel,.blk-ctrl,.canvas-hint{display:none!important}
   .app{display:block}
   .canvas-wrap{padding:0;background:#fff;overflow:visible}
-  .page{box-shadow:none;width:100%;min-height:auto;padding:0;margin:0}
-  .block{border:none!important;box-shadow:none!important;padding:3px 0}
+  .page{box-shadow:none;width:100%;min-height:auto;padding:0}
+  .block{border:none!important;box-shadow:none!important;padding:2px 0}
   @page{margin:12mm 14mm}
 }
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════
-     TOPBAR
-══════════════════════════════════════ -->
 <div class="topbar">
   <h1>&#9881; Template Editor</h1>
   <div class="tb-sep"></div>
-  <select class="tpl-sel" id="tpl-sel" onchange="loadTemplate(this.value)">
+  <select class="tpl-sel" id="tpl-sel" onchange="loadTpl(this.value)">
     <option value="">-- Chọn template --</option>
   </select>
-  <button class="tb-btn" onclick="showNewModal()">+ Tạo mới</button>
-  <button class="tb-btn" onclick="renameTemplate()">Đổi tên</button>
-  <button class="tb-btn" onclick="deleteCurrentTemplate()">Xoá</button>
+  <button class="tb-btn" onclick="showModal()">+ Mới</button>
+  <button class="tb-btn" onclick="renameTpl()">Đổi tên</button>
+  <button class="tb-btn" onclick="deleteTpl()">Xoá</button>
   <div class="tb-sep"></div>
-  <span class="tb-badge unsaved" id="save-badge">Chưa lưu</span>
-  <button class="tb-btn save" onclick="saveTemplate()">&#128190; Lưu</button>
-  <button class="tb-btn preview" onclick="previewTemplate()">&#128065; Xem thử</button>
+  <span class="tb-badge unsaved" id="badge">Chưa lưu</span>
+  <button class="tb-btn save" onclick="saveTpl()">&#128190; Lưu</button>
+  <button class="tb-btn prev" onclick="previewTpl()">&#128065; Xem thử</button>
   <div class="spacer"></div>
-  <span style="font-size:11px;color:rgba(255,255,255,.5)" id="api-status">Đang kết nối...</span>
+  <span class="api-st" id="api-st">Kết nối...</span>
 </div>
 
-<!-- ══════════════════════════════════════
-     APP LAYOUT
-══════════════════════════════════════ -->
 <div class="app">
 
-  <!-- LEFT: Block Palette -->
   <div class="palette">
-
-    <div class="pal-section">
-      <div class="pal-label">Bố cục trang</div>
+    <div class="warn-box" id="no-tpl-hint">
+      &#9888; Nhấn <strong>"+ Mới"</strong> để tạo template, sau đó click các block bên dưới để thêm vào trang.
+    </div>
+    <div class="pal-sec">
+      <span class="pal-lbl">Bố cục trang</span>
       <div class="pal-grid">
-        <div class="pal-item" onclick="addBlock('docheader')">
-          <div class="pi-icon">&#128203;</div>
-          <div class="pi-label">Header hóa đơn</div>
-        </div>
-        <div class="pal-item" onclick="addBlock('logo')">
-          <div class="pi-icon">&#127968;</div>
-          <div class="pi-label">Logo + tên cty</div>
-        </div>
-        <div class="pal-item" onclick="addBlock('infogrid')">
-          <div class="pi-icon">&#128196;</div>
-          <div class="pi-label">Thông tin 2 cột</div>
-        </div>
-        <div class="pal-item" onclick="addBlock('sign')">
-          <div class="pi-icon">&#9997;</div>
-          <div class="pi-label">Chữ ký</div>
-        </div>
+        <div class="pal-item" onclick="addBlock('docheader')"><div class="pi-icon">&#128203;</div><div class="pi-lbl">Header HĐ</div></div>
+        <div class="pal-item" onclick="addBlock('logo')"><div class="pi-icon">&#127968;</div><div class="pi-lbl">Logo cty</div></div>
+        <div class="pal-item" onclick="addBlock('infogrid')"><div class="pi-icon">&#128196;</div><div class="pi-lbl">Thông tin 2 cột</div></div>
+        <div class="pal-item" onclick="addBlock('sign')"><div class="pi-icon">&#9997;</div><div class="pi-lbl">Chữ ký</div></div>
       </div>
     </div>
-
-    <div class="pal-section">
-      <div class="pal-label">Văn bản</div>
+    <div class="pal-sec">
+      <span class="pal-lbl">Văn bản</span>
       <div class="pal-grid">
-        <div class="pal-item" onclick="addBlock('heading')">
-          <div class="pi-icon">H1</div>
-          <div class="pi-label">Tiêu đề lớn</div>
-        </div>
-        <div class="pal-item" onclick="addBlock('subheading')">
-          <div class="pi-icon">H2</div>
-          <div class="pi-label">Tiêu đề nhỏ</div>
-        </div>
-        <div class="pal-item" onclick="addBlock('text')">
-          <div class="pi-icon">&#182;</div>
-          <div class="pi-label">Đoạn văn bản</div>
-        </div>
-        <div class="pal-item" onclick="addBlock('fieldrow')">
-          <div class="pi-icon">&#128208;</div>
-          <div class="pi-label">Label + Giá trị</div>
-        </div>
+        <div class="pal-item" onclick="addBlock('heading')"><div class="pi-icon" style="font-weight:700;font-size:15px">H1</div><div class="pi-lbl">Tiêu đề lớn</div></div>
+        <div class="pal-item" onclick="addBlock('subheading')"><div class="pi-icon" style="font-weight:700;font-size:13px">H2</div><div class="pi-lbl">Tiêu đề nhỏ</div></div>
+        <div class="pal-item" onclick="addBlock('text')"><div class="pi-icon">&#182;</div><div class="pi-lbl">Đoạn văn</div></div>
+        <div class="pal-item" onclick="addBlock('fieldrow')"><div class="pi-icon">&#128208;</div><div class="pi-lbl">Label+Giá trị</div></div>
       </div>
     </div>
-
-    <div class="pal-section">
-      <div class="pal-label">Dữ liệu</div>
+    <div class="pal-sec">
+      <span class="pal-lbl">Dữ liệu</span>
       <div class="pal-grid">
-        <div class="pal-item" onclick="addBlock('field')">
-          <div class="pi-icon">&#123;&#125;</div>
-          <div class="pi-label">Field đơn</div>
-        </div>
-        <div class="pal-item" onclick="addBlock('datatable')">
-          <div class="pi-icon">&#128200;</div>
-          <div class="pi-label">Bảng dữ liệu</div>
-        </div>
-        <div class="pal-item" onclick="addBlock('amount')">
-          <div class="pi-icon">&#128176;</div>
-          <div class="pi-label">Tổng tiền</div>
-        </div>
-        <div class="pal-item" onclick="addBlock('custom')">
-          <div class="pi-icon">&#128295;</div>
-          <div class="pi-label">Field tính toán</div>
-        </div>
+        <div class="pal-item" onclick="addBlock('field')"><div class="pi-icon">{ }</div><div class="pi-lbl">Field đơn</div></div>
+        <div class="pal-item" onclick="addBlock('datatable')"><div class="pi-icon">&#128200;</div><div class="pi-lbl">Bảng dữ liệu</div></div>
+        <div class="pal-item" onclick="addBlock('amount')"><div class="pi-icon">&#128176;</div><div class="pi-lbl">Tổng tiền</div></div>
+        <div class="pal-item" onclick="addBlock('custom')"><div class="pi-icon">&#128295;</div><div class="pi-lbl">Tính toán</div></div>
       </div>
     </div>
-
-    <div class="pal-section">
-      <div class="pal-label">Trang trí</div>
+    <div class="pal-sec">
+      <span class="pal-lbl">Trang trí</span>
       <div class="pal-grid">
-        <div class="pal-item" onclick="addBlock('divider')">
-          <div class="pi-icon">&#9135;</div>
-          <div class="pi-label">Đường kẻ đậm</div>
-        </div>
-        <div class="pal-item" onclick="addBlock('dividerlight')">
-          <div class="pi-icon">&#8212;</div>
-          <div class="pi-label">Đường kẻ mờ</div>
-        </div>
-        <div class="pal-item" onclick="addBlock('spacer')">
-          <div class="pi-icon">&#8597;</div>
-          <div class="pi-label">Khoảng trống</div>
-        </div>
-        <div class="pal-item" onclick="addBlock('pagebreak')">
-          <div class="pi-icon">&#128196;</div>
-          <div class="pi-label">Ngắt trang</div>
-        </div>
+        <div class="pal-item" onclick="addBlock('divider')"><div class="pi-icon">&#9135;</div><div class="pi-lbl">Đường đậm</div></div>
+        <div class="pal-item" onclick="addBlock('dividerlight')"><div class="pi-icon">&#8212;</div><div class="pi-lbl">Đường mờ</div></div>
+        <div class="pal-item" onclick="addBlock('spacer')"><div class="pi-icon">&#8597;</div><div class="pi-lbl">Khoảng trống</div></div>
+        <div class="pal-item" onclick="addBlock('pagebreak')"><div class="pi-icon">&#128196;</div><div class="pi-lbl">Ngắt trang</div></div>
       </div>
     </div>
-
-    <div class="pal-section">
-      <div class="pal-label">Cột dữ liệu có sẵn</div>
-      <div class="pal-fields" id="field-chips">
-        <div class="no-fields">Chọn sheet trong cài đặt để xem cột</div>
-      </div>
+    <div class="pal-sec">
+      <span class="pal-lbl">Cột dữ liệu — click để thêm</span>
+      <div class="field-list" id="field-list"><div class="no-col-hint">Chọn sheet bên dưới</div></div>
     </div>
-
-    <div class="pal-section">
-      <div class="pal-label">Sheet nguồn dữ liệu</div>
-      <div style="padding:0 2px">
-        <select id="sheet-sel" style="width:100%;padding:6px 8px;border:1px solid var(--bd2);
-                border-radius:var(--r);font-size:12px;font-family:inherit"
-                onchange="loadSheetColumns(this.value)">
-          <option value="">-- Chọn sheet --</option>
-        </select>
-      </div>
+    <div class="pal-sec">
+      <span class="pal-lbl">Sheet nguồn</span>
+      <div class="sheet-wrap"><select id="sheet-sel" onchange="onSheetChange(this.value)">
+        <option value="">-- Chọn sheet --</option>
+      </select></div>
     </div>
+  </div>
 
-  </div><!-- /palette -->
-
-  <!-- MIDDLE: Canvas -->
-  <div class="canvas-wrap" id="canvas-wrap">
+  <div class="canvas-wrap">
     <div class="page" id="page">
-      <div class="block-list" id="block-list"
-           id="block-list-inner">
+      <div class="block-list" id="block-list">
         <div class="canvas-hint" id="canvas-hint">
-          <div style="font-size:32px">&#128203;</div>
-          <p>Nhấn vào block bên trái để thêm vào trang</p>
-          <p style="font-size:11px;color:var(--tx3)">Kéo thả để sắp xếp lại thứ tự</p>
+          <p>&#128203; Chưa có block nào</p>
+          <small>Nhấn "+ Mới" tạo template, rồi click các block ở panel trái</small>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- RIGHT: Properties -->
-  <div class="props" id="props-panel">
+  <div class="props-panel">
     <div class="props-empty" id="props-empty">
       <div style="font-size:28px">&#9881;</div>
       <p>Chọn một block để chỉnh thuộc tính</p>
@@ -429,756 +283,374 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
     <div id="props-content" style="display:none"></div>
   </div>
 
-</div><!-- /app -->
+</div>
 
-<!-- MODAL: Tên template mới -->
-<div class="modal-overlay" id="modal">
+<div class="overlay" id="overlay">
   <div class="modal">
-    <h2 id="modal-title">Tạo template mới</h2>
-    <input type="text" id="modal-input" placeholder="Vd: Hóa đơn bán hàng"
-           onkeydown="if(event.key==='Enter')modalOK()">
+    <h2>Tạo template mới</h2>
+    <input type="text" id="modal-inp" placeholder="Vd: Hóa đơn bán hàng"
+           onkeydown="if(event.key==='Enter')doCreate()">
     <div class="modal-btns">
       <button onclick="closeModal()">Huỷ</button>
-      <button class="ok" onclick="modalOK()">Tạo</button>
+      <button class="ok" onclick="doCreate()">Tạo</button>
     </div>
   </div>
 </div>
 
-
-<!-- ══════════════════════════════════════
-     JAVASCRIPT
-══════════════════════════════════════ -->
 <script>
-// ┌─────────────────────────────────────────────────────────────┐
-// │  ★  KHAI BÁO — sửa 2 dòng này  ★                         │
-// └─────────────────────────────────────────────────────────────┘
+// CONFIG
 const API_URL       = "https://script.google.com/macros/s/AKfycbwqwRgBqKmL5yGY8YD0MrJi-iQUusgQPplEOfqzWsXHpDf-HZus900DueXzxYIe9V-i/exec";
 const PRINT_APP_URL = "https://dohuuduy.github.io/appsheet-print/print-block.html";
-// ──────────────────────────────────────────────────────────────
+const LS_KEY = "ps_tpl_v3";
 
-// ─── State ───
-let templates    = {};   // { tplId: { name, sheet, blocks:[] } }
-let currentTplId = null;
-let selectedBlockId = null;
-let blocks       = [];   // array of block objects (current template)
-let sheetColumns = [];   // cột từ sheet đang chọn
-let dirty        = false;
-
+// STATE
+let tpls  = {};
+let curId = null;
+let blks  = [];
+let selId = null;
+let cols  = [];
+let dirty = false;
+let drag  = null;
 const COLORS = ["#1a1a18","#185FA5","#0F6E56","#A32D2D","#854F0B","#534AB7","#6b6b67"];
-const LS_KEY = "ps_templates_editor_v1";
 
-// ─── BLOCK DEFAULTS ───
-const BLOCK_DEFAULTS = {
-  docheader : { type:"docheader", companyName:"CÔNG TY ABC", companyInfo:"Địa chỉ: 123 Đường ABC, TP.HCM\nĐT: 0901 234 567", docTitle:"HÓA ĐƠN BÁN HÀNG", docNumField:"MaDonHang", dateField:"NgayTao" },
-  logo      : { type:"logo", companyName:"CÔNG TY ABC", subTitle:"Địa chỉ: 123 Đường ABC, TP.HCM" },
-  heading   : { type:"heading", text:"TIÊU ĐỀ BÁO CÁO", align:"center", color:"#1a1a18", size:"20" },
-  subheading: { type:"subheading", text:"Tiêu đề phụ", align:"left", color:"#1a1a18", size:"15" },
-  text      : { type:"text", text:"Nhập nội dung văn bản tại đây...", align:"left", color:"#6b6b67", size:"13" },
-  field     : { type:"field", fieldName:"", label:"", showLabel:true },
-  fieldrow  : { type:"fieldrow", fieldName:"", label:"Tên trường" },
-  infogrid  : { type:"infogrid", fields:[] },
-  datatable : { type:"datatable", sheet:"", columns:[], showTotal:true },
-  amount    : { type:"amount", fieldName:"", label:"TỔNG CỘNG", showWords:true },
-  custom    : { type:"custom", label:"Thuế 10%", formula:"{TongTien}*0.1" },
-  sign      : { type:"sign", count:3, labels:["Người lập phiếu","Người phê duyệt","Người nhận"] },
-  divider   : { type:"divider" },
-  dividerlight:{ type:"dividerlight" },
-  spacer    : { type:"spacer", height:"20" },
-  pagebreak : { type:"pagebreak" },
+const DEF = {
+  docheader:{type:"docheader",companyName:"CÔNG TY ABC",companyInfo:"Địa chỉ: 123 Đường ABC\nĐT: 0901 234 567",docTitle:"HÓA ĐƠN BÁN HÀNG",docNumField:"MaDonHang",dateField:"NgayTao"},
+  logo:{type:"logo",companyName:"CÔNG TY ABC",subTitle:"Địa chỉ: 123 Đường ABC"},
+  heading:{type:"heading",text:"TIÊU ĐỀ BÁO CÁO",align:"center",color:"#1a1a18",size:20},
+  subheading:{type:"subheading",text:"Tiêu đề phụ",align:"left",color:"#1a1a18",size:15},
+  text:{type:"text",text:"Nhập nội dung tại đây...",align:"left",color:"#6b6b67",size:13},
+  field:{type:"field",fieldName:"",label:"",showLabel:false},
+  fieldrow:{type:"fieldrow",fieldName:"",label:"Tên trường"},
+  infogrid:{type:"infogrid",fields:[]},
+  datatable:{type:"datatable",columns:[],showTotal:true},
+  amount:{type:"amount",fieldName:"",label:"TỔNG CỘNG",showWords:true},
+  custom:{type:"custom",label:"Thuế 10%",formula:"{TongTien}*0.1"},
+  sign:{type:"sign",count:3,labels:["Người lập phiếu","Người phê duyệt","Người nhận"]},
+  divider:{type:"divider"},dividerlight:{type:"dividerlight"},
+  spacer:{type:"spacer",height:20},pagebreak:{type:"pagebreak"},
 };
 
-// ═══════════════ INIT ═══════════════
-async function init() {
-  loadFromLS();
-  renderTemplateList();
-  try {
-    await Promise.all([pingAPI(), loadSheetsList()]);
-  } catch(e) {
-    setAPIStatus("err", "Lỗi API");
-  }
-}
+// BOOT — chạy sau khi DOM sẵn sàng
+window.addEventListener("load", function() {
+  try { tpls = JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch(e){ tpls={}; }
+  renderTplList();
+  renderCanvas();
+  // API kết nối song song
+  apiFetch({action:"ping"})
+    .then(()=>{ setApiSt("ok","&#10003; API OK"); return loadSheetList(); })
+    .catch(()=>setApiSt("err","Offline — dùng local OK"));
+  // Click page background = deselect
+  document.getElementById("page").addEventListener("click", function(e){
+    if (!e.target.closest(".block")) selectBlock(null);
+  });
+  // Keyboard
+  document.addEventListener("keydown", function(e){
+    if ((e.ctrlKey||e.metaKey) && e.key==="s") { e.preventDefault(); saveTpl(); }
+    if (e.key==="Delete" && selId && !e.target.matches("input,textarea,select")) delBlock(selId);
+    if (e.key==="ArrowUp" && selId && !e.target.matches("input,textarea,select")) { e.preventDefault(); moveBlock(selId,-1); }
+    if (e.key==="ArrowDown" && selId && !e.target.matches("input,textarea,select")) { e.preventDefault(); moveBlock(selId,1); }
+  });
+});
 
-async function pingAPI() {
-  const d = await apiFetch({action:"ping"});
-  setAPIStatus("ok", "API OK");
-}
-
-async function loadSheetsList() {
-  const d = await apiFetch({action:"getSheets"});
-  const sel = document.getElementById("sheet-sel");
-  sel.innerHTML = '<option value="">-- Chọn sheet --</option>' +
-    (d.sheets||[]).map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join("");
-}
-
-async function loadSheetColumns(sheet) {
-  if (!sheet) { sheetColumns=[]; renderFieldChips(); return; }
-  if (currentTplId) { templates[currentTplId].sheet = sheet; dirty=true; }
-  try {
-    const d = await apiFetch({action:"getColumns",sheet});
-    sheetColumns = d.columns || [];
-    renderFieldChips();
-  } catch(e) { sheetColumns=[]; }
-}
-
-// ═══════════════ API ═══════════════
-async function apiFetch(params) {
-  const r = await fetch(API_URL+"?"+new URLSearchParams(params));
+// API
+async function apiFetch(p) {
+  const r = await fetch(API_URL+"?"+new URLSearchParams(p));
   const d = await r.json();
-  if(d.error) throw new Error(d.error);
+  if (d.error) throw new Error(d.error);
   return d;
 }
-
-function setAPIStatus(cls,txt) {
-  const el=document.getElementById("api-status");
-  el.textContent=txt;
-  el.style.color=cls==="ok"?"#4ade9e":"#f87171";
-}
-
-// ═══════════════ LOCAL STORAGE ═══════════════
-function saveLS()  { try{localStorage.setItem(LS_KEY,JSON.stringify(templates));}catch(e){} }
-function loadFromLS() { try{templates=JSON.parse(localStorage.getItem(LS_KEY))||{};}catch(e){templates={};} }
-
-// ═══════════════ TEMPLATE MANAGEMENT ═══════════════
-function renderTemplateList() {
-  const sel = document.getElementById("tpl-sel");
+function setApiSt(c,h) { const el=document.getElementById("api-st"); el.className="api-st "+c; el.innerHTML=h; }
+async function loadSheetList() {
+  const d = await apiFetch({action:"getSheets"});
+  const sel = document.getElementById("sheet-sel");
   const cur = sel.value;
-  sel.innerHTML = '<option value="">-- Chọn template --</option>' +
-    Object.entries(templates).map(([id,t])=>
-      `<option value="${esc(id)}" ${id===currentTplId?"selected":""}>${esc(t.name)}</option>`
-    ).join("");
-  if (currentTplId) sel.value = currentTplId;
+  sel.innerHTML = '<option value="">-- Chọn sheet --</option>' +
+    (d.sheets||[]).map(s=>`<option value="${esc(s)}" ${s===cur?"selected":""}>${esc(s)}</option>`).join("");
 }
-
-function loadTemplate(id) {
-  if (!id) return;
-  if (dirty && !confirm("Có thay đổi chưa lưu. Tiếp tục?")) {
-    document.getElementById("tpl-sel").value = currentTplId||""; return;
-  }
-  currentTplId = id;
-  const t = templates[id];
-  blocks = JSON.parse(JSON.stringify(t.blocks||[]));
-  // Restore sheet
-  const sheetSel = document.getElementById("sheet-sel");
-  if (t.sheet) {
-    sheetSel.value = t.sheet;
-    loadSheetColumns(t.sheet);
-  }
-  renderBlocks();
-  selectBlock(null);
-  dirty = false; updateBadge();
-}
-
-function showNewModal() {
-  document.getElementById("modal-title").textContent = "Tạo template mới";
-  document.getElementById("modal-input").value = "";
-  document.getElementById("modal").classList.add("show");
-  setTimeout(()=>document.getElementById("modal-input").focus(),50);
-}
-
-function closeModal() { document.getElementById("modal").classList.remove("show"); }
-
-function modalOK() {
-  const name = document.getElementById("modal-input").value.trim();
-  if (!name) { alert("Vui lòng nhập tên template"); return; }
-  const id = "tpl-"+Date.now();
-  templates[id] = { name, sheet:"", blocks:[] };
-  saveLS();
-  renderTemplateList();
-  closeModal();
-  loadTemplate(id);
-  dirty=true; updateBadge();
-}
-
-function renameTemplate() {
-  if (!currentTplId) { alert("Chọn template trước"); return; }
-  const name = prompt("Tên mới:", templates[currentTplId].name);
-  if (!name) return;
-  templates[currentTplId].name = name;
-  saveLS(); renderTemplateList(); dirty=true; updateBadge();
-}
-
-function deleteCurrentTemplate() {
-  if (!currentTplId) { alert("Chọn template trước"); return; }
-  if (!confirm(`Xoá template "${templates[currentTplId].name}"?`)) return;
-  delete templates[currentTplId];
-  currentTplId=null; blocks=[]; dirty=false;
-  saveLS(); renderTemplateList(); renderBlocks(); updateBadge();
-}
-
-async function saveTemplate() {
-  if (!currentTplId) { alert("Chọn hoặc tạo template trước"); return; }
-  const t = templates[currentTplId];
-  t.blocks = JSON.parse(JSON.stringify(blocks));
-  // Lưu lên Google Sheets _PrintConfig
+async function onSheetChange(sheet) {
+  if (curId) { tpls[curId].sheet=sheet; saveLS(); }
+  if (!sheet) { cols=[]; renderFieldList(); return; }
   try {
-    const sheet = document.getElementById("sheet-sel").value || t.sheet || "";
-    await apiFetch({
-      action      : "saveConfig",
-      tplId       : currentTplId,
-      tplName     : t.name,
-      reportType  : "custom",
-      mainSheet   : sheet,
-      columns     : JSON.stringify([]),
-      dataSources : JSON.stringify([]),
-      printOptions: JSON.stringify({ templateBlocks: blocks, paper:"A4", orient:"portrait" }),
-      customFields: JSON.stringify([]),
-    });
-    saveLS();
-    dirty=false; updateBadge();
-    alert("Đã lưu template!");
-  } catch(e) {
-    // Lưu local kể cả khi API lỗi
-    saveLS(); dirty=false; updateBadge();
-    alert("Đã lưu local. Lỗi sync lên Sheets: "+e.message);
-  }
+    const d = await apiFetch({action:"getColumns",sheet});
+    cols = d.columns||[]; renderFieldList();
+    if (selId) renderProps(selId);
+  } catch(e) { cols=[]; }
 }
 
-function previewTemplate() {
-  if (!currentTplId) { alert("Chọn template trước"); return; }
-  const sheet = document.getElementById("sheet-sel").value || "";
-  const url = PRINT_APP_URL+`?tpl=${currentTplId}&sheet=${sheet}&preview=1&useBlockTemplate=1`;
-  window.open(url,"_blank");
+// TEMPLATE OPS
+function saveLS() { try{localStorage.setItem(LS_KEY,JSON.stringify(tpls));}catch(e){} }
+function renderTplList() {
+  const sel=document.getElementById("tpl-sel");
+  sel.innerHTML='<option value="">-- Chọn template --</option>'+
+    Object.entries(tpls).map(([id,t])=>`<option value="${esc(id)}" ${id===curId?"selected":""}>${esc(t.name)}</option>`).join("");
+}
+function loadTpl(id) {
+  if (!id) return;
+  if (dirty && !confirm("Có thay đổi chưa lưu. Tiếp tục?")) { document.getElementById("tpl-sel").value=curId||""; return; }
+  curId=id; blks=JSON.parse(JSON.stringify(tpls[id].blocks||[])); dirty=false;
+  const ss=document.getElementById("sheet-sel");
+  const sheet=tpls[id].sheet||"";
+  if (sheet) { ss.value=sheet; onSheetChange(sheet); }
+  renderTplList(); renderCanvas(); selectBlock(null); updateBadge();
+  document.getElementById("no-tpl-hint").style.display="none";
+}
+function showModal() { document.getElementById("modal-inp").value=""; document.getElementById("overlay").classList.add("show"); setTimeout(()=>document.getElementById("modal-inp").focus(),50); }
+function closeModal() { document.getElementById("overlay").classList.remove("show"); }
+function doCreate() {
+  const name=document.getElementById("modal-inp").value.trim();
+  if (!name) { document.getElementById("modal-inp").focus(); return; }
+  const id="t"+Date.now();
+  tpls[id]={name,sheet:"",blocks:[]}; curId=id; blks=[]; dirty=false;
+  saveLS(); renderTplList(); closeModal(); renderCanvas(); updateBadge();
+  document.getElementById("no-tpl-hint").style.display="none";
+}
+function renameTpl() {
+  if (!curId) { alert("Chọn template trước"); return; }
+  const name=prompt("Tên mới:",tpls[curId].name);
+  if (!name||!name.trim()) return;
+  tpls[curId].name=name.trim(); saveLS(); renderTplList(); markDirty();
+}
+function deleteTpl() {
+  if (!curId) { alert("Chọn template trước"); return; }
+  if (!confirm(`Xoá template "${tpls[curId].name}"?`)) return;
+  delete tpls[curId]; curId=null; blks=[]; dirty=false;
+  saveLS(); renderTplList(); renderCanvas(); updateBadge();
+  document.getElementById("no-tpl-hint").style.display="";
+}
+async function saveTpl() {
+  if (!curId) { alert("Nhấn '+ Mới' để tạo template trước"); return; }
+  tpls[curId].blocks=JSON.parse(JSON.stringify(blks)); saveLS(); dirty=false; updateBadge();
+  const sheet=document.getElementById("sheet-sel").value||tpls[curId].sheet||"";
+  try {
+    await apiFetch({action:"saveConfig",tplId:curId,tplName:tpls[curId].name,
+      reportType:"custom",mainSheet:sheet,columns:JSON.stringify([]),
+      dataSources:JSON.stringify([]),
+      printOptions:JSON.stringify({templateBlocks:blks,paper:"A4",orient:"portrait"}),
+      customFields:JSON.stringify([])});
+    setApiSt("ok","&#10003; Đã lưu");
+  } catch(e) { setApiSt("err","Local OK · Sheets: "+e.message); }
+}
+function previewTpl() {
+  if (!curId) { alert("Tạo template trước"); return; }
+  const sheet=document.getElementById("sheet-sel").value||tpls[curId].sheet||"";
+  window.open(PRINT_APP_URL+`?tpl=${curId}&sheet=${esc(sheet)}&preview=1&useBlockTemplate=1`,"_blank");
 }
 
-// ═══════════════ BLOCK OPERATIONS ═══════════════
-function genId() { return "b"+Date.now()+Math.random().toString(36).slice(2,6); }
+// BLOCK OPS
+function uid() { return "b"+Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
 
 function addBlock(type) {
-  if (!currentTplId) { alert("Tạo hoặc chọn template trước!"); return; }
-  const def = JSON.parse(JSON.stringify(BLOCK_DEFAULTS[type]||{type}));
-  def.id = genId();
-  // Nếu chọn block → chèn sau block đó, không thì thêm cuối
-  if (selectedBlockId) {
-    const idx = blocks.findIndex(b=>b.id===selectedBlockId);
-    blocks.splice(idx+1, 0, def);
-  } else {
-    blocks.push(def);
+  // Auto-tạo template nếu chưa có
+  if (!curId) {
+    const id="t"+Date.now();
+    tpls[id]={name:"Template mới",sheet:"",blocks:[]};
+    curId=id; blks=[]; saveLS(); renderTplList();
+    document.getElementById("no-tpl-hint").style.display="none";
   }
-  dirty=true; renderBlocks();
-  selectBlock(def.id);
-  updateBadge();
-  // Scroll vào block mới + flash highlight
+  const b=JSON.parse(JSON.stringify(DEF[type]||{type}));
+  b.id=uid();
+  if (selId) {
+    const i=blks.findIndex(x=>x.id===selId);
+    blks.splice(i>=0?i+1:blks.length,0,b);
+  } else { blks.push(b); }
+  markDirty(); renderCanvas(); selectBlock(b.id);
   setTimeout(()=>{
-    const el = document.getElementById("block-"+def.id);
-    if (el) {
-      el.scrollIntoView({behavior:"smooth",block:"nearest"});
-      el.style.transition = "box-shadow .2s";
-      el.style.boxShadow = "0 0 0 3px rgba(24,95,165,.5)";
-      setTimeout(()=>{ el.style.boxShadow=""; }, 800);
-    }
-  },50);
+    const el=document.getElementById("blk-"+b.id);
+    if (!el) return;
+    el.scrollIntoView({behavior:"smooth",block:"nearest"});
+    el.style.outline="3px solid var(--blue)";
+    setTimeout(()=>el.style.outline="",700);
+  },40);
 }
 
-function deleteBlock(id) {
-  blocks = blocks.filter(b=>b.id!==id);
-  if (selectedBlockId===id) selectBlock(null);
-  dirty=true; renderBlocks(); updateBadge();
+function delBlock(id) {
+  blks=blks.filter(b=>b.id!==id);
+  if (selId===id) selectBlock(null);
+  markDirty(); renderCanvas();
 }
-
-function moveBlock(id, dir) {
-  const idx = blocks.findIndex(b=>b.id===id);
-  const newIdx = idx+dir;
-  if (newIdx<0||newIdx>=blocks.length) return;
-  [blocks[idx],blocks[newIdx]]=[blocks[newIdx],blocks[idx]];
-  dirty=true; renderBlocks(); selectBlock(id); updateBadge();
+function moveBlock(id,dir) {
+  const i=blks.findIndex(b=>b.id===id), j=i+dir;
+  if (j<0||j>=blks.length) return;
+  [blks[i],blks[j]]=[blks[j],blks[i]];
+  markDirty(); renderCanvas(); selectBlock(id);
 }
-
-function updateBlockProp(id, key, val) {
-  const b = blocks.find(b=>b.id===id); if(!b) return;
-  // Nested key support: "labels.0"
-  const keys = key.split(".");
-  if (keys.length===2) { b[keys[0]][parseInt(keys[1])]=val; }
-  else { b[key]=val; }
-  dirty=true;
-  renderSingleBlock(id);
-  updateBadge();
+function setProp(id,key,val) {
+  const b=blks.find(b=>b.id===id); if(!b) return;
+  if (/\.\d+$/.test(key)) { const [k,i]=key.split("."); if(!b[k])b[k]=[]; b[k][+i]=val; }
+  else b[key]=val;
+  markDirty();
+  const el=document.getElementById("blk-"+id);
+  if (el) { const t=document.createElement("div"); t.innerHTML=blockHTML(b); const ne=t.firstElementChild; el.replaceWith(ne); ne.classList.add("selected"); attachBlock(ne,id); }
 }
-
-// ═══════════════ DRAG & DROP (mouse-based, ổn định) ═══════════════
-let dragState = null;  // { id, ghost, startY, srcIdx, indicator }
-
-function initDragHandle(el, id) {
-  const handle = el.querySelector(".drag-handle-area");
-  if (!handle) return;
-  handle.addEventListener("mousedown", e => startDrag(e, id));
+function toggleDTCol(id,col) {
+  const b=blks.find(b=>b.id===id); if(!b) return;
+  if (!b.columns) b.columns=[];
+  const i=b.columns.indexOf(col);
+  if (i>=0) b.columns.splice(i,1); else b.columns.push(col);
+  markDirty();
+  const el=document.getElementById("blk-"+id);
+  if(el){const t=document.createElement("div");t.innerHTML=blockHTML(b);const ne=t.firstElementChild;el.replaceWith(ne);ne.classList.add("selected");attachBlock(ne,id);}
+  renderProps(id);
 }
-
-function startDrag(e, id) {
-  e.preventDefault();
-  e.stopPropagation();
-  const srcEl = document.getElementById("block-"+id);
-  if (!srcEl) return;
-
-  // Tạo ghost element
-  const ghost = document.createElement("div");
-  ghost.className = "block-drag-ghost";
-  ghost.textContent = "⠿ " + (blocks.find(b=>b.id===id)?.type || "block");
-  document.body.appendChild(ghost);
-
-  // Indicator line
-  const indicator = document.createElement("div");
-  indicator.className = "drop-indicator";
-  indicator.style.display = "none";
-
-  srcEl.classList.add("dragging");
-  selectBlock(null);
-
-  dragState = { id, ghost, indicator, srcIdx: blocks.findIndex(b=>b.id===id), dropIdx: -1 };
-
-  document.addEventListener("mousemove", onDragMove);
-  document.addEventListener("mouseup", onDragEnd);
-}
-
-function onDragMove(e) {
-  if (!dragState) return;
-  const { ghost, indicator, id } = dragState;
-
-  // Di chuyển ghost theo chuột
-  ghost.style.left = (e.clientX + 12) + "px";
-  ghost.style.top  = (e.clientY - 12) + "px";
-
-  // Tìm vị trí thả
-  const list = document.getElementById("block-list");
-  const allBlocks = Array.from(list.querySelectorAll(".block:not(.dragging)"));
-
-  let dropIdx = blocks.length;  // mặc định thả cuối
-  let refEl = null;
-  let insertBefore = false;
-
-  for (let i = 0; i < allBlocks.length; i++) {
-    const rect = allBlocks[i].getBoundingClientRect();
-    const midY = rect.top + rect.height / 2;
-    if (e.clientY < midY) {
-      dropIdx = blocks.findIndex(b => b.id === allBlocks[i].id.replace("block-",""));
-      refEl = allBlocks[i];
-      insertBefore = true;
-      break;
-    } else {
-      dropIdx = blocks.findIndex(b => b.id === allBlocks[i].id.replace("block-","")) + 1;
-    }
-  }
-
-  dragState.dropIdx = dropIdx;
-
-  // Hiện indicator
-  if (indicator.parentNode) indicator.parentNode.removeChild(indicator);
-
-  if (refEl && insertBefore) {
-    list.insertBefore(indicator, refEl);
-  } else {
-    // Thả cuối
-    const lastBlock = allBlocks[allBlocks.length-1];
-    if (lastBlock) lastBlock.after(indicator);
-    else list.appendChild(indicator);
-  }
-  indicator.style.display = "block";
-}
-
-function onDragEnd(e) {
-  if (!dragState) return;
-  const { id, ghost, indicator, srcIdx, dropIdx } = dragState;
-
-  // Cleanup
-  ghost.remove();
-  if (indicator.parentNode) indicator.parentNode.removeChild(indicator);
-  document.getElementById("block-"+id)?.classList.remove("dragging");
-  document.removeEventListener("mousemove", onDragMove);
-  document.removeEventListener("mouseup", onDragEnd);
-  dragState = null;
-
-  // Thực hiện reorder nếu dropIdx hợp lệ và khác vị trí cũ
-  if (dropIdx < 0 || dropIdx === srcIdx || dropIdx === srcIdx + 1) return;
-
-  const [moved] = blocks.splice(srcIdx, 1);
-  const newIdx = dropIdx > srcIdx ? dropIdx - 1 : dropIdx;
-  blocks.splice(newIdx, 0, moved);
-  dirty = true;
-  renderBlocks();
-  selectBlock(id);
-  updateBadge();
-}
-
-// ═══════════════ RENDER BLOCKS ═══════════════
-function renderBlocks() {
-  const list = document.getElementById("block-list");
-  const hint = document.getElementById("canvas-hint");
-  if (!blocks.length) {
-    list.innerHTML=""; list.appendChild(hint); hint.style.display="flex"; return;
-  }
-  hint.style.display="none";
-  list.innerHTML = blocks.map(b => renderBlockHTML(b)).join("");
-  // Re-attach event listeners (mouse-based drag)
-  list.querySelectorAll(".block").forEach(el => {
-    const id = el.id.replace("block-","");
-    el.addEventListener("click", e=>{
-      if (e.target.closest(".bc-btn,.drag-handle-area")) return;
-      selectBlock(id);
-    });
-    initDragHandle(el, id);
+function setIGFields(id,raw) {
+  const b=blks.find(b=>b.id===id); if(!b) return;
+  b.fields=raw.split("\n").filter(s=>s.trim()).map(line=>{
+    const p=line.split(":"); const field=p.length>1?p.slice(1).join(":").trim():p[0].trim();
+    const label=p.length>1?p[0].trim():p[0].trim(); return {label,field};
   });
-  // Re-highlight selected
-  if (selectedBlockId) {
-    document.getElementById("block-"+selectedBlockId)?.classList.add("selected");
+  markDirty();
+  const el=document.getElementById("blk-"+id);
+  if(el){const t=document.createElement("div");t.innerHTML=blockHTML(b);const ne=t.firstElementChild;el.replaceWith(ne);ne.classList.add("selected");attachBlock(ne,id);}
+}
+
+// CANVAS RENDER
+function renderCanvas() {
+  const list=document.getElementById("block-list");
+  list.innerHTML="";
+  if (!blks.length) {
+    list.innerHTML=`<div class="canvas-hint"><p>&#128203; ${curId?"Click các block ở panel trái để thêm":"Nhấn '+ Mới' để tạo template"}</p><small>${curId?"Tip: ↑↓ di chuyển block, ⇕ kéo thả sắp xếp":"Sau đó click block ở panel trái để thêm"}</small></div>`;
+    return;
+  }
+  blks.forEach(b=>{
+    const t=document.createElement("div"); t.innerHTML=blockHTML(b);
+    const el=t.firstElementChild; attachBlock(el,b.id); list.appendChild(el);
+  });
+  if (selId) document.getElementById("blk-"+selId)?.classList.add("selected");
+}
+
+function attachBlock(el,id) {
+  el.addEventListener("click",function(e){
+    if (e.target.closest(".cc")) return;
+    selectBlock(id);
+  });
+  const dh=el.querySelector(".cc.dh");
+  if (dh) dh.addEventListener("mousedown",function(e){ e.preventDefault(); e.stopPropagation(); startDrag(e,id); });
+}
+
+// BLOCK HTML
+function blockHTML(b) {
+  const id=b.id;
+  const ctrl=`<div class="blk-ctrl"><button class="cc dh" title="Kéo sắp xếp">&#8597;</button><button class="cc" onclick="moveBlock('${id}',-1)">&#8593;</button><button class="cc" onclick="moveBlock('${id}',1)">&#8595;</button><button class="cc del" onclick="delBlock('${id}')">&#10005;</button></div>`;
+  let body="";
+  switch(b.type){
+    case "docheader": body=`<div class="b-dochd"><div class="dhl"><strong>${esc(b.companyName||"")}</strong>${esc(b.companyInfo||"").replace(/\n/g,"<br>")}</div><div class="dhr"><strong>{{${esc(b.docNumField||"MaDonHang")}}}</strong>${esc(b.docTitle||"")}<br>Ngày: {{${esc(b.dateField||"NgayTao")}}}</div></div>`; break;
+    case "logo": body=`<div class="b-logo"><div class="logobox">LOGO</div><div><div style="font-size:16px;font-weight:700">${esc(b.companyName||"")}</div><div style="font-size:11px;color:var(--tx2)">${esc(b.subTitle||"")}</div></div></div>`; break;
+    case "heading": body=`<div class="b-heading" style="text-align:${b.align||"center"};color:${b.color||"#1a1a18"};font-size:${b.size||20}px">${esc(b.text||"")}</div>`; break;
+    case "subheading": body=`<div class="b-subheading" style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||15}px">${esc(b.text||"")}</div>`; break;
+    case "text": body=`<div class="b-text" style="text-align:${b.align||"left"};color:${b.color||"#6b6b67"};font-size:${b.size||13}px">${esc(b.text||"")}</div>`; break;
+    case "field": body=`<div class="b-fi">${b.showLabel&&b.label?`<span style="color:var(--tx2);font-weight:400">${esc(b.label)}: </span>`:""}{{${esc(b.fieldName||"TenCot")}}}</div>`; break;
+    case "fieldrow": body=`<div class="b-fr"><span class="lbl">${esc(b.label||"Nhãn")}:</span><span class="val">{{${esc(b.fieldName||"TenCot")}}}</span></div>`; break;
+    case "infogrid":{const f=b.fields||[];body=`<dl class="b-ig">${f.length?f.map(x=>`<div><dt>${esc(x.label||x.field)}</dt><dd>{{${esc(x.field)}}}</dd></div>`).join(""):"<div><dt>Cột 1</dt><dd>{{TenCot1}}</dd></div><div><dt>Cột 2</dt><dd>{{TenCot2}}</dd></div>"}</dl>`; break;}
+    case "datatable":{const dc=b.columns||[];body=`<table class="b-tbl"><thead><tr>${dc.length?dc.map(c=>`<th>${esc(c)}</th>`).join(""):"<th>Cột 1</th><th>Cột 2</th><th>Cột 3</th>"}</tr></thead><tbody><tr class="ph"><td colspan="${dc.length||3}">← Dữ liệu tự động điền khi in</td></tr></tbody>${b.showTotal?`<tfoot><tr><td colspan="${Math.max((dc.length||3)-1,1)}" style="text-align:right">Tổng:</td><td>{{TongTien}}</td></tr></tfoot>`:""}</table>`; break;}
+    case "amount": body=`<div class="b-amt"><div class="amti"><div class="aml">${esc(b.label||"TỔNG CỘNG")}</div><div class="amv">{{${esc(b.fieldName||"TongTien")}}} ₫</div>${b.showWords?`<div class="amw">(Bằng chữ: {{${esc(b.fieldName||"TongTien")}_words}})</div>`:""}</div></div>`; break;
+    case "custom": body=`<div class="b-cust"><span style="font-weight:400">${esc(b.label||"")}: </span>${esc(b.formula||"")}</div>`; break;
+    case "sign":{const lb=(b.labels||["Người lập","Người duyệt","Người nhận"]).slice(0,b.count||3);body=`<div class="b-sign">${lb.map(l=>`<div class="sc"><div class="sl"></div><div class="sn">${esc(l)}</div><div style="font-size:10px;margin-top:2px">(Ký, ghi rõ họ tên)</div></div>`).join("")}</div>`; break;}
+    case "divider": body=`<hr class="b-div">`; break;
+    case "dividerlight": body=`<hr class="b-divl">`; break;
+    case "spacer": body=`<div style="height:${b.height||20}px"></div>`; break;
+    case "pagebreak": body=`<div class="b-pb">─── Ngắt trang ───</div>`; break;
+    default: body=`<span style="color:var(--tx3);font-size:11px">[${b.type}]</span>`;
+  }
+  return `<div class="block" id="blk-${id}">${ctrl}${body}</div>`;
+}
+
+// DRAG & DROP (mouse-based)
+function startDrag(e,id) {
+  const srcEl=document.getElementById("blk-"+id); if(!srcEl) return;
+  const ghost=document.createElement("div");
+  ghost.className="drag-ghost";
+  ghost.textContent="⠿ "+typeName(blks.find(b=>b.id===id)?.type||"");
+  document.body.appendChild(ghost);
+  const ind=document.createElement("div"); ind.className="drop-line";
+  drag={id,ghost,ind,srcIdx:blks.findIndex(b=>b.id===id),dropIdx:-1};
+  srcEl.classList.add("dragging"); selectBlock(null);
+  document.addEventListener("mousemove",onDragMove);
+  document.addEventListener("mouseup",onDragEnd);
+}
+function onDragMove(e) {
+  if (!drag) return;
+  drag.ghost.style.left=(e.clientX+14)+"px"; drag.ghost.style.top=(e.clientY-10)+"px";
+  const list=document.getElementById("block-list");
+  const items=[...list.querySelectorAll(".block:not(.dragging)")];
+  if (drag.ind.parentNode) drag.ind.parentNode.removeChild(drag.ind);
+  let dropIdx=blks.length, inserted=false;
+  for (let i=0;i<items.length;i++){
+    const r=items[i].getBoundingClientRect();
+    if (e.clientY<r.top+r.height/2){
+      dropIdx=blks.findIndex(b=>b.id===items[i].id.replace("blk-",""));
+      items[i].before(drag.ind); inserted=true; break;
+    } else { dropIdx=blks.findIndex(b=>b.id===items[i].id.replace("blk-",""))+1; }
+  }
+  if (!inserted){const last=items[items.length-1];if(last)last.after(drag.ind);else list.appendChild(drag.ind);}
+  drag.ind.style.display="block"; drag.dropIdx=dropIdx;
+}
+function onDragEnd() {
+  if (!drag) return;
+  const {id,ghost,ind,srcIdx,dropIdx}=drag;
+  ghost.remove(); if(ind.parentNode)ind.parentNode.removeChild(ind);
+  document.getElementById("blk-"+id)?.classList.remove("dragging");
+  document.removeEventListener("mousemove",onDragMove);
+  document.removeEventListener("mouseup",onDragEnd);
+  drag=null;
+  if (dropIdx>=0&&dropIdx!==srcIdx&&dropIdx!==srcIdx+1){
+    const [m]=blks.splice(srcIdx,1);
+    blks.splice(dropIdx>srcIdx?dropIdx-1:dropIdx,0,m);
+    markDirty(); renderCanvas(); selectBlock(id);
   }
 }
 
-function renderSingleBlock(id) {
-  const el = document.getElementById("block-"+id); if(!el) return;
-  const b = blocks.find(b=>b.id===id); if(!b) return;
-  const newEl = document.createElement("div");
-  newEl.innerHTML = renderBlockHTML(b);
-  const newBlock = newEl.firstElementChild;
-  el.replaceWith(newBlock);
-  newBlock.addEventListener("click",e=>{ if(e.target.closest(".bc-btn,.drag-handle-area"))return; selectBlock(id); });
-  initDragHandle(newBlock, id);
-  if (selectedBlockId===id) newBlock.classList.add("selected");
-}
-
-function renderBlockHTML(b) {
-  const id = b.id;
-  const ctrl = `
-    <div class="block-controls">
-      <span class="drag-handle-area" title="Kéo để di chuyển để thay đổi thứ tự" style="cursor:grab;width:22px;height:22px;border-radius:4px;border:1px solid var(--bd2);background:var(--bg);font-size:11px;display:inline-flex;align-items:center;justify-content:center;color:var(--tx2);flex-shrink:0">&#8597;</span>
-      <button class="bc-btn" onclick="moveBlock('${id}',-1)" title="Lên">&#8593;</button>
-      <button class="bc-btn" onclick="moveBlock('${id}',1)" title="Xuống">&#8595;</button>
-      <button class="bc-btn del" onclick="deleteBlock('${id}')" title="Xoá">&#10005;</button>
-    </div>`;
-
-  let inner = "";
-  switch(b.type) {
-    case "docheader":
-      inner=`<div class="b-docheader">
-        <div class="dh-left"><strong>${esc(b.companyName)}</strong>${esc(b.companyInfo||"").replace(/\n/g,"<br>")}</div>
-        <div class="dh-right"><strong>{{${esc(b.docNumField||"MaDonHang")}}}</strong>${esc(b.docTitle)}<br>Ngày: {{${esc(b.dateField||"NgayTao")}}}</div>
-      </div>`; break;
-
-    case "logo":
-      inner=`<div class="b-logo">
-        <div class="logo-box">LOGO</div>
-        <div class="logo-info"><div class="li-name">${esc(b.companyName)}</div><div class="li-sub">${esc(b.subTitle||"")}</div></div>
-      </div>`; break;
-
-    case "heading":
-      inner=`<div class="b-heading" style="text-align:${b.align||"center"};color:${b.color||"#1a1a18"};font-size:${b.size||20}px">${esc(b.text)}</div>`; break;
-
-    case "subheading":
-      inner=`<div class="b-subheading" style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||15}px">${esc(b.text)}</div>`; break;
-
-    case "text":
-      inner=`<div class="b-text" style="text-align:${b.align||"left"};color:${b.color||"#6b6b67"};font-size:${b.size||13}px">${esc(b.text)}</div>`; break;
-
-    case "field":
-      inner=`<div class="b-field">
-        ${b.showLabel&&b.label?`<span style="color:#6b6b67;font-weight:400;margin-right:2px">${esc(b.label)}:</span>`:""}
-        <span class="field-name">{{${esc(b.fieldName||"TenCot")}}}</span>
-      </div>`; break;
-
-    case "fieldrow":
-      inner=`<div class="b-fieldrow">
-        <span class="fr-label">${esc(b.label||"Tên trường")}:</span>
-        <span class="fr-value">{{${esc(b.fieldName||"TenCot")}}}</span>
-      </div>`; break;
-
-    case "infogrid":
-      const igFields = b.fields||[];
-      inner=`<div class="b-infogrid">${igFields.length
-        ? igFields.map(f=>`<div class="ig-item"><dt>${esc(f.label||f.field)}</dt><dd>{{${esc(f.field)}}}</dd></div>`).join("")
-        : `<div class="ig-item"><dt>Cột 1</dt><dd>{{TenCot1}}</dd></div>
-           <div class="ig-item"><dt>Cột 2</dt><dd>{{TenCot2}}</dd></div>
-           <div class="ig-item"><dt>Cột 3</dt><dd>{{TenCot3}}</dd></div>
-           <div class="ig-item"><dt>Cột 4</dt><dd>{{TenCot4}}</dd></div>`
-      }</div>`; break;
-
-    case "datatable":
-      const dtCols = b.columns||[];
-      inner=`<table class="b-table">
-        <thead><tr>${dtCols.length
-          ? dtCols.map(c=>`<th>${esc(c)}</th>`).join("")
-          : "<th>Cột 1</th><th>Cột 2</th><th>Cột 3</th><th>Cột 4</th>"
-        }</tr></thead>
-        <tbody><tr class="placeholder-row"><td colspan="${dtCols.length||4}">← Dữ liệu tự động điền khi in</td></tr></tbody>
-        ${b.showTotal?`<tfoot><tr><td colspan="${(dtCols.length||4)-1}" style="text-align:right">Tổng:</td><td>{{TongTien}}</td></tr></tfoot>`:""}
-      </table>`; break;
-
-    case "amount":
-      inner=`<div class="b-amount"><div class="b-amount-inner">
-        <div class="am-label">${esc(b.label||"TỔNG CỘNG")}</div>
-        <div class="am-value">{{${esc(b.fieldName||"TongTien")}}} ₫</div>
-        ${b.showWords?`<div class="am-words">(Bằng chữ: {{${esc(b.fieldName||"TongTien")}_words}})</div>`:""}
-      </div></div>`; break;
-
-    case "custom":
-      inner=`<div class="b-field" style="background:#faeeda;border-color:rgba(133,79,11,.3);color:#854F0B">
-        <span style="font-weight:400;margin-right:4px">${esc(b.label||"Tính toán")}:</span>
-        <span class="field-name">${esc(b.formula||"")}</span>
-      </div>`; break;
-
-    case "sign":
-      const signCols = (b.labels||["Người lập","Người duyệt","Người nhận"]).slice(0,b.count||3);
-      inner=`<div class="b-sign">${signCols.map(l=>`
-        <div class="sign-col"><div class="sign-line"></div>
-        <div class="sign-name">${esc(l)}</div>
-        <div style="font-size:10px;margin-top:2px">(Ký, ghi rõ họ tên)</div></div>`).join("")}</div>`; break;
-
-    case "divider":     inner=`<hr class="b-divider">`; break;
-    case "dividerlight":inner=`<hr class="b-divider-light">`; break;
-    case "spacer":      inner=`<div class="b-spacer" style="height:${b.height||20}px"></div>`; break;
-    case "pagebreak":   inner=`<div style="border:1px dashed #ccc;text-align:center;font-size:10px;color:#aaa;padding:4px">--- Ngắt trang ---</div>`; break;
-    default:            inner=`<div style="padding:4px;color:var(--tx3);font-size:12px">[${b.type}]</div>`;
-  }
-
-  return `<div class="block" id="block-${id}">${ctrl}${inner}</div>`;
-}
-
-// ═══════════════ SELECT BLOCK & PROPS ═══════════════
+// SELECT & PROPS
 function selectBlock(id) {
   document.querySelectorAll(".block").forEach(el=>el.classList.remove("selected"));
-  selectedBlockId = id;
-  if (id) {
-    document.getElementById("block-"+id)?.classList.add("selected");
-    renderProps(id);
-  } else {
-    document.getElementById("props-empty").style.display="";
-    document.getElementById("props-content").style.display="none";
-  }
+  selId=id;
+  if (id){document.getElementById("blk-"+id)?.classList.add("selected");renderProps(id);}
+  else{document.getElementById("props-empty").style.display="";document.getElementById("props-content").style.display="none";}
 }
-
 function renderProps(id) {
-  const b = blocks.find(b=>b.id===id); if(!b) return;
+  const b=blks.find(b=>b.id===id); if(!b) return;
   document.getElementById("props-empty").style.display="none";
-  const pc = document.getElementById("props-content");
-  pc.style.display="";
-  pc.innerHTML = buildPropsHTML(b);
+  const pc=document.getElementById("props-content"); pc.style.display=""; pc.innerHTML=propsHTML(b);
 }
-
-function buildPropsHTML(b) {
+function propsHTML(b) {
   const id=b.id;
-  let html=`<div class="prop-section-title">${typeName(b.type)}</div>`;
-
-  const colorSwatches = COLORS.map(c=>
-    `<div class="clr-swatch ${b.color===c?"active":""}" style="background:${c}"
-     onclick="updateBlockProp('${id}','color','${c}')"></div>`).join("");
-
-  const alignBtns = (cur)=>["left","center","right"].map(a=>
-    `<button class="fmt-btn ${cur===a?"active":""}" onclick="updateBlockProp('${id}','align','${a}')">
-      ${a==="left"?"&#8676;":a==="center"?"&#8596;":"&#8677;"}</button>`).join("");
-
-  const fieldSelect = (curField)=>`
-    <div class="field-select-grid" style="max-height:120px;overflow-y:auto">
-      ${sheetColumns.length
-        ? sheetColumns.map(c=>`<div class="fsg-item ${c===curField?"active":""}"
-            onclick="updateBlockProp('${id}','fieldName','${esc(c)}')">${esc(c)}</div>`).join("")
-        : `<div style="font-size:11px;color:var(--tx3);padding:6px">Chọn sheet để xem cột</div>`
-      }
-    </div>`;
-
-  switch(b.type) {
-    case "docheader":
-      html+=`
-        <div class="prop-row"><label>Tên công ty</label>
-          <input value="${esc(b.companyName)}" oninput="updateBlockProp('${id}','companyName',this.value)"></div>
-        <div class="prop-row"><label>Thông tin công ty</label>
-          <textarea oninput="updateBlockProp('${id}','companyInfo',this.value)">${esc(b.companyInfo||"")}</textarea></div>
-        <div class="prop-row"><label>Tiêu đề loại tài liệu</label>
-          <input value="${esc(b.docTitle)}" oninput="updateBlockProp('${id}','docTitle',this.value)"></div>
-        <div class="prop-row"><label>Field số tài liệu</label>${fieldSelect(b.docNumField)}
-          <input value="${esc(b.docNumField||"")}" placeholder="MaDonHang"
-                 oninput="updateBlockProp('${id}','docNumField',this.value)"></div>
-        <div class="prop-row"><label>Field ngày tạo</label>
-          <input value="${esc(b.dateField||"")}" placeholder="NgayTao"
-                 oninput="updateBlockProp('${id}','dateField',this.value)"></div>`; break;
-
-    case "logo":
-      html+=`
-        <div class="prop-row"><label>Tên công ty</label>
-          <input value="${esc(b.companyName)}" oninput="updateBlockProp('${id}','companyName',this.value)"></div>
-        <div class="prop-row"><label>Mô tả / địa chỉ</label>
-          <input value="${esc(b.subTitle||"")}" oninput="updateBlockProp('${id}','subTitle',this.value)"></div>`; break;
-
-    case "heading":
-    case "subheading":
-    case "text":
-      html+=`
-        <div class="prop-row"><label>Nội dung</label>
-          <textarea oninput="updateBlockProp('${id}','text',this.value)">${esc(b.text||"")}</textarea></div>
-        <div class="prop-row"><label>Cỡ chữ (px)</label>
-          <input type="number" value="${b.size||13}" min="8" max="48"
-                 oninput="updateBlockProp('${id}','size',this.value)"></div>
-        <div class="prop-row"><label>Căn lề</label>
-          <div class="format-btns">${alignBtns(b.align)}</div></div>
-        <div class="prop-row"><label>Màu chữ</label>
-          <div class="color-row">${colorSwatches}</div></div>`; break;
-
-    case "field":
-      html+=`
-        <div class="prop-row"><label>Chọn cột dữ liệu</label>${fieldSelect(b.fieldName)}</div>
-        <div class="prop-row"><label>Nhãn hiển thị</label>
-          <input value="${esc(b.label||"")}" placeholder="Vd: Khách hàng"
-                 oninput="updateBlockProp('${id}','label',this.value)"></div>
-        <div class="prop-row"><label>Hiện nhãn</label>
-          <select onchange="updateBlockProp('${id}','showLabel',this.value==='true')">
-            <option value="true" ${b.showLabel?"selected":""}>Có</option>
-            <option value="false" ${!b.showLabel?"selected":""}>Không</option>
-          </select></div>`; break;
-
-    case "fieldrow":
-      html+=`
-        <div class="prop-row"><label>Nhãn</label>
-          <input value="${esc(b.label||"")}" oninput="updateBlockProp('${id}','label',this.value)"></div>
-        <div class="prop-row"><label>Chọn cột dữ liệu</label>${fieldSelect(b.fieldName)}</div>`; break;
-
-    case "infogrid":
-      const igF = b.fields||[];
-      html+=`
-        <div class="prop-row"><label>Các field (mỗi dòng: tên_cột hoặc nhãn:tên_cột)</label>
-          <textarea rows="6"
-            oninput="updateInfoGridFields('${id}',this.value)">${igF.map(f=>f.label&&f.label!==f.field?`${f.label}:${f.field}`:f.field).join("\n")}</textarea></div>
-        <div style="font-size:11px;color:var(--tx3)">Ví dụ:<br>TenKhachHang<br>Khách hàng:TenKhachHang</div>`; break;
-
-    case "datatable":
-      html+=`
-        <div class="prop-row"><label>Cột hiển thị (click để chọn)</label>
-          <div class="field-select-grid">${sheetColumns.map(c=>
-            `<div class="fsg-item ${(b.columns||[]).includes(c)?"active":""}"
-              onclick="toggleDTCol('${id}','${esc(c)}')">${esc(c)}</div>`).join("")||
-            '<div style="font-size:11px;color:var(--tx3);padding:6px">Chọn sheet để xem cột</div>'
-          }</div></div>
-        <div class="prop-row"><label>Hiện dòng tổng</label>
-          <select onchange="updateBlockProp('${id}','showTotal',this.value==='true')">
-            <option value="true" ${b.showTotal?"selected":""}>Có</option>
-            <option value="false" ${!b.showTotal?"selected":""}>Không</option>
-          </select></div>`; break;
-
-    case "amount":
-      html+=`
-        <div class="prop-row"><label>Chọn cột tiền</label>${fieldSelect(b.fieldName)}</div>
-        <div class="prop-row"><label>Nhãn</label>
-          <input value="${esc(b.label||"TỔNG CỘNG")}" oninput="updateBlockProp('${id}','label',this.value)"></div>
-        <div class="prop-row"><label>Hiện số tiền bằng chữ</label>
-          <select onchange="updateBlockProp('${id}','showWords',this.value==='true')">
-            <option value="true" ${b.showWords?"selected":""}>Có</option>
-            <option value="false" ${!b.showWords?"selected":""}>Không</option>
-          </select></div>`; break;
-
-    case "custom":
-      html+=`
-        <div class="prop-row"><label>Nhãn cột</label>
-          <input value="${esc(b.label||"")}" oninput="updateBlockProp('${id}','label',this.value)"></div>
-        <div class="prop-row"><label>Công thức</label>
-          <input value="${esc(b.formula||"")}" placeholder="{TongTien}*0.1"
-                 oninput="updateBlockProp('${id}','formula',this.value)"></div>
-        <div style="font-size:11px;color:var(--tx3)">Dùng {TenCot} để tham chiếu</div>`; break;
-
-    case "sign":
-      html+=`
-        <div class="prop-row"><label>Số ô chữ ký</label>
-          <select onchange="updateBlockProp('${id}','count',parseInt(this.value))">
-            ${[1,2,3].map(n=>`<option value="${n}" ${b.count===n?"selected":""}>${n} ô</option>`).join("")}
-          </select></div>
-        ${(b.labels||[]).slice(0,b.count||3).map((l,i)=>
-          `<div class="prop-row"><label>Nhãn ô ${i+1}</label>
-           <input value="${esc(l)}" oninput="updateSignLabel('${id}',${i},this.value)"></div>`
-        ).join("")}`; break;
-
-    case "spacer":
-      html+=`<div class="prop-row"><label>Chiều cao (px)</label>
-        <input type="number" value="${b.height||20}" min="4" max="120"
-               oninput="updateBlockProp('${id}','height',this.value)"></div>`; break;
+  const CP=(cur,key)=>`<div class="fld-pick">${cols.length?cols.map(c=>`<div class="fp ${c===cur?"on":""}" onclick="setProp('${id}','${key}','${esc(c)}')">${esc(c)}</div>`).join(""):`<div class="no-col-hint">Chọn sheet để xem cột</div>`}</div>`;
+  const AB=(a)=>["left","center","right"].map(v=>`<button class="fb ${a===v?"on":""}" onclick="setProp('${id}','align','${v}')">${v==="left"?"&#8676;":v==="center"?"&#8596;":"&#8677;"}</button>`).join("");
+  const CS=COLORS.map(c=>`<div class="csw ${b.color===c?"on":""}" style="background:${c}" onclick="setProp('${id}','color','${c}')"></div>`).join("");
+  let h=`<div class="ps-title">${typeName(b.type)}</div>`;
+  switch(b.type){
+    case "docheader":h+=`<div class="pr"><label>Tên công ty</label><input value="${esc(b.companyName||"")}" oninput="setProp('${id}','companyName',this.value)"></div><div class="pr"><label>Thông tin cty</label><textarea oninput="setProp('${id}','companyInfo',this.value)">${esc(b.companyInfo||"")}</textarea></div><div class="pr"><label>Tiêu đề tài liệu</label><input value="${esc(b.docTitle||"")}" oninput="setProp('${id}','docTitle',this.value)"></div><div class="pr"><label>Cột số tài liệu</label>${CP(b.docNumField,"docNumField")}</div><div class="pr"><label>Cột ngày tạo</label><input value="${esc(b.dateField||"")}" placeholder="NgayTao" oninput="setProp('${id}','dateField',this.value)"></div>`;break;
+    case "logo":h+=`<div class="pr"><label>Tên công ty</label><input value="${esc(b.companyName||"")}" oninput="setProp('${id}','companyName',this.value)"></div><div class="pr"><label>Địa chỉ / mô tả</label><input value="${esc(b.subTitle||"")}" oninput="setProp('${id}','subTitle',this.value)"></div>`;break;
+    case "heading":case "subheading":case "text":h+=`<div class="pr"><label>Nội dung</label><textarea oninput="setProp('${id}','text',this.value)">${esc(b.text||"")}</textarea></div><div class="pr2"><div class="pr"><label>Cỡ chữ (px)</label><input type="number" min="8" max="60" value="${b.size||14}" oninput="setProp('${id}','size',+this.value)"></div><div class="pr"><label>Căn lề</label><div class="fmt-row">${AB(b.align||"left")}</div></div></div><div class="pr"><label>Màu chữ</label><div class="clr-row">${CS}</div></div>`;break;
+    case "field":h+=`<div class="pr"><label>Chọn cột</label>${CP(b.fieldName,"fieldName")}</div><div class="pr"><label>Nhãn</label><input value="${esc(b.label||"")}" oninput="setProp('${id}','label',this.value)"></div><div class="pr"><label>Hiện nhãn</label><select onchange="setProp('${id}','showLabel',this.value==='true')"><option value="false" ${!b.showLabel?"selected":""}>Không</option><option value="true" ${b.showLabel?"selected":""}>Có</option></select></div>`;break;
+    case "fieldrow":h+=`<div class="pr"><label>Nhãn hiển thị</label><input value="${esc(b.label||"")}" oninput="setProp('${id}','label',this.value)"></div><div class="pr"><label>Chọn cột dữ liệu</label>${CP(b.fieldName,"fieldName")}</div>`;break;
+    case "infogrid":h+=`<div class="pr"><label>Danh sách cột (mỗi dòng 1 cột)</label><textarea rows="6" oninput="setIGFields('${id}',this.value)">${(b.fields||[]).map(f=>f.label&&f.label!==f.field?`${f.label}:${f.field}`:f.field).join("\n")}</textarea><div style="font-size:10px;color:var(--tx3);margin-top:3px">Định dạng: TenCot hoặc Nhãn:TenCot</div></div>`;break;
+    case "datatable":h+=`<div class="pr"><label>Cột hiển thị (click để chọn/bỏ)</label><div class="fld-pick">${cols.length?cols.map(c=>`<div class="fp ${(b.columns||[]).includes(c)?"on":""}" onclick="toggleDTCol('${id}','${esc(c)}')">${esc(c)}</div>`).join(""):`<div class="no-col-hint">Chọn sheet để xem cột</div>`}</div></div><div class="pr"><label>Hiện dòng tổng</label><select onchange="setProp('${id}','showTotal',this.value==='true')"><option value="true" ${b.showTotal?"selected":""}>Có</option><option value="false" ${!b.showTotal?"selected":""}>Không</option></select></div>`;break;
+    case "amount":h+=`<div class="pr"><label>Chọn cột tiền</label>${CP(b.fieldName,"fieldName")}</div><div class="pr"><label>Nhãn</label><input value="${esc(b.label||"TỔNG CỘNG")}" oninput="setProp('${id}','label',this.value)"></div><div class="pr"><label>Hiện số bằng chữ</label><select onchange="setProp('${id}','showWords',this.value==='true')"><option value="true" ${b.showWords?"selected":""}>Có</option><option value="false" ${!b.showWords?"selected":""}>Không</option></select></div>`;break;
+    case "custom":h+=`<div class="pr"><label>Nhãn cột</label><input value="${esc(b.label||"")}" oninput="setProp('${id}','label',this.value)"></div><div class="pr"><label>Công thức</label><input value="${esc(b.formula||"")}" placeholder="{TongTien}*0.1" oninput="setProp('${id}','formula',this.value)"></div><div style="font-size:10px;color:var(--tx3)">Dùng {TenCot} để tham chiếu</div>`;break;
+    case "sign":h+=`<div class="pr"><label>Số ô chữ ký</label><select onchange="setProp('${id}','count',+this.value)">${[1,2,3].map(n=>`<option value="${n}" ${b.count===n?"selected":""}>${n} ô</option>`).join("")}</select></div>${(b.labels||["Người lập","Người duyệt","Người nhận"]).slice(0,b.count||3).map((l,i)=>`<div class="pr"><label>Nhãn ô ${i+1}</label><input value="${esc(l)}" oninput="setProp('${id}','labels.${i}',this.value)"></div>`).join("")}`;break;
+    case "spacer":h+=`<div class="pr"><label>Chiều cao (px)</label><input type="number" min="4" max="200" value="${b.height||20}" oninput="setProp('${id}','height',+this.value)"></div>`;break;
   }
-
-  html+=`<button class="delete-block-btn" onclick="deleteBlock('${id}')">&#128465; Xoá block này</button>`;
-
-  // Xuất JSON (debug)
-  html+=`<details style="margin-top:12px"><summary style="font-size:10px;color:var(--tx3);cursor:pointer">Xem JSON block</summary>
-    <pre style="font-size:10px;color:var(--tx3);margin-top:6px;overflow-x:auto;max-height:100px">${esc(JSON.stringify(blocks.find(b=>b.id===id),null,2))}</pre></details>`;
-
-  return html;
+  return h+`<button class="del-btn" onclick="delBlock('${id}')">&#128465; Xoá block này</button>`;
 }
 
-// ═══════════════ SPECIAL PROP HANDLERS ═══════════════
-function updateInfoGridFields(id, val) {
-  const b = blocks.find(b=>b.id===id); if(!b) return;
-  b.fields = val.split("\n").filter(s=>s.trim()).map(line=>{
-    const [label,field] = line.includes(":") ? line.split(":") : [line,line];
-    return { label:label.trim(), field:field.trim() };
-  });
-  dirty=true; renderSingleBlock(id); updateBadge();
+// FIELD CHIPS
+function renderFieldList() {
+  const el=document.getElementById("field-list");
+  if (!cols.length){el.innerHTML='<div class="no-col-hint">Chọn sheet để xem cột</div>';return;}
+  el.innerHTML=cols.map(c=>`<div class="fc" onclick="addFieldBlock('${esc(c)}')"><span class="fc-dot"></span>${esc(c)}</div>`).join("");
+}
+function addFieldBlock(col) {
+  if (!curId){const id="t"+Date.now();tpls[id]={name:"Template mới",sheet:"",blocks:[]};curId=id;blks=[];saveLS();renderTplList();document.getElementById("no-tpl-hint").style.display="none";}
+  const b={...DEF.fieldrow,id:uid(),fieldName:col,label:col};
+  if(selId){const i=blks.findIndex(x=>x.id===selId);blks.splice(i>=0?i+1:blks.length,0,b);}else blks.push(b);
+  markDirty();renderCanvas();selectBlock(b.id);
 }
 
-function toggleDTCol(id, col) {
-  const b = blocks.find(b=>b.id===id); if(!b) return;
-  if (!b.columns) b.columns=[];
-  if (b.columns.includes(col)) b.columns=b.columns.filter(c=>c!==col);
-  else b.columns.push(col);
-  dirty=true; renderSingleBlock(id); renderProps(id); updateBadge();
-}
-
-function updateSignLabel(id, idx, val) {
-  const b = blocks.find(b=>b.id===id); if(!b) return;
-  if (!b.labels) b.labels=["Người lập","Người duyệt","Người nhận"];
-  b.labels[idx]=val;
-  dirty=true; renderSingleBlock(id); updateBadge();
-}
-
-// ═══════════════ FIELD CHIPS ═══════════════
-function renderFieldChips() {
-  const el = document.getElementById("field-chips");
-  if (!sheetColumns.length) {
-    el.innerHTML='<div class="no-fields">Chọn sheet để xem cột</div>'; return;
-  }
-  el.innerHTML = sheetColumns.map(c=>`
-    <div class="field-chip" onclick="addFieldBlock('${esc(c)}')">
-      <span class="fc-dot"></span>${esc(c)}
-    </div>`).join("");
-}
-
-function addFieldBlock(colName) {
-  if (!currentTplId) { alert("Tạo hoặc chọn template trước!"); return; }
-  const b = { ...BLOCK_DEFAULTS.fieldrow, id:genId(), fieldName:colName, label:colName };
-  if (selectedBlockId) {
-    const idx = blocks.findIndex(b=>b.id===selectedBlockId);
-    blocks.splice(idx+1,0,b);
-  } else {
-    blocks.push(b);
-  }
-  dirty=true; renderBlocks(); selectBlock(b.id); updateBadge();
-}
-
-// ═══════════════ MISC ═══════════════
-function typeName(t) {
-  const m={docheader:"Header hóa đơn",logo:"Logo + Tên cty",heading:"Tiêu đề lớn",
-           subheading:"Tiêu đề nhỏ",text:"Đoạn văn bản",field:"Field đơn",
-           fieldrow:"Label + Giá trị",infogrid:"Thông tin 2 cột",datatable:"Bảng dữ liệu",
-           amount:"Tổng tiền",custom:"Cột tính toán",sign:"Chữ ký",
-           divider:"Đường kẻ đậm",dividerlight:"Đường kẻ mờ",
-           spacer:"Khoảng trống",pagebreak:"Ngắt trang"};
-  return m[t]||t;
-}
-
-function updateBadge() {
-  const el=document.getElementById("save-badge");
-  el.textContent=dirty?"Chưa lưu":"Đã lưu";
-  el.className="tb-badge "+(dirty?"unsaved":"saved");
-}
-
-function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-
-// ─── Keyboard shortcuts ───
-document.addEventListener("keydown",e=>{
-  if (e.key==="Delete"&&selectedBlockId&&!e.target.matches("input,textarea,select")) {
-    deleteBlock(selectedBlockId);
-  }
-  if ((e.ctrlKey||e.metaKey)&&e.key==="s") {
-    e.preventDefault(); saveTemplate();
-  }
-});
-
-// ─── Click outside to deselect ───
-document.getElementById("page").addEventListener("click",e=>{
-  if (!e.target.closest(".block")) selectBlock(null);
-});
-
-init();
+// MISC
+function markDirty(){dirty=true;updateBadge();}
+function updateBadge(){const el=document.getElementById("badge");el.textContent=dirty?"Chưa lưu":"Đã lưu";el.className="tb-badge "+(dirty?"unsaved":"saved");}
+function typeName(t){const m={docheader:"Header HĐ",logo:"Logo",heading:"Tiêu đề lớn",subheading:"Tiêu đề nhỏ",text:"Đoạn văn",field:"Field đơn",fieldrow:"Label+Giá trị",infogrid:"Thông tin 2 cột",datatable:"Bảng dữ liệu",amount:"Tổng tiền",custom:"Tính toán",sign:"Chữ ký",divider:"Đường đậm",dividerlight:"Đường mờ",spacer:"Khoảng trống",pagebreak:"Ngắt trang"};return m[t]||t;}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
 </script>
 </body>
 </html>
