@@ -224,6 +224,42 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 .zoom-wrap select{padding:2px 6px;border:1px solid var(--bd2);border-radius:5px;
                   font-size:11px;font-family:inherit;background:var(--bg)}
 
+
+/* ── Logo upload ── */
+.logo-upload-area{border:2px dashed var(--bd2);border-radius:var(--r);padding:14px;
+                  text-align:center;cursor:pointer;transition:all .15s;position:relative}
+.logo-upload-area:hover{border-color:var(--blue);background:var(--blue-bg)}
+.logo-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.logo-upload-area p{font-size:12px;color:var(--tx2);margin-top:4px}
+.logo-img-preview{max-width:100%;max-height:60px;object-fit:contain;border-radius:4px}
+.logo-clear{font-size:11px;color:var(--red);cursor:pointer;text-decoration:underline;margin-top:4px;display:inline-block}
+
+/* ── 2-column block ── */
+.b-2col{display:grid;gap:12px}
+.b-2col-inner{border:1px dashed var(--bd2);border-radius:4px;padding:4px;min-height:30px}
+.b-2col-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+              color:var(--tx3);margin-bottom:3px}
+.col-drop-hint{font-size:10px;color:var(--tx3);text-align:center;padding:8px 4px;font-style:italic}
+
+/* ── Preset modal ── */
+.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.preset-card{border:1px solid var(--bd);border-radius:var(--r);padding:12px;
+             cursor:pointer;transition:all .13s;text-align:center}
+.preset-card:hover{border-color:var(--blue-bd);background:var(--blue-bg)}
+.preset-card .pc-icon{font-size:24px;margin-bottom:6px}
+.preset-card .pc-name{font-size:12px;font-weight:600}
+.preset-card .pc-desc{font-size:10px;color:var(--tx2);margin-top:2px;line-height:1.4}
+.modal-wide{width:500px!important}
+
+/* ── Duplicate btn ── */
+.tb-btn.dup{background:rgba(255,255,255,.08);border-style:dashed}
+
+/* ── Inline richtext block ── */
+.b-richtext{font-size:13px;line-height:1.7;padding:1px 3px;min-height:1.7em}
+.b-richtext .fld-chip-inline{background:var(--blue-bg);color:var(--blue);
+  border:1px solid var(--blue-bd);border-radius:4px;padding:0 5px;font-size:11px;
+  font-weight:600;display:inline;white-space:nowrap}
+
 @media print{
   .topbar,.palette,.props-panel,.blk-ctrl,.canvas-hint{display:none!important}
   .app{display:block}
@@ -243,6 +279,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
     <option value="">-- Chọn template --</option>
   </select>
   <button class="tb-btn" onclick="showModal()">+ Mới</button>
+  <button class="tb-btn" onclick="showPresetModal()">&#127775; Preset</button>
+  <button class="tb-btn dup" onclick="duplicateTpl()" title="Nhân bản template hiện tại">&#9112; Nhân bản</button>
   <button class="tb-btn" onclick="renameTpl()">Đổi tên</button>
   <button class="tb-btn" onclick="deleteTpl()">Xoá</button>
   <div class="tb-sep"></div>
@@ -269,7 +307,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
       <span class="pal-lbl">Bố cục trang</span>
       <div class="pal-grid">
         <div class="pal-item" onclick="addBlock('docheader')"><div class="pi-icon">&#128203;</div><div class="pi-lbl">Header HĐ</div></div>
-        <div class="pal-item" onclick="addBlock('logo')"><div class="pi-icon">&#127968;</div><div class="pi-lbl">Logo cty</div></div>
+        <div class="pal-item" onclick="addBlock('logo')"><div class="pi-icon">&#127968;</div><div class="pi-lbl">Logo (upload)</div></div>
         <div class="pal-item" onclick="addBlock('infogrid')"><div class="pi-icon">&#128196;</div><div class="pi-lbl">Thông tin 2 cột</div></div>
         <div class="pal-item" onclick="addBlock('sign')"><div class="pi-icon">&#9997;</div><div class="pi-lbl">Chữ ký</div></div>
       </div>
@@ -281,6 +319,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
         <div class="pal-item" onclick="addBlock('subheading')"><div class="pi-icon" style="font-weight:700;font-size:13px">H2</div><div class="pi-lbl">Tiêu đề nhỏ</div></div>
         <div class="pal-item" onclick="addBlock('text')"><div class="pi-icon">&#182;</div><div class="pi-lbl">Đoạn văn</div></div>
         <div class="pal-item" onclick="addBlock('fieldrow')"><div class="pi-icon">&#128208;</div><div class="pi-lbl">Label+Giá trị</div></div>
+        <div class="pal-item" onclick="addBlock('richtext')"><div class="pi-icon">&#128394;</div><div class="pi-lbl">Text + Field</div></div>
+        <div class="pal-item" onclick="addBlock('twocol')"><div class="pi-icon">&#9638;</div><div class="pi-lbl">2 cột tự do</div></div>
       </div>
     </div>
     <div class="pal-sec">
@@ -417,6 +457,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   </div>
 </div>
 
+<!-- PRESET MODAL -->
+<div class="overlay" id="preset-overlay">
+  <div class="modal modal-wide">
+    <h2>&#127775; Chọn template mẫu</h2>
+    <p style="font-size:12px;color:var(--tx2);margin-bottom:12px">
+      Bắt đầu nhanh từ template có sẵn, sau đó tuỳ chỉnh theo nhu cầu.
+    </p>
+    <div class="preset-grid" id="preset-grid"></div>
+    <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="closePresetModal()" style="padding:6px 14px;border-radius:var(--r);
+        border:1px solid var(--bd2);background:none;cursor:pointer;font-size:13px;font-family:inherit">
+        Đóng
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
 // CONFIG
 const API_URL       = "https://script.google.com/macros/s/AKfycbwqwRgBqKmL5yGY8YD0MrJi-iQUusgQPplEOfqzWsXHpDf-HZus900DueXzxYIe9V-i/exec";
@@ -447,7 +504,8 @@ const PAGE_DEF = {
 
 const DEF = {
   docheader:{type:"docheader",companyName:"CÔNG TY ABC",companyInfo:"Địa chỉ: 123 Đường ABC\nĐT: 0901 234 567",docTitle:"HÓA ĐƠN BÁN HÀNG",docNumField:"MaDonHang",dateField:"NgayTao"},
-  logo:{type:"logo",companyName:"CÔNG TY ABC",subTitle:"Địa chỉ: 123 Đường ABC"},
+  logo:{type:"logo",companyName:"CÔNG TY ABC",subTitle:"Địa chỉ: 123 Đường ABC",
+       logoData:"",logoWidth:80,logoAlign:"left"},
   heading:{type:"heading",text:"TIÊU ĐỀ BÁO CÁO",align:"center",color:"#1a1a18",size:20,bold:true,italic:false,underline:false,fontFamily:"",lineHeight:1.3},
   subheading:{type:"subheading",text:"Tiêu đề phụ",align:"left",color:"#1a1a18",size:15,bold:true,italic:false,underline:false,fontFamily:"",lineHeight:1.4},
   text:{type:"text",text:"Nhập nội dung tại đây...",align:"left",color:"#6b6b67",size:13,bold:false,italic:false,underline:false,fontFamily:"",lineHeight:1.7},
@@ -460,6 +518,9 @@ const DEF = {
   amount:{type:"amount",fieldName:"",label:"TỔNG CỘNG",showWords:true},
   custom:{type:"custom",label:"Thuế 10%",formula:"{TongTien}*0.1"},
   sign:{type:"sign",count:3,labels:["Người lập phiếu","Người phê duyệt","Người nhận"]},
+  richtext:{type:"richtext",content:"Kính gửi {{TenKhachHang}}, đơn hàng {{MaDonHang}} đã được xác nhận.",
+            align:"left",color:"#1a1a18",size:13,bold:false,italic:false,lineHeight:1.7},
+  twocol:{type:"twocol",ratio:"50:50",leftBlocks:[],rightBlocks:[]},
   divider:{type:"divider"},dividerlight:{type:"dividerlight"},
   spacer:{type:"spacer",height:20},pagebreak:{type:"pagebreak"},
 };
@@ -700,7 +761,19 @@ function blockHTML(b) {
   let body="";
   switch(b.type){
     case "docheader": body=`<div class="b-dochd"><div class="dhl"><strong>${esc(b.companyName||"")}</strong>${esc(b.companyInfo||"").replace(/\n/g,"<br>")}</div><div class="dhr"><strong>{{${esc(b.docNumField||"MaDonHang")}}}</strong>${esc(b.docTitle||"")}<br>Ngày: {{${esc(b.dateField||"NgayTao")}}}</div></div>`; break;
-    case "logo": body=`<div class="b-logo"><div class="logobox">LOGO</div><div><div style="font-size:16px;font-weight:700">${esc(b.companyName||"")}</div><div style="font-size:11px;color:var(--tx2)">${esc(b.subTitle||"")}</div></div></div>`; break;
+    case "logo": {
+      const logoEl = b.logoData
+        ? `<img src="${b.logoData}" class="logo-img-preview" style="width:${b.logoWidth||80}px;height:auto">`
+        : `<div class="logobox" style="width:${b.logoWidth||80}px;height:${b.logoWidth||80}px">LOGO</div>`;
+      const align = b.logoAlign||"left";
+      body=`<div class="b-logo" style="justify-content:${align==="right"?"flex-end":align==="center"?"center":"flex-start"}">
+        ${logoEl}
+        <div style="margin-left:10px">
+          <div style="font-size:16px;font-weight:700">${esc(b.companyName||"")}</div>
+          <div style="font-size:11px;color:var(--tx2)">${esc(b.subTitle||"")}</div>
+        </div>
+      </div>`; break;
+    }
     case "heading": body=`<div class="b-heading" style="text-align:${b.align||"center"};color:${b.color||"#1a1a18"};font-size:${b.size||20}px;${txStyle(b)}">${esc(b.text||"")}</div>`; break;
     case "subheading": body=`<div class="b-subheading" style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||15}px;${txStyle(b)}">${esc(b.text||"")}</div>`; break;
     case "text": body=`<div class="b-text" style="text-align:${b.align||"left"};color:${b.color||"#6b6b67"};font-size:${b.size||13}px;${txStyle(b)}">${esc(b.text||"")}</div>`; break;
@@ -723,6 +796,26 @@ function blockHTML(b) {
     case "amount": body=`<div class="b-amt"><div class="amti"><div class="aml">${esc(b.label||"TỔNG CỘNG")}</div><div class="amv">{{${esc(b.fieldName||"TongTien")}}} ₫</div>${b.showWords?`<div class="amw">(Bằng chữ: {{${esc(b.fieldName||"TongTien")}_words}})</div>`:""}</div></div>`; break;
     case "custom": body=`<div class="b-cust"><span style="font-weight:400">${esc(b.label||"")}: </span>${esc(b.formula||"")}</div>`; break;
     case "sign":{const lb=(b.labels||["Người lập","Người duyệt","Người nhận"]).slice(0,b.count||3);body=`<div class="b-sign">${lb.map(l=>`<div class="sc"><div class="sl"></div><div class="sn">${esc(l)}</div><div style="font-size:10px;margin-top:2px">(Ký, ghi rõ họ tên)</div></div>`).join("")}</div>`; break;}
+    case "richtext": {
+      // Thay {{field}} → chip màu xanh khi preview trong editor
+      const rtHtml = esc(b.content||"").replace(
+        /\{\{([^}]+)\}\}/g,
+        (_,f)=>`<span class="fld-chip-inline">{{${f}}}</span>`
+      );
+      body=`<div class="b-richtext" style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||13}px;${txStyle(b)}">${rtHtml}</div>`; break;
+    }
+    case "twocol": {
+      const ratios = (b.ratio||"50:50").split(":");
+      const l=parseInt(ratios[0]), r=100-l;
+      const lBlks = (b.leftBlocks||[]).map(cb=>blockHTML(cb)).join("") || `<div class="col-drop-hint">Cột trái (kéo block vào)</div>`;
+      const rBlks = (b.rightBlocks||[]).map(cb=>blockHTML(cb)).join("") || `<div class="col-drop-hint">Cột phải (kéo block vào)</div>`;
+      body=`<div class="b-2col" style="grid-template-columns:${l}fr ${r}fr">
+        <div class="b-2col-inner" data-side="left" data-parent="${id}">
+          <div class="b-2col-label">Cột trái (${l}%)</div>${lBlks}</div>
+        <div class="b-2col-inner" data-side="right" data-parent="${id}">
+          <div class="b-2col-label">Cột phải (${r}%)</div>${rBlks}</div>
+      </div>`; break;
+    }
     case "divider": body=`<hr class="b-div">`; break;
     case "dividerlight": body=`<hr class="b-divl">`; break;
     case "spacer": body=`<div style="height:${b.height||20}px"></div>`; break;
@@ -832,7 +925,35 @@ function propsHTML(b) {
   let h=`<div class="ps-title">${typeName(b.type)}</div>`;
   switch(b.type){
     case "docheader":h+=`<div class="pr"><label>Tên công ty</label><input value="${esc(b.companyName||"")}" oninput="setProp('${id}','companyName',this.value)"></div><div class="pr"><label>Thông tin cty</label><textarea oninput="setProp('${id}','companyInfo',this.value)">${esc(b.companyInfo||"")}</textarea></div><div class="pr"><label>Tiêu đề tài liệu</label><input value="${esc(b.docTitle||"")}" oninput="setProp('${id}','docTitle',this.value)"></div><div class="pr"><label>Cột số tài liệu</label>${CP(b.docNumField,"docNumField")}</div><div class="pr"><label>Cột ngày tạo</label><input value="${esc(b.dateField||"")}" placeholder="NgayTao" oninput="setProp('${id}','dateField',this.value)"></div>`;break;
-    case "logo":h+=`<div class="pr"><label>Tên công ty</label><input value="${esc(b.companyName||"")}" oninput="setProp('${id}','companyName',this.value)"></div><div class="pr"><label>Địa chỉ / mô tả</label><input value="${esc(b.subTitle||"")}" oninput="setProp('${id}','subTitle',this.value)"></div>`;break;
+    case "logo": h+=`
+      <div class="pr"><label>Upload logo</label>
+        <div class="logo-upload-area">
+          ${b.logoData
+            ? '<img src="'+'"'+'$'+'{b.logoData}" class="logo-img-preview" style="max-height:50px"><br>'
+            : '<div style="font-size:24px">&#128247;</div>'}
+          <p>${b.logoData?"Nhấn để thay ảnh":"Nhấn để chọn ảnh (PNG, JPG, SVG)"}</p>
+          <input type="file" accept="image/*"
+            onchange="uploadLogo('${id}',this)"
+            style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">
+        </div>
+        ${b.logoData?'<span class="logo-clear" onclick="setProp(\'${id}\',\'logoData\',' + "'" + '\'\')"' + '>&#10005; Xoá logo</span>':""}
+      </div>
+      <div class="pr2">
+        <div class="pr"><label>Kích thước (px)</label>
+          <input type="number" min="20" max="300" value="${b.logoWidth||80}"
+            oninput="setProp('${id}','logoWidth',+this.value)"></div>
+        <div class="pr"><label>Căn lề</label>
+          <select onchange="setProp('${id}','logoAlign',this.value)">
+            <option value="left" ${(b.logoAlign||"left")==="left"?"selected":""}>Trái</option>
+            <option value="center" ${b.logoAlign==="center"?"selected":""}>Giữa</option>
+            <option value="right" ${b.logoAlign==="right"?"selected":""}>Phải</option>
+          </select></div>
+      </div>
+      <div class="pr"><label>Tên công ty</label>
+        <input value="${esc(b.companyName||"")}" oninput="setProp('${id}','companyName',this.value)"></div>
+      <div class="pr"><label>Địa chỉ / mô tả</label>
+        <input value="${esc(b.subTitle||"")}" oninput="setProp('${id}','subTitle',this.value)"></div>
+    `;break;
     case "heading":case "subheading":case "text":h+=
       `<div class="pr"><label>Nội dung</label><textarea oninput="setProp('${id}','text',this.value)">${esc(b.text||"")}</textarea></div>`+
       fmtToolbar(id,b)+
@@ -874,6 +995,45 @@ function propsHTML(b) {
       `; break;}
     case "amount":h+=`<div class="pr"><label>Chọn cột tiền</label>${CP(b.fieldName,"fieldName")}</div><div class="pr"><label>Nhãn</label><input value="${esc(b.label||"TỔNG CỘNG")}" oninput="setProp('${id}','label',this.value)"></div><div class="pr"><label>Hiện số bằng chữ</label><select onchange="setProp('${id}','showWords',this.value==='true')"><option value="true" ${b.showWords?"selected":""}>Có</option><option value="false" ${!b.showWords?"selected":""}>Không</option></select></div>`;break;
     case "custom":h+=`<div class="pr"><label>Nhãn cột</label><input value="${esc(b.label||"")}" oninput="setProp('${id}','label',this.value)"></div><div class="pr"><label>Công thức</label><input value="${esc(b.formula||"")}" placeholder="{TongTien}*0.1" oninput="setProp('${id}','formula',this.value)"></div><div style="font-size:10px;color:var(--tx3)">Dùng {TenCot} để tham chiếu</div>`;break;
+    case "richtext": {
+      const fonts2=[["","(Theo trang)"],["'Times New Roman',serif","Times New Roman"],
+               ["Arial,sans-serif","Arial"],["'Segoe UI',sans-serif","Segoe UI"],
+               ["Georgia,serif","Georgia"]];
+      h+=`<div class="pr"><label>Nội dung (dùng {{TenCot}} để chèn dữ liệu)</label>
+        <textarea rows="4" oninput="setProp('${id}','content',this.value)">${esc(b.content||"")}</textarea>
+        <div style="font-size:10px;color:var(--tx3);margin-top:3px">
+          Click tên cột bên dưới để chèn nhanh:</div>
+        <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">
+          ${cols.map(c=>`<span onclick="insertFieldToRichtext('${id}','${esc(c)}')"
+            style="background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-bd);
+            border-radius:4px;padding:1px 6px;font-size:10px;cursor:pointer">{{${esc(c)}}}</span>`).join("")}
+        </div>
+      </div>`+fmtToolbar(id,b)+
+      `<div class="pr"><label>Căn lề</label><div class="fmt-row">${AB(b.align||"left")}</div></div>
+       <div class="pr"><label>Màu chữ</label><div class="clr-row">${CS}</div></div>`;
+      break;
+    }
+    case "twocol": h+=`
+      <div class="pr"><label>Tỉ lệ 2 cột</label>
+        <select onchange="setProp('${id}','ratio',this.value)">
+          ${["50:50","60:40","40:60","70:30","30:70","65:35","35:65"].map(r=>
+            `<option value="${r}" ${b.ratio===r?"selected":""}>${r.replace(":"," / ")}</option>`
+          ).join("")}
+        </select></div>
+      <div style="font-size:11px;color:var(--tx2);line-height:1.6;padding:6px;
+           background:var(--blue-bg);border-radius:var(--r)">
+        Để thêm nội dung vào từng cột:<br>
+        1. Chọn block 2-cột này<br>
+        2. Click <strong>"Thêm vào cột trái/phải"</strong> bên dưới<br>
+        3. Hoặc click trực tiếp vào cột trong canvas rồi thêm block bình thường
+      </div>
+      <button style="width:100%;padding:6px;border-radius:var(--r);border:1px solid var(--blue-bd);
+        background:var(--blue-bg);color:var(--blue);cursor:pointer;font-size:12px;margin-top:6px;font-family:inherit"
+        onclick="addToCol('${id}','left')">+ Thêm block vào cột trái</button>
+      <button style="width:100%;padding:6px;border-radius:var(--r);border:1px solid var(--blue-bd);
+        background:var(--blue-bg);color:var(--blue);cursor:pointer;font-size:12px;margin-top:4px;font-family:inherit"
+        onclick="addToCol('${id}','right')">+ Thêm block vào cột phải</button>
+    `;break;
     case "sign":h+=`<div class="pr"><label>Số ô chữ ký</label><select onchange="setProp('${id}','count',+this.value)">${[1,2,3].map(n=>`<option value="${n}" ${b.count===n?"selected":""}>${n} ô</option>`).join("")}</select></div>${(b.labels||["Người lập","Người duyệt","Người nhận"]).slice(0,b.count||3).map((l,i)=>`<div class="pr"><label>Nhãn ô ${i+1}</label><input value="${esc(l)}" oninput="setProp('${id}','labels.${i}',this.value)"></div>`).join("")}`;break;
     case "spacer":h+=`<div class="pr"><label>Chiều cao (px)</label><input type="number" min="4" max="200" value="${b.height||20}" oninput="setProp('${id}','height',+this.value)"></div>`;break;
   }
@@ -994,6 +1154,212 @@ function setTblStyle(id, key, val) {
   markDirty();
   const el=document.getElementById("blk-"+id);
   if(el){const t=document.createElement("div");t.innerHTML=blockHTML(b);const ne=t.firstElementChild;el.replaceWith(ne);ne.classList.add("selected");attachBlock(ne,id);}
+}
+
+
+// ══════════════════════════════════════════════════════════════
+//  SPRINT 2 — LOGO UPLOAD
+// ══════════════════════════════════════════════════════════════
+function uploadLogo(id, input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 500*1024) { alert("Ảnh quá lớn (tối đa 500KB). Vui lòng nén ảnh trước."); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    setProp(id, "logoData", e.target.result);
+    renderProps(id); // refresh props panel để hiện preview
+  };
+  reader.readAsDataURL(file);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SPRINT 2 — RICHTEXT FIELD INSERT
+// ══════════════════════════════════════════════════════════════
+function insertFieldToRichtext(id, col) {
+  const b = blks.find(b=>b.id===id); if(!b) return;
+  b.content = (b.content||"") + "{{" + col + "}}";
+  setProp(id, "content", b.content);
+  renderProps(id);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SPRINT 2 — 2-COLUMN BLOCK
+// ══════════════════════════════════════════════════════════════
+function addToCol(parentId, side) {
+  // Mở prompt để chọn loại block thêm vào cột
+  const types = Object.keys(DEF).filter(t=>!["twocol"].includes(t));
+  const list = types.map((t,i)=>`${i+1}. ${typeName(t)}`).join("\n");
+  const choice = prompt("Chọn loại block (nhập số):\n" + list);
+  if (!choice) return;
+  const idx = parseInt(choice) - 1;
+  if (idx < 0 || idx >= types.length) return;
+  const type = types[idx];
+  const parent = blks.find(b=>b.id===parentId); if(!parent) return;
+  const newB = JSON.parse(JSON.stringify(DEF[type]||{type}));
+  newB.id = uid();
+  if (side === "left") { if(!parent.leftBlocks)parent.leftBlocks=[]; parent.leftBlocks.push(newB); }
+  else { if(!parent.rightBlocks)parent.rightBlocks=[]; parent.rightBlocks.push(newB); }
+  markDirty(); renderCanvas(); selectBlock(parentId);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SPRINT 2 — TEMPLATE PRESET
+// ══════════════════════════════════════════════════════════════
+const PRESETS = [
+  {
+    id:"p-invoice", name:"Hóa đơn bán hàng", icon:"&#128203;",
+    desc:"Header + thông tin KH + bảng SP + tổng tiền + chữ ký",
+    blocks:[
+      {...DEF.logo, id:uid(), companyName:"CÔNG TY ABC", subTitle:"ĐT: 0901 234 567 | abc@company.com"},
+      {...DEF.divider, id:uid()},
+      {...DEF.docheader, id:uid()},
+      {...DEF.spacer, id:uid(), height:8},
+      {...DEF.infogrid, id:uid(), fields:[
+        {label:"Khách hàng",field:"TenKhachHang"},{label:"Điện thoại",field:"SoDienThoai"},
+        {label:"Địa chỉ",field:"DiaChi"},{label:"Phương thức TT",field:"PhuongThucThanhToan"}
+      ]},
+      {...DEF.spacer, id:uid(), height:8},
+      {...DEF.datatable, id:uid(), columns:["TenSanPham","SoLuong","DonGia","ThanhTien"],
+        tblStyle:{headerBg:"#185FA5",headerColor:"#fff",stripeBg:"#f0f7ff",borderStyle:"all",borderWidth:1,borderColor:"rgba(0,0,0,.1)"}},
+      {...DEF.amount, id:uid(), fieldName:"TongTien", label:"TỔNG CỘNG", showWords:true},
+      {...DEF.spacer, id:uid(), height:12},
+      {...DEF.sign, id:uid(), count:3}
+    ]
+  },
+  {
+    id:"p-warehouse", name:"Phiếu xuất/nhập kho", icon:"&#128230;",
+    desc:"Tiêu đề + thông tin kho + bảng hàng hóa + chữ ký",
+    blocks:[
+      {...DEF.heading, id:uid(), text:"PHIẾU XUẤT KHO", align:"center"},
+      {...DEF.subheading, id:uid(), text:"Số phiếu: {{SoPhieu}} | Ngày: {{NgayXuat}}", align:"center", color:"#6b6b67", size:12},
+      {...DEF.divider, id:uid()},
+      {...DEF.infogrid, id:uid(), fields:[
+        {label:"Kho xuất",field:"TenKho"},{label:"Người xuất",field:"NguoiXuat"},
+        {label:"Lý do xuất",field:"LyDoXuat"},{label:"Ngày xuất",field:"NgayXuat"}
+      ]},
+      {...DEF.spacer, id:uid(), height:8},
+      {...DEF.datatable, id:uid(), columns:["TenHang","MaHang","SoLuong","DonViTinh","GhiChu"],
+        tblStyle:{headerBg:"#0F6E56",headerColor:"#fff",stripeBg:"#f0fdf4",borderStyle:"all",borderWidth:1,borderColor:"rgba(0,0,0,.1)"}},
+      {...DEF.spacer, id:uid(), height:12},
+      {...DEF.sign, id:uid(), count:3, labels:["Thủ kho","Kế toán","Người nhận"]}
+    ]
+  },
+  {
+    id:"p-receipt", name:"Phiếu thu tiền", icon:"&#128176;",
+    desc:"Phiếu đơn giản: thông tin + số tiền + chữ ký",
+    blocks:[
+      {...DEF.logo, id:uid()},
+      {...DEF.heading, id:uid(), text:"PHIẾU THU", align:"center"},
+      {...DEF.divider, id:uid()},
+      {...DEF.fieldrow, id:uid(), label:"Người nộp", fieldName:"TenNguoiNop"},
+      {...DEF.fieldrow, id:uid(), label:"Nội dung", fieldName:"NoiDung"},
+      {...DEF.fieldrow, id:uid(), label:"Ngày thu", fieldName:"NgayThu"},
+      {...DEF.spacer, id:uid(), height:8},
+      {...DEF.amount, id:uid(), fieldName:"SoTien", label:"SỐ TIỀN", showWords:true},
+      {...DEF.spacer, id:uid(), height:12},
+      {...DEF.sign, id:uid(), count:2, labels:["Người thu","Người nộp"]}
+    ]
+  },
+  {
+    id:"p-report", name:"Báo cáo tổng hợp", icon:"&#128202;",
+    desc:"Header + bảng dữ liệu nhiều cột + ghi chú",
+    blocks:[
+      {...DEF.heading, id:uid(), text:"BÁO CÁO TỔNG HỢP", align:"center"},
+      {...DEF.subheading, id:uid(), text:"Kỳ báo cáo: {{KyBaoCao}}", align:"center", color:"#6b6b67", size:12},
+      {...DEF.divider, id:uid()},
+      {...DEF.datatable, id:uid(), columns:["STT","NoiDung","SoLuong","ThanhTien","GhiChu"],
+        tblStyle:{headerBg:"#534AB7",headerColor:"#fff",stripeBg:"#f5f3ff",borderStyle:"all",borderWidth:1,borderColor:"rgba(0,0,0,.1)"},showTotal:true},
+      {...DEF.spacer, id:uid(), height:8},
+      {...DEF.text, id:uid(), text:"Ghi chú: {{GhiChu}}", color:"#6b6b67", size:11, italic:true},
+      {...DEF.spacer, id:uid(), height:12},
+      {...DEF.sign, id:uid(), count:2, labels:["Người lập","Người duyệt"]}
+    ]
+  },
+  {
+    id:"p-salary", name:"Bảng lương", icon:"&#128184;",
+    desc:"Thông tin nhân viên + chi tiết lương + ký xác nhận",
+    blocks:[
+      {...DEF.heading, id:uid(), text:"BẢNG THANH TOÁN LƯƠNG", align:"center"},
+      {...DEF.subheading, id:uid(), text:"Tháng {{Thang}} / Năm {{Nam}}", align:"center", color:"#6b6b67", size:12},
+      {...DEF.divider, id:uid()},
+      {...DEF.infogrid, id:uid(), fields:[
+        {label:"Họ tên",field:"HoTen"},{label:"Mã NV",field:"MaNhanVien"},
+        {label:"Phòng ban",field:"PhongBan"},{label:"Chức vụ",field:"ChucVu"}
+      ]},
+      {...DEF.spacer, id:uid(), height:8},
+      {...DEF.datatable, id:uid(), columns:["KhoanMuc","SoTien","GhiChu"],
+        tblStyle:{headerBg:"#854F0B",headerColor:"#fff",stripeBg:"#fefce8",borderStyle:"all",borderWidth:1,borderColor:"rgba(0,0,0,.1)"}},
+      {...DEF.amount, id:uid(), fieldName:"LuongThucNhan", label:"THỰC NHẬN", showWords:true},
+      {...DEF.spacer, id:uid(), height:12},
+      {...DEF.sign, id:uid(), count:2, labels:["Kế toán","Người nhận"]}
+    ]
+  },
+  {
+    id:"p-blank", name:"Trang trắng", icon:"&#128196;",
+    desc:"Template rỗng, tự thiết kế từ đầu",
+    blocks:[]
+  }
+];
+
+function showPresetModal() {
+  const grid = document.getElementById("preset-grid");
+  grid.innerHTML = PRESETS.map(p=>`
+    <div class="preset-card" onclick="applyPreset('${p.id}')">
+      <div class="pc-icon">${p.icon}</div>
+      <div class="pc-name">${p.name}</div>
+      <div class="pc-desc">${p.desc}</div>
+    </div>`).join("");
+  document.getElementById("preset-overlay").classList.add("show");
+}
+
+function closePresetModal() {
+  document.getElementById("preset-overlay").classList.remove("show");
+}
+
+function applyPreset(presetId) {
+  const p = PRESETS.find(x=>x.id===presetId); if(!p) return;
+  const name = prompt(`Tên template "${p.name}":`, p.name);
+  if (!name) return;
+  const id = "t"+Date.now();
+  // Deep clone blocks và gán ID mới
+  const newBlocks = JSON.parse(JSON.stringify(p.blocks)).map(b=>({...b,id:uid()}));
+  tpls[id] = {name, sheet:"", blocks:newBlocks, pageSettings:{...PAGE_DEF}};
+  curId = id; blks = newBlocks; dirty = false;
+  hist=[]; histIdx=-1; snapshot();
+  loadPageSettingsForm(PAGE_DEF);
+  applyPageSettingsToCanvas(PAGE_DEF);
+  saveLS(); renderTplList(); closePresetModal();
+  renderCanvas(); selectBlock(null); updateBadge();
+  document.getElementById("no-tpl-hint").style.display="none";
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SPRINT 2 — DUPLICATE TEMPLATE
+// ══════════════════════════════════════════════════════════════
+function duplicateTpl() {
+  if (!curId) { alert("Chọn template cần nhân bản"); return; }
+  const orig = tpls[curId];
+  const name = prompt("Tên template mới:", orig.name + " (copy)");
+  if (!name) return;
+  const id = "t"+Date.now();
+  tpls[id] = JSON.parse(JSON.stringify(orig));
+  tpls[id].name = name;
+  // Gán lại ID mới cho tất cả block
+  tpls[id].blocks = tpls[id].blocks.map(b=>({...b,id:uid()}));
+  curId = id; blks = tpls[id].blocks; dirty = true;
+  hist=[]; histIdx=-1; snapshot();
+  saveLS(); renderTplList(); renderCanvas(); updateBadge();
+  document.getElementById("no-tpl-hint").style.display="none";
+  alert(`Đã nhân bản thành "${name}"!`);
+}
+
+function typeName(t){
+  const m={docheader:"Header HĐ",logo:"Logo",heading:"Tiêu đề lớn",subheading:"Tiêu đề nhỏ",
+    text:"Đoạn văn",field:"Field đơn",fieldrow:"Label+Giá trị",infogrid:"Thông tin 2 cột",
+    datatable:"Bảng dữ liệu",amount:"Tổng tiền",custom:"Tính toán",sign:"Chữ ký",
+    divider:"Đường đậm",dividerlight:"Đường mờ",spacer:"Khoảng trống",pagebreak:"Ngắt trang",
+    richtext:"Text+Field inline",twocol:"2 cột tự do"};
+  return m[t]||t;
 }
 
 // MISC
