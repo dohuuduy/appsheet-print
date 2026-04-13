@@ -181,6 +181,49 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 .modal-btns button{padding:6px 14px;border-radius:var(--r);border:1px solid var(--bd2);
                    background:none;cursor:pointer;font-size:13px;font-family:inherit}
 .modal-btns .ok{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+
+/* ── Page Settings Panel ── */
+.pg-panel{background:var(--bg);border-left:1px solid var(--bd);
+          overflow-y:auto;padding:0;display:flex;flex-direction:column}
+.pg-tabs{display:flex;border-bottom:1px solid var(--bd);flex-shrink:0}
+.pg-tab{flex:1;padding:8px 4px;font-size:11px;font-weight:600;cursor:pointer;
+        text-align:center;color:var(--tx2);border-bottom:2px solid transparent;
+        transition:all .13s;margin-bottom:-1px}
+.pg-tab.on{color:var(--blue);border-bottom-color:var(--blue)}
+.pg-tab:hover:not(.on){background:var(--bg2)}
+.pg-pane{display:none;padding:12px;overflow-y:auto;flex:1}
+.pg-pane.on{display:block}
+/* ── Undo/Redo toolbar ── */
+.tb-undoredo{display:flex;gap:2px}
+.tb-icon{padding:5px 8px;border-radius:6px;border:1px solid rgba(255,255,255,.2);
+         background:none;color:#fff;cursor:pointer;font-size:13px;line-height:1;
+         transition:background .15s}
+.tb-icon:hover{background:rgba(255,255,255,.15)}
+.tb-icon:disabled{opacity:.3;cursor:default}
+/* ── Format toolbar (inline trong props) ── */
+.fmt-toolbar{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px}
+.ftb{width:26px;height:26px;border:1px solid var(--bd2);border-radius:5px;
+     background:none;cursor:pointer;font-size:12px;display:flex;align-items:center;
+     justify-content:center;color:var(--tx);transition:all .12s;flex-shrink:0}
+.ftb:hover{background:var(--bg2)}
+.ftb.on{background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue)}
+.ftb[data-fmt="bold"]{font-weight:700}
+.ftb[data-fmt="italic"]{font-style:italic}
+.ftb[data-fmt="underline"]{text-decoration:underline}
+/* ── Table style preview ── */
+.tbl-preview{border-collapse:collapse;width:100%;font-size:10px;margin-top:6px}
+.tbl-preview th,.tbl-preview td{padding:3px 5px}
+/* ── Page ruler ── */
+.ruler{height:18px;background:var(--bg2);border-bottom:1px solid var(--bd);
+       display:flex;align-items:flex-end;overflow:hidden;font-size:8px;color:var(--tx3);
+       position:relative;flex-shrink:0}
+/* ── Canvas zoom ── */
+.zoom-wrap{display:flex;align-items:center;gap:6px;padding:6px 12px;
+           background:var(--bg3);border-bottom:1px solid var(--bd);flex-shrink:0}
+.zoom-wrap label{font-size:11px;color:var(--tx2)}
+.zoom-wrap select{padding:2px 6px;border:1px solid var(--bd2);border-radius:5px;
+                  font-size:11px;font-family:inherit;background:var(--bg)}
+
 @media print{
   .topbar,.palette,.props-panel,.blk-ctrl,.canvas-hint{display:none!important}
   .app{display:block}
@@ -204,6 +247,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   <button class="tb-btn" onclick="deleteTpl()">Xoá</button>
   <div class="tb-sep"></div>
   <span class="tb-badge unsaved" id="badge">Chưa lưu</span>
+  <div class="tb-sep"></div>
+  <div class="tb-undoredo">
+    <button class="tb-icon" id="btn-undo" onclick="undo()" title="Undo (Ctrl+Z)" disabled>&#8630;</button>
+    <button class="tb-icon" id="btn-redo" onclick="redo()" title="Redo (Ctrl+Y)" disabled>&#8631;</button>
+  </div>
+  <div class="tb-sep"></div>
   <button class="tb-btn save" onclick="saveTpl()">&#128190; Lưu</button>
   <button class="tb-btn prev" onclick="previewTpl()">&#128065; Xem thử</button>
   <div class="spacer"></div>
@@ -275,12 +324,83 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
     </div>
   </div>
 
-  <div class="props-panel">
-    <div class="props-empty" id="props-empty">
-      <div style="font-size:28px">&#9881;</div>
-      <p>Chọn một block để chỉnh thuộc tính</p>
+  <div class="pg-panel">
+    <div class="pg-tabs">
+      <div class="pg-tab on" onclick="pgTab(this,'pt-block')">Block</div>
+      <div class="pg-tab" onclick="pgTab(this,'pt-page')">Trang in</div>
     </div>
-    <div id="props-content" style="display:none"></div>
+    <!-- Tab: Block Properties -->
+    <div class="pg-pane on" id="pt-block">
+      <div class="props-empty" id="props-empty">
+        <div style="font-size:28px">&#9881;</div>
+        <p>Chọn một block để chỉnh thuộc tính</p>
+      </div>
+      <div id="props-content" style="display:none"></div>
+    </div>
+    <!-- Tab: Page Settings -->
+    <div class="pg-pane" id="pt-page">
+      <div class="pr"><label>Khổ giấy</label>
+        <select id="pg-paper" onchange="setPageProp('paper',this.value)">
+          <option value="A4">A4 (210 × 297mm)</option>
+          <option value="A5">A5 (148 × 210mm)</option>
+          <option value="letter">Letter (216 × 279mm)</option>
+          <option value="80mm">Máy nhiệt 80mm</option>
+          <option value="K57">Máy nhiệt K57 (57mm)</option>
+        </select>
+      </div>
+      <div class="pr"><label>Hướng giấy</label>
+        <select id="pg-orient" onchange="setPageProp('orient',this.value)">
+          <option value="portrait">Dọc (Portrait)</option>
+          <option value="landscape">Ngang (Landscape)</option>
+        </select>
+      </div>
+      <div class="pr"><label>Font chữ mặc định trang</label>
+        <select id="pg-font" onchange="setPageProp('fontFamily',this.value)">
+          <option value="'Times New Roman',serif">Times New Roman (mặc định in)</option>
+          <option value="Arial,sans-serif">Arial (hiện đại)</option>
+          <option value="'Segoe UI',sans-serif">Segoe UI (sạch)</option>
+          <option value="Georgia,serif">Georgia (sang trọng)</option>
+          <option value="'Courier New',monospace">Courier New (kỹ thuật)</option>
+        </select>
+      </div>
+      <div class="pr"><label>Cỡ chữ mặc định (px)</label>
+        <input type="number" id="pg-fontsize" min="8" max="18" value="13"
+               oninput="setPageProp('baseFontSize',+this.value)">
+      </div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);margin:10px 0 6px">Lề trang (mm)</div>
+      <div class="pr2">
+        <div class="pr"><label>Trên</label><input type="number" id="pg-mt" min="0" max="50" value="15" oninput="setPageProp('marginTop',+this.value)"></div>
+        <div class="pr"><label>Dưới</label><input type="number" id="pg-mb" min="0" max="50" value="15" oninput="setPageProp('marginBottom',+this.value)"></div>
+        <div class="pr"><label>Trái</label><input type="number" id="pg-ml" min="0" max="50" value="17" oninput="setPageProp('marginLeft',+this.value)"></div>
+        <div class="pr"><label>Phải</label><input type="number" id="pg-mr" min="0" max="50" value="17" oninput="setPageProp('marginRight',+this.value)"></div>
+      </div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);margin:10px 0 6px">Zoom canvas</div>
+      <div class="pr"><label>Mức zoom hiển thị</label>
+        <select id="pg-zoom" onchange="setZoom(+this.value)">
+          <option value="60">60%</option>
+          <option value="75">75%</option>
+          <option value="85">85%</option>
+          <option value="100" selected>100%</option>
+          <option value="115">115%</option>
+          <option value="125">125%</option>
+        </select>
+      </div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);margin:10px 0 6px">Header / Footer</div>
+      <div class="pr"><label>Tiêu đề in (header)</label>
+        <input type="text" id="pg-header" placeholder="Vd: CÔNG TY ABC - BÁO CÁO"
+               oninput="setPageProp('header',this.value)">
+      </div>
+      <div class="pr"><label>Ghi chú cuối trang (footer)</label>
+        <input type="text" id="pg-footer" placeholder="Vd: Cảm ơn quý khách!"
+               oninput="setPageProp('footer',this.value)">
+      </div>
+      <div class="pr"><label>Hiện ngày in</label>
+        <select id="pg-showdate" onchange="setPageProp('showDate',this.value==='true')">
+          <option value="true">Có</option>
+          <option value="false">Không</option>
+        </select>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -312,17 +432,31 @@ let cols  = [];
 let dirty = false;
 let drag  = null;
 const COLORS = ["#1a1a18","#185FA5","#0F6E56","#A32D2D","#854F0B","#534AB7","#6b6b67"];
+const TBL_COLORS = ["#1a1a18","#185FA5","#0F6E56","#6b6b67","#854F0B","#534AB7","#A32D2D","#f0efe9"];
+
+// Undo/Redo history
+let hist = [], histIdx = -1;
+
+// Default page settings
+const PAGE_DEF = {
+  paper:"A4", orient:"portrait",
+  marginTop:15, marginBottom:15, marginLeft:17, marginRight:17,
+  fontFamily:"'Times New Roman',serif", baseFontSize:13,
+  header:"", footer:"", showDate:true,
+};
 
 const DEF = {
   docheader:{type:"docheader",companyName:"CÔNG TY ABC",companyInfo:"Địa chỉ: 123 Đường ABC\nĐT: 0901 234 567",docTitle:"HÓA ĐƠN BÁN HÀNG",docNumField:"MaDonHang",dateField:"NgayTao"},
   logo:{type:"logo",companyName:"CÔNG TY ABC",subTitle:"Địa chỉ: 123 Đường ABC"},
-  heading:{type:"heading",text:"TIÊU ĐỀ BÁO CÁO",align:"center",color:"#1a1a18",size:20},
-  subheading:{type:"subheading",text:"Tiêu đề phụ",align:"left",color:"#1a1a18",size:15},
-  text:{type:"text",text:"Nhập nội dung tại đây...",align:"left",color:"#6b6b67",size:13},
+  heading:{type:"heading",text:"TIÊU ĐỀ BÁO CÁO",align:"center",color:"#1a1a18",size:20,bold:true,italic:false,underline:false,fontFamily:"",lineHeight:1.3},
+  subheading:{type:"subheading",text:"Tiêu đề phụ",align:"left",color:"#1a1a18",size:15,bold:true,italic:false,underline:false,fontFamily:"",lineHeight:1.4},
+  text:{type:"text",text:"Nhập nội dung tại đây...",align:"left",color:"#6b6b67",size:13,bold:false,italic:false,underline:false,fontFamily:"",lineHeight:1.7},
   field:{type:"field",fieldName:"",label:"",showLabel:false},
-  fieldrow:{type:"fieldrow",fieldName:"",label:"Tên trường"},
+  fieldrow:{type:"fieldrow",fieldName:"",label:"Tên trường",bold:false,italic:false,labelBold:true},
   infogrid:{type:"infogrid",fields:[]},
-  datatable:{type:"datatable",columns:[],showTotal:true},
+  datatable:{type:"datatable",columns:[],showTotal:true,
+    tblStyle:{headerBg:"#1a1a18",headerColor:"#ffffff",stripeBg:"#f7f7f5",
+              borderStyle:"all",borderWidth:1,borderColor:"rgba(0,0,0,.1)"}},
   amount:{type:"amount",fieldName:"",label:"TỔNG CỘNG",showWords:true},
   custom:{type:"custom",label:"Thuế 10%",formula:"{TongTien}*0.1"},
   sign:{type:"sign",count:3,labels:["Người lập phiếu","Người phê duyệt","Người nhận"]},
@@ -335,6 +469,7 @@ window.addEventListener("load", function() {
   try { tpls = JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch(e){ tpls={}; }
   renderTplList();
   renderCanvas();
+  snapshot(); // initial empty snapshot
   // API kết nối song song
   apiFetch({action:"ping"})
     .then(()=>{ setApiSt("ok","&#10003; API OK"); return loadSheetList(); })
@@ -346,6 +481,8 @@ window.addEventListener("load", function() {
   // Keyboard
   document.addEventListener("keydown", function(e){
     if ((e.ctrlKey||e.metaKey) && e.key==="s") { e.preventDefault(); saveTpl(); }
+  if ((e.ctrlKey||e.metaKey) && e.key==="z") { e.preventDefault(); undo(); }
+  if ((e.ctrlKey||e.metaKey) && (e.key==="y"||(e.shiftKey&&e.key==="Z"))) { e.preventDefault(); redo(); }
     if (e.key==="Delete" && selId && !e.target.matches("input,textarea,select")) delBlock(selId);
     if (e.key==="ArrowUp" && selId && !e.target.matches("input,textarea,select")) { e.preventDefault(); moveBlock(selId,-1); }
     if (e.key==="ArrowDown" && selId && !e.target.matches("input,textarea,select")) { e.preventDefault(); moveBlock(selId,1); }
@@ -388,9 +525,14 @@ function loadTpl(id) {
   if (!id) return;
   if (dirty && !confirm("Có thay đổi chưa lưu. Tiếp tục?")) { document.getElementById("tpl-sel").value=curId||""; return; }
   curId=id; blks=JSON.parse(JSON.stringify(tpls[id].blocks||[])); dirty=false;
+  hist=[]; histIdx=-1; snapshot();
   const ss=document.getElementById("sheet-sel");
   const sheet=tpls[id].sheet||"";
   if (sheet) { ss.value=sheet; onSheetChange(sheet); }
+  // Load page settings vào form
+  const pg=Object.assign({},PAGE_DEF,tpls[id].pageSettings||{});
+  loadPageSettingsForm(pg);
+  applyPageSettingsToCanvas(pg);
   renderTplList(); renderCanvas(); selectBlock(null); updateBadge();
   document.getElementById("no-tpl-hint").style.display="none";
 }
@@ -400,7 +542,11 @@ function doCreate() {
   const name=document.getElementById("modal-inp").value.trim();
   if (!name) { document.getElementById("modal-inp").focus(); return; }
   const id="t"+Date.now();
-  tpls[id]={name,sheet:"",blocks:[]}; curId=id; blks=[]; dirty=false;
+  tpls[id]={name,sheet:"",blocks:[],pageSettings:{...PAGE_DEF}};
+  curId=id; blks=[]; dirty=false;
+  hist=[]; histIdx=-1; snapshot();
+  loadPageSettingsForm(PAGE_DEF);
+  applyPageSettingsToCanvas(PAGE_DEF);
   saveLS(); renderTplList(); closeModal(); renderCanvas(); updateBadge();
   document.getElementById("no-tpl-hint").style.display="none";
 }
@@ -421,11 +567,12 @@ async function saveTpl() {
   if (!curId) { alert("Nhấn '+ Mới' để tạo template trước"); return; }
   tpls[curId].blocks=JSON.parse(JSON.stringify(blks)); saveLS(); dirty=false; updateBadge();
   const sheet=document.getElementById("sheet-sel").value||tpls[curId].sheet||"";
+  const pg=tpls[curId].pageSettings||PAGE_DEF;
   try {
     await apiFetch({action:"saveConfig",tplId:curId,tplName:tpls[curId].name,
       reportType:"custom",mainSheet:sheet,columns:JSON.stringify([]),
       dataSources:JSON.stringify([]),
-      printOptions:JSON.stringify({templateBlocks:blks,paper:"A4",orient:"portrait"}),
+      printOptions:JSON.stringify({templateBlocks:blks,...pg}),
       customFields:JSON.stringify([])});
     setApiSt("ok","&#10003; Đã lưu");
   } catch(e) { setApiSt("err","Local OK · Sheets: "+e.message); }
@@ -433,6 +580,7 @@ async function saveTpl() {
 function previewTpl() {
   if (!curId) { alert("Tạo template trước"); return; }
   const sheet=document.getElementById("sheet-sel").value||tpls[curId].sheet||"";
+  const pg=tpls[curId].pageSettings||PAGE_DEF;
   window.open(PRINT_APP_URL+`?tpl=${curId}&sheet=${esc(sheet)}&preview=1&useBlockTemplate=1`,"_blank");
 }
 
@@ -528,6 +676,24 @@ function attachBlock(el,id) {
 }
 
 // BLOCK HTML
+function txStyle(b) {
+  // Build inline style cho text formatting
+  let s="";
+  if (b.bold)      s+="font-weight:700;";
+  if (b.italic)    s+="font-style:italic;";
+  if (b.underline) s+="text-decoration:underline;";
+  if (b.fontFamily) s+=`font-family:${b.fontFamily};`;
+  if (b.lineHeight) s+=`line-height:${b.lineHeight};`;
+  return s;
+}
+function tblBorderCSS(ts) {
+  if (!ts) return "";
+  const bw=ts.borderWidth||1, bc=ts.borderColor||"rgba(0,0,0,.1)";
+  if (ts.borderStyle==="none") return "border:none";
+  if (ts.borderStyle==="outer") return `border:${bw}px solid ${bc}`;
+  if (ts.borderStyle==="inner") return "";
+  return `border:${bw}px solid ${bc}`; // all
+}
 function blockHTML(b) {
   const id=b.id;
   const ctrl=`<div class="blk-ctrl"><button class="cc dh" title="Kéo sắp xếp">&#8597;</button><button class="cc" onclick="moveBlock('${id}',-1)">&#8593;</button><button class="cc" onclick="moveBlock('${id}',1)">&#8595;</button><button class="cc del" onclick="delBlock('${id}')">&#10005;</button></div>`;
@@ -535,13 +701,25 @@ function blockHTML(b) {
   switch(b.type){
     case "docheader": body=`<div class="b-dochd"><div class="dhl"><strong>${esc(b.companyName||"")}</strong>${esc(b.companyInfo||"").replace(/\n/g,"<br>")}</div><div class="dhr"><strong>{{${esc(b.docNumField||"MaDonHang")}}}</strong>${esc(b.docTitle||"")}<br>Ngày: {{${esc(b.dateField||"NgayTao")}}}</div></div>`; break;
     case "logo": body=`<div class="b-logo"><div class="logobox">LOGO</div><div><div style="font-size:16px;font-weight:700">${esc(b.companyName||"")}</div><div style="font-size:11px;color:var(--tx2)">${esc(b.subTitle||"")}</div></div></div>`; break;
-    case "heading": body=`<div class="b-heading" style="text-align:${b.align||"center"};color:${b.color||"#1a1a18"};font-size:${b.size||20}px">${esc(b.text||"")}</div>`; break;
-    case "subheading": body=`<div class="b-subheading" style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||15}px">${esc(b.text||"")}</div>`; break;
-    case "text": body=`<div class="b-text" style="text-align:${b.align||"left"};color:${b.color||"#6b6b67"};font-size:${b.size||13}px">${esc(b.text||"")}</div>`; break;
+    case "heading": body=`<div class="b-heading" style="text-align:${b.align||"center"};color:${b.color||"#1a1a18"};font-size:${b.size||20}px;${txStyle(b)}">${esc(b.text||"")}</div>`; break;
+    case "subheading": body=`<div class="b-subheading" style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||15}px;${txStyle(b)}">${esc(b.text||"")}</div>`; break;
+    case "text": body=`<div class="b-text" style="text-align:${b.align||"left"};color:${b.color||"#6b6b67"};font-size:${b.size||13}px;${txStyle(b)}">${esc(b.text||"")}</div>`; break;
     case "field": body=`<div class="b-fi">${b.showLabel&&b.label?`<span style="color:var(--tx2);font-weight:400">${esc(b.label)}: </span>`:""}{{${esc(b.fieldName||"TenCot")}}}</div>`; break;
     case "fieldrow": body=`<div class="b-fr"><span class="lbl">${esc(b.label||"Nhãn")}:</span><span class="val">{{${esc(b.fieldName||"TenCot")}}}</span></div>`; break;
     case "infogrid":{const f=b.fields||[];body=`<dl class="b-ig">${f.length?f.map(x=>`<div><dt>${esc(x.label||x.field)}</dt><dd>{{${esc(x.field)}}}</dd></div>`).join(""):"<div><dt>Cột 1</dt><dd>{{TenCot1}}</dd></div><div><dt>Cột 2</dt><dd>{{TenCot2}}</dd></div>"}</dl>`; break;}
-    case "datatable":{const dc=b.columns||[];body=`<table class="b-tbl"><thead><tr>${dc.length?dc.map(c=>`<th>${esc(c)}</th>`).join(""):"<th>Cột 1</th><th>Cột 2</th><th>Cột 3</th>"}</tr></thead><tbody><tr class="ph"><td colspan="${dc.length||3}">← Dữ liệu tự động điền khi in</td></tr></tbody>${b.showTotal?`<tfoot><tr><td colspan="${Math.max((dc.length||3)-1,1)}" style="text-align:right">Tổng:</td><td>{{TongTien}}</td></tr></tfoot>`:""}</table>`; break;}
+    case "datatable":{
+      const dc=b.columns||[];
+      const ts=b.tblStyle||{};
+      const hbg=ts.headerBg||"#1a1a18", hcol=ts.headerColor||"#fff";
+      const sbg=ts.stripeBg||"#f7f7f5";
+      const bstyle=ts.borderStyle||"all", bw=ts.borderWidth||1, bc=ts.borderColor||"rgba(0,0,0,.1)";
+      const tdBorder=bstyle==="none"?"border:none":bstyle==="outer"?"border:none;border-top:${bw}px solid ${bc}":`border:${bw}px solid ${bc}`;
+      const thBorder=bstyle==="none"?"border:none":`border:${bw}px solid ${bc}`;
+      body=`<table class="b-tbl" style="${bstyle==="outer"?`border:${bw}px solid ${bc}`:""}">
+        <thead><tr style="background:${hbg};color:${hcol}">${dc.length?dc.map(c=>`<th style="padding:5px 7px;font-size:10px;font-weight:700;text-transform:uppercase;${thBorder}">${esc(c)}</th>`).join(""):"<th>Cột 1</th><th>Cột 2</th><th>Cột 3</th>"}</tr></thead>
+        <tbody><tr class="ph"><td colspan="${dc.length||3}" style="${tdBorder}">← Dữ liệu tự động điền khi in</td></tr></tbody>
+        ${b.showTotal?`<tfoot><tr><td colspan="${Math.max((dc.length||3)-1,1)}" style="text-align:right;font-weight:700;${tdBorder}">Tổng:</td><td style="${tdBorder}">{{TongTien}}</td></tr></tfoot>`:""}
+      </table>`; break;}
     case "amount": body=`<div class="b-amt"><div class="amti"><div class="aml">${esc(b.label||"TỔNG CỘNG")}</div><div class="amv">{{${esc(b.fieldName||"TongTien")}}} ₫</div>${b.showWords?`<div class="amw">(Bằng chữ: {{${esc(b.fieldName||"TongTien")}_words}})</div>`:""}</div></div>`; break;
     case "custom": body=`<div class="b-cust"><span style="font-weight:400">${esc(b.label||"")}: </span>${esc(b.formula||"")}</div>`; break;
     case "sign":{const lb=(b.labels||["Người lập","Người duyệt","Người nhận"]).slice(0,b.count||3);body=`<div class="b-sign">${lb.map(l=>`<div class="sc"><div class="sl"></div><div class="sn">${esc(l)}</div><div style="font-size:10px;margin-top:2px">(Ký, ghi rõ họ tên)</div></div>`).join("")}</div>`; break;}
@@ -611,6 +789,41 @@ function renderProps(id) {
   document.getElementById("props-empty").style.display="none";
   const pc=document.getElementById("props-content"); pc.style.display=""; pc.innerHTML=propsHTML(b);
 }
+
+function fmtToolbar(id, b) {
+  const fonts=[["","(Theo trang)"],["'Times New Roman',serif","Times New Roman"],
+               ["Arial,sans-serif","Arial"],["'Segoe UI',sans-serif","Segoe UI"],
+               ["Georgia,serif","Georgia"],["'Courier New',monospace","Courier New"]];
+  return `<div class="fmt-toolbar">
+    <button class="ftb ${b.bold?"on":""}" data-fmt="bold" title="Đậm (Bold)"
+      onclick="toggleFmt('${id}','bold')"><strong>B</strong></button>
+    <button class="ftb ${b.italic?"on":""}" data-fmt="italic" title="Nghiêng (Italic)"
+      onclick="toggleFmt('${id}','italic')"><em>I</em></button>
+    <button class="ftb ${b.underline?"on":""}" data-fmt="underline" title="Gạch chân"
+      onclick="toggleFmt('${id}','underline')"><u>U</u></button>
+  </div>
+  <div class="pr"><label>Font chữ</label>
+    <select onchange="setProp('${id}','fontFamily',this.value)">
+      ${fonts.map(([v,l])=>`<option value="${v}" ${b.fontFamily===v?"selected":""}>${l}</option>`).join("")}
+    </select></div>
+  <div class="pr2">
+    <div class="pr"><label>Cỡ chữ</label>
+      <input type="number" min="8" max="60" value="${b.size||13}"
+             oninput="setProp('${id}','size',+this.value)"></div>
+    <div class="pr"><label>Giãn dòng</label>
+      <select onchange="setProp('${id}','lineHeight',+this.value)">
+        ${[1.0,1.2,1.4,1.6,1.7,1.8,2.0].map(v=>`<option value="${v}" ${(b.lineHeight||1.7)==v?"selected":""}>${v}</option>`).join("")}
+      </select></div>
+  </div>`;
+}
+function toggleFmt(id, key) {
+  const b=blks.find(b=>b.id===id); if(!b) return;
+  b[key]=!b[key]; markDirty();
+  const el=document.getElementById("blk-"+id);
+  if(el){const t=document.createElement("div");t.innerHTML=blockHTML(b);const ne=t.firstElementChild;el.replaceWith(ne);ne.classList.add("selected");attachBlock(ne,id);}
+  renderProps(id);
+}
+
 function propsHTML(b) {
   const id=b.id;
   const CP=(cur,key)=>`<div class="fld-pick">${cols.length?cols.map(c=>`<div class="fp ${c===cur?"on":""}" onclick="setProp('${id}','${key}','${esc(c)}')">${esc(c)}</div>`).join(""):`<div class="no-col-hint">Chọn sheet để xem cột</div>`}</div>`;
@@ -620,11 +833,45 @@ function propsHTML(b) {
   switch(b.type){
     case "docheader":h+=`<div class="pr"><label>Tên công ty</label><input value="${esc(b.companyName||"")}" oninput="setProp('${id}','companyName',this.value)"></div><div class="pr"><label>Thông tin cty</label><textarea oninput="setProp('${id}','companyInfo',this.value)">${esc(b.companyInfo||"")}</textarea></div><div class="pr"><label>Tiêu đề tài liệu</label><input value="${esc(b.docTitle||"")}" oninput="setProp('${id}','docTitle',this.value)"></div><div class="pr"><label>Cột số tài liệu</label>${CP(b.docNumField,"docNumField")}</div><div class="pr"><label>Cột ngày tạo</label><input value="${esc(b.dateField||"")}" placeholder="NgayTao" oninput="setProp('${id}','dateField',this.value)"></div>`;break;
     case "logo":h+=`<div class="pr"><label>Tên công ty</label><input value="${esc(b.companyName||"")}" oninput="setProp('${id}','companyName',this.value)"></div><div class="pr"><label>Địa chỉ / mô tả</label><input value="${esc(b.subTitle||"")}" oninput="setProp('${id}','subTitle',this.value)"></div>`;break;
-    case "heading":case "subheading":case "text":h+=`<div class="pr"><label>Nội dung</label><textarea oninput="setProp('${id}','text',this.value)">${esc(b.text||"")}</textarea></div><div class="pr2"><div class="pr"><label>Cỡ chữ (px)</label><input type="number" min="8" max="60" value="${b.size||14}" oninput="setProp('${id}','size',+this.value)"></div><div class="pr"><label>Căn lề</label><div class="fmt-row">${AB(b.align||"left")}</div></div></div><div class="pr"><label>Màu chữ</label><div class="clr-row">${CS}</div></div>`;break;
+    case "heading":case "subheading":case "text":h+=
+      `<div class="pr"><label>Nội dung</label><textarea oninput="setProp('${id}','text',this.value)">${esc(b.text||"")}</textarea></div>`+
+      fmtToolbar(id,b)+
+      `<div class="pr"><label>Căn lề</label><div class="fmt-row">${AB(b.align||"left")}</div></div>`+
+      `<div class="pr"><label>Màu chữ</label><div class="clr-row">${CS}</div></div>`;break;
     case "field":h+=`<div class="pr"><label>Chọn cột</label>${CP(b.fieldName,"fieldName")}</div><div class="pr"><label>Nhãn</label><input value="${esc(b.label||"")}" oninput="setProp('${id}','label',this.value)"></div><div class="pr"><label>Hiện nhãn</label><select onchange="setProp('${id}','showLabel',this.value==='true')"><option value="false" ${!b.showLabel?"selected":""}>Không</option><option value="true" ${b.showLabel?"selected":""}>Có</option></select></div>`;break;
     case "fieldrow":h+=`<div class="pr"><label>Nhãn hiển thị</label><input value="${esc(b.label||"")}" oninput="setProp('${id}','label',this.value)"></div><div class="pr"><label>Chọn cột dữ liệu</label>${CP(b.fieldName,"fieldName")}</div>`;break;
     case "infogrid":h+=`<div class="pr"><label>Danh sách cột (mỗi dòng 1 cột)</label><textarea rows="6" oninput="setIGFields('${id}',this.value)">${(b.fields||[]).map(f=>f.label&&f.label!==f.field?`${f.label}:${f.field}`:f.field).join("\n")}</textarea><div style="font-size:10px;color:var(--tx3);margin-top:3px">Định dạng: TenCot hoặc Nhãn:TenCot</div></div>`;break;
-    case "datatable":h+=`<div class="pr"><label>Cột hiển thị (click để chọn/bỏ)</label><div class="fld-pick">${cols.length?cols.map(c=>`<div class="fp ${(b.columns||[]).includes(c)?"on":""}" onclick="toggleDTCol('${id}','${esc(c)}')">${esc(c)}</div>`).join(""):`<div class="no-col-hint">Chọn sheet để xem cột</div>`}</div></div><div class="pr"><label>Hiện dòng tổng</label><select onchange="setProp('${id}','showTotal',this.value==='true')"><option value="true" ${b.showTotal?"selected":""}>Có</option><option value="false" ${!b.showTotal?"selected":""}>Không</option></select></div>`;break;
+    case "datatable":{
+      const ts=b.tblStyle||{};
+      h+=`<div class="pr"><label>Cột hiển thị (click để chọn/bỏ)</label>
+        <div class="fld-pick">${cols.length?cols.map(c=>`<div class="fp ${(b.columns||[]).includes(c)?"on":""}" onclick="toggleDTCol('${id}','${esc(c)}')">${esc(c)}</div>`).join(""):`<div class="no-col-hint">Chọn sheet để xem cột</div>`}</div></div>
+        <div class="pr"><label>Hiện dòng tổng</label><select onchange="setProp('${id}','showTotal',this.value==='true')"><option value="true" ${b.showTotal?"selected":""}>Có</option><option value="false" ${!b.showTotal?"selected":""}>Không</option></select></div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);margin:10px 0 6px">Kiểu bảng</div>
+        <div class="pr2">
+          <div class="pr"><label>Màu nền header</label>
+            <input type="color" value="${ts.headerBg||"#1a1a18"}"
+                   oninput="setTblStyle('${id}','headerBg',this.value)" style="height:30px;padding:1px 4px;cursor:pointer"></div>
+          <div class="pr"><label>Màu chữ header</label>
+            <input type="color" value="${ts.headerColor||"#ffffff"}"
+                   oninput="setTblStyle('${id}','headerColor',this.value)" style="height:30px;padding:1px 4px;cursor:pointer"></div>
+          <div class="pr"><label>Màu hàng xen kẽ</label>
+            <input type="color" value="${ts.stripeBg||"#f7f7f5"}"
+                   oninput="setTblStyle('${id}','stripeBg',this.value)" style="height:30px;padding:1px 4px;cursor:pointer"></div>
+          <div class="pr"><label>Độ dày viền (px)</label>
+            <input type="number" min="0" max="4" value="${ts.borderWidth||1}"
+                   oninput="setTblStyle('${id}','borderWidth',+this.value)"></div>
+        </div>
+        <div class="pr"><label>Kiểu đường kẻ</label>
+          <select onchange="setTblStyle('${id}','borderStyle',this.value)">
+            <option value="all" ${(ts.borderStyle||"all")==="all"?"selected":""}>Tất cả ô</option>
+            <option value="outer" ${ts.borderStyle==="outer"?"selected":""}>Chỉ viền ngoài</option>
+            <option value="inner" ${ts.borderStyle==="inner"?"selected":""}>Chỉ đường trong</option>
+            <option value="none" ${ts.borderStyle==="none"?"selected":""}>Không có đường kẻ</option>
+          </select></div>
+        <div class="pr"><label>Màu đường kẻ</label>
+          <input type="color" value="${ts.borderColor && ts.borderColor.startsWith("#") ? ts.borderColor : "#cccccc"}"
+                 oninput="setTblStyle('${id}','borderColor',this.value)" style="height:30px;padding:1px 4px;cursor:pointer"></div>
+      `; break;}
     case "amount":h+=`<div class="pr"><label>Chọn cột tiền</label>${CP(b.fieldName,"fieldName")}</div><div class="pr"><label>Nhãn</label><input value="${esc(b.label||"TỔNG CỘNG")}" oninput="setProp('${id}','label',this.value)"></div><div class="pr"><label>Hiện số bằng chữ</label><select onchange="setProp('${id}','showWords',this.value==='true')"><option value="true" ${b.showWords?"selected":""}>Có</option><option value="false" ${!b.showWords?"selected":""}>Không</option></select></div>`;break;
     case "custom":h+=`<div class="pr"><label>Nhãn cột</label><input value="${esc(b.label||"")}" oninput="setProp('${id}','label',this.value)"></div><div class="pr"><label>Công thức</label><input value="${esc(b.formula||"")}" placeholder="{TongTien}*0.1" oninput="setProp('${id}','formula',this.value)"></div><div style="font-size:10px;color:var(--tx3)">Dùng {TenCot} để tham chiếu</div>`;break;
     case "sign":h+=`<div class="pr"><label>Số ô chữ ký</label><select onchange="setProp('${id}','count',+this.value)">${[1,2,3].map(n=>`<option value="${n}" ${b.count===n?"selected":""}>${n} ô</option>`).join("")}</select></div>${(b.labels||["Người lập","Người duyệt","Người nhận"]).slice(0,b.count||3).map((l,i)=>`<div class="pr"><label>Nhãn ô ${i+1}</label><input value="${esc(l)}" oninput="setProp('${id}','labels.${i}',this.value)"></div>`).join("")}`;break;
@@ -646,8 +893,111 @@ function addFieldBlock(col) {
   markDirty();renderCanvas();selectBlock(b.id);
 }
 
+
+// ══════════════════════════════════════════════════════════════
+//  UNDO / REDO
+// ══════════════════════════════════════════════════════════════
+function snapshot() {
+  // Cắt nhánh redo khi có thay đổi mới
+  if (histIdx < hist.length - 1) hist.splice(histIdx + 1);
+  hist.push(JSON.stringify(blks));
+  if (hist.length > 50) hist.shift();
+  histIdx = hist.length - 1;
+  updateUndoRedo();
+}
+function undo() {
+  if (histIdx <= 0) return;
+  histIdx--;
+  blks = JSON.parse(hist[histIdx]);
+  dirty = true; renderCanvas(); selectBlock(null); updateBadge(); updateUndoRedo();
+}
+function redo() {
+  if (histIdx >= hist.length - 1) return;
+  histIdx++;
+  blks = JSON.parse(hist[histIdx]);
+  dirty = true; renderCanvas(); selectBlock(null); updateBadge(); updateUndoRedo();
+}
+function updateUndoRedo() {
+  const bu = document.getElementById("btn-undo");
+  const br = document.getElementById("btn-redo");
+  if (bu) bu.disabled = histIdx <= 0;
+  if (br) br.disabled = histIdx >= hist.length - 1;
+  if (bu) bu.title = `Undo (${histIdx} bước) Ctrl+Z`;
+  if (br) br.title = `Redo (${hist.length-1-histIdx} bước) Ctrl+Y`;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PAGE SETTINGS
+// ══════════════════════════════════════════════════════════════
+function pgTab(el, pane) {
+  document.querySelectorAll(".pg-tab").forEach(t => t.classList.remove("on"));
+  document.querySelectorAll(".pg-pane").forEach(p => p.classList.remove("on"));
+  el.classList.add("on");
+  document.getElementById(pane).classList.add("on");
+}
+function setPageProp(key, val) {
+  if (!curId) return;
+  if (!tpls[curId].pageSettings) tpls[curId].pageSettings = {...PAGE_DEF};
+  tpls[curId].pageSettings[key] = val;
+  applyPageSettingsToCanvas(tpls[curId].pageSettings);
+  markDirty();
+}
+function loadPageSettingsForm(pg) {
+  const set = (id, val) => { const el=document.getElementById(id); if(el) el.value=val; };
+  set("pg-paper",    pg.paper       || "A4");
+  set("pg-orient",   pg.orient      || "portrait");
+  set("pg-font",     pg.fontFamily  || "'Times New Roman',serif");
+  set("pg-fontsize", pg.baseFontSize|| 13);
+  set("pg-mt",       pg.marginTop   || 15);
+  set("pg-mb",       pg.marginBottom|| 15);
+  set("pg-ml",       pg.marginLeft  || 17);
+  set("pg-mr",       pg.marginRight || 17);
+  set("pg-header",   pg.header      || "");
+  set("pg-footer",   pg.footer      || "");
+  set("pg-showdate", pg.showDate!==false?"true":"false");
+}
+function applyPageSettingsToCanvas(pg) {
+  const paperSizes = {
+    A4:{w:"210mm",h:"297mm"}, A5:{w:"148mm",h:"210mm"},
+    letter:{w:"216mm",h:"279mm"}, "80mm":{w:"80mm",h:"auto"},
+    K57:{w:"57mm",h:"auto"}
+  };
+  const size = paperSizes[pg.paper||"A4"] || paperSizes.A4;
+  const isLand = pg.orient === "landscape";
+  const w = isLand && size.h!=="auto" ? size.h : size.w;
+  const h = isLand && size.h!=="auto" ? size.w : size.h;
+  const page = document.getElementById("page");
+  if (!page) return;
+  page.style.width       = w;
+  page.style.minHeight   = h==="auto" ? "auto" : h;
+  page.style.paddingTop    = (pg.marginTop||15)    + "mm";
+  page.style.paddingBottom = (pg.marginBottom||15) + "mm";
+  page.style.paddingLeft   = (pg.marginLeft||17)   + "mm";
+  page.style.paddingRight  = (pg.marginRight||17)  + "mm";
+  page.style.fontFamily    = pg.fontFamily || "'Times New Roman',serif";
+  page.style.fontSize      = (pg.baseFontSize||13) + "px";
+}
+function setZoom(pct) {
+  const wrap = document.querySelector(".canvas-wrap");
+  if (wrap) wrap.style.zoom = (pct/100);
+  // Lưu vào pageSettings nếu có
+  if (curId) setPageProp("zoom", pct);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TABLE STYLE HELPER
+// ══════════════════════════════════════════════════════════════
+function setTblStyle(id, key, val) {
+  const b = blks.find(b=>b.id===id); if(!b) return;
+  if (!b.tblStyle) b.tblStyle = {};
+  b.tblStyle[key] = val;
+  markDirty();
+  const el=document.getElementById("blk-"+id);
+  if(el){const t=document.createElement("div");t.innerHTML=blockHTML(b);const ne=t.firstElementChild;el.replaceWith(ne);ne.classList.add("selected");attachBlock(ne,id);}
+}
+
 // MISC
-function markDirty(){dirty=true;updateBadge();}
+function markDirty(){dirty=true;updateBadge();snapshot();}
 function updateBadge(){const el=document.getElementById("badge");el.textContent=dirty?"Chưa lưu":"Đã lưu";el.className="tb-badge "+(dirty?"unsaved":"saved");}
 function typeName(t){const m={docheader:"Header HĐ",logo:"Logo",heading:"Tiêu đề lớn",subheading:"Tiêu đề nhỏ",text:"Đoạn văn",field:"Field đơn",fieldrow:"Label+Giá trị",infogrid:"Thông tin 2 cột",datatable:"Bảng dữ liệu",amount:"Tổng tiền",custom:"Tính toán",sign:"Chữ ký",divider:"Đường đậm",dividerlight:"Đường mờ",spacer:"Khoảng trống",pagebreak:"Ngắt trang"};return m[t]||t;}
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
