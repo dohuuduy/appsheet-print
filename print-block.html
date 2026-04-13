@@ -75,7 +75,16 @@ body{font-family:"Times New Roman",Georgia,serif;font-size:14px;color:#1a1a18;ba
 .bp-footer{margin-top:16px;padding-top:10px;border-top:1px solid rgba(0,0,0,.1);
            font-size:10px;color:#9b9b96;text-align:center;line-height:1.9}
 
+/* QR + page number */
+.qr-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px}
+.qr-label{font-size:10px;color:#6b6b67}
+.b-cond-block{} /* shown/hidden by JS at print time */
+.b-highlight{display:flex;align-items:flex-start;gap:8px;border-radius:6px;padding:8px 12px}
+.b-pagenum-print{text-align:center;font-size:11px;color:#9b9b96;font-style:italic}
 @media print{
+  .b-pagenum-print::after{content:" " counter(page) " / " counter(pages);}
+  @page{counter-increment:page;}
+  body{counter-reset:page;}
   body{background:#fff}
   .toolbar,.no-print{display:none!important}
   .pw{padding:0}
@@ -101,6 +110,7 @@ body{font-family:"Times New Roman",Georgia,serif;font-size:14px;color:#1a1a18;ba
 <script>
 // ─── CONFIG (sửa duy nhất dòng này) ───
 const API_URL       = "https://script.google.com/macros/s/AKfycbwqwRgBqKmL5yGY8YD0MrJi-iQUusgQPplEOfqzWsXHpDf-HZus900DueXzxYIe9V-i/exec";
+
 // ──────────────────────────────────────
 
 const Q          = new URLSearchParams(location.search);
@@ -192,6 +202,8 @@ async function main() {
       `<div class="bp-footer">In lúc: ${new Date().toLocaleString("vi-VN")}${PREVIEW?' &nbsp;·&nbsp; <strong>[DỮ LIỆU XEM THỬ]</strong>':""}</div>`;
     document.title = tplName;
     document.getElementById("tb-title").textContent = (PREVIEW?"[XEM THỬ] ":"")+tplName;
+    // Sprint 3: render QR codes
+    if (window._renderQR) setTimeout(()=>window._renderQR(row), 200);
 
   } catch(e) {
     document.getElementById("paper").innerHTML =
@@ -309,6 +321,48 @@ function renderBlock(b, row, extraRows) {
     case "dividerlight": return `<hr class="bp-divider-light">`;
     case "spacer":       return `<div style="height:${b.height||20}px"></div>`;
     case "pagebreak":    return `<div style="page-break-after:always"></div>`;
+    case "pagenum":
+      return `<div class="b-pagenum-print" style="text-align:${b.align||"center"};font-size:${b.size||11}px">
+        Trang <span class="pg-num"></span>
+      </div>`;
+
+    case "qrcode": {
+      const sz=b.size||80;
+      const align=b.align||"center";
+      return `<div class="qr-wrap" style="align-items:${align==="right"?"flex-end":align==="left"?"flex-start":"center"}">
+        <div class="qr-placeholder" data-field="${esc(b.fieldName||"")}" data-size="${sz}"
+             style="width:${sz}px;height:${sz}px;display:flex;align-items:center;justify-content:center"></div>
+        ${b.label?`<div class="qr-label">${esc(b.label)}</div>`:""}
+      </div>`;
+    }
+
+    case "condition": {
+      // Điều kiện được evaluate ở client khi load
+      const val = String(row[b.condField]||"");
+      const cval = String(b.condValue||"");
+      let show = false;
+      switch(b.condOp) {
+        case "eq":       show = val === cval; break;
+        case "neq":      show = val !== cval; break;
+        case "gt":       show = parseFloat(val) > parseFloat(cval); break;
+        case "lt":       show = parseFloat(val) < parseFloat(cval); break;
+        case "contains": show = val.includes(cval); break;
+        case "empty":    show = !val || val.trim()===""; break;
+        case "notempty": show = val && val.trim()!==""; break;
+        default:         show = true;
+      }
+      if (!show) return ""; // Ẩn hoàn toàn nếu điều kiện sai
+      return (b.innerBlocks||[]).map(cb=>renderBlock(cb,row,extraRows)).join("");
+    }
+
+    case "highlight": {
+      const bg=b.bgColor||"#faeeda", bc=b.borderColor||"#854F0B", tc=b.textColor||"#854F0B";
+      return `<div class="b-highlight" style="background:${bg};border:1.5px solid ${bc}">
+        ${b.icon?`<span style="font-size:16px;flex-shrink:0">${b.icon}</span>`:""}
+        <span style="font-size:${b.size||13}px;color:${tc};font-weight:${b.bold?"700":"400"}">${tpl(b.text||"")}</span>
+      </div>`;
+    }
+
     default:             return "";
   }
 }
@@ -344,6 +398,26 @@ function soThanhChu(raw){let n=parseInt(String(raw||"0").replace(/[^0-9]/g,""))|
   res=res.trim();return res.charAt(0).toUpperCase()+res.slice(1)+" đồng";}
 
 main();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+// Sprint 3: render QR codes sau khi page load
+function renderQRCodes(row) {
+  document.querySelectorAll(".qr-placeholder[data-field]").forEach(el=>{
+    const field=el.dataset.field;
+    const val=row&&row[field]?String(row[field]):"";
+    if (!val) { el.textContent="(trống)"; return; }
+    try {
+      el.innerHTML="";
+      const size=parseInt(el.dataset.size)||80;
+      new QRCode(el,{text:val,width:size,height:size,
+        colorDark:"#000000",colorLight:"#ffffff",
+        correctLevel:QRCode.CorrectLevel.M});
+    } catch(e) { el.textContent="QR: "+val; }
+  });
+}
+// Gọi sau khi data đã load — được gọi từ main()
+window._renderQR = renderQRCodes;
 </script>
 </body>
 </html>
