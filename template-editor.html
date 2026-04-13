@@ -260,6 +260,52 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   border:1px solid var(--blue-bd);border-radius:4px;padding:0 5px;font-size:11px;
   font-weight:600;display:inline;white-space:nowrap}
 
+
+/* ── Background color block ── */
+.blk-bg-picker{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.bg-swatch{width:18px;height:18px;border-radius:3px;border:2px solid transparent;
+           cursor:pointer;transition:transform .12s;flex-shrink:0}
+.bg-swatch:hover{transform:scale(1.15)}
+.bg-swatch.on{border-color:var(--tx)!important}
+.bg-swatch.none{background:repeating-linear-gradient(45deg,#ddd 0,#ddd 2px,#fff 2px,#fff 6px)!important}
+
+/* ── Spacing sliders ── */
+.spacing-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.spacing-item{display:flex;flex-direction:column;gap:3px}
+.spacing-item label{font-size:10px;color:var(--tx2);font-weight:500}
+.spacing-item input[type=range]{width:100%;accent-color:var(--blue)}
+.spacing-val{font-size:10px;color:var(--tx3);text-align:right}
+
+/* ── Conditional block ── */
+.b-cond-wrap{border:1.5px dashed var(--amber);border-radius:6px;padding:4px 8px;
+             background:var(--amber-bg)}
+.b-cond-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+              color:var(--amber);margin-bottom:3px}
+.b-cond-inner{padding:3px 0}
+
+/* ── Page number block ── */
+.b-pagenum{display:flex;justify-content:center;align-items:center;gap:4px;
+           padding:3px;font-size:11px;color:var(--tx2);font-style:italic}
+
+/* ── QR block ── */
+.b-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px}
+.b-qr-box{width:80px;height:80px;border:1px solid var(--bd2);border-radius:4px;
+          background:var(--bg2);display:flex;align-items:center;justify-content:center;
+          font-size:9px;color:var(--tx3);text-align:center;padding:4px}
+
+/* ── Block wrapper dùng bg + padding ── */
+.block-inner-wrap{border-radius:4px;transition:background .15s,padding .15s}
+
+/* ── Props section separator ── */
+.props-sep{border:none;border-top:1px solid var(--bd);margin:10px 0}
+.props-subsec{font-size:10px;font-weight:700;text-transform:uppercase;
+              letter-spacing:.05em;color:var(--tx3);margin:10px 0 6px}
+
+/* ── Condition builder ── */
+.cond-row{display:grid;grid-template-columns:1fr auto 1fr;gap:5px;align-items:center}
+.cond-row select,.cond-row input{padding:5px 6px;border:1px solid var(--bd2);
+  border-radius:5px;font-size:11px;font-family:inherit;background:var(--bg);color:var(--tx)}
+
 @media print{
   .topbar,.palette,.props-panel,.blk-ctrl,.canvas-hint{display:none!important}
   .app{display:block}
@@ -339,6 +385,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
         <div class="pal-item" onclick="addBlock('dividerlight')"><div class="pi-icon">&#8212;</div><div class="pi-lbl">Đường mờ</div></div>
         <div class="pal-item" onclick="addBlock('spacer')"><div class="pi-icon">&#8597;</div><div class="pi-lbl">Khoảng trống</div></div>
         <div class="pal-item" onclick="addBlock('pagebreak')"><div class="pi-icon">&#128196;</div><div class="pi-lbl">Ngắt trang</div></div>
+        <div class="pal-item" onclick="addBlock('pagenum')"><div class="pi-icon">&#35;</div><div class="pi-lbl">Số trang</div></div>
+        <div class="pal-item" onclick="addBlock('qrcode')"><div class="pi-icon">&#9638;</div><div class="pi-lbl">QR Code</div></div>
+        <div class="pal-item" onclick="addBlock('condition')"><div class="pi-icon">&#10067;</div><div class="pi-lbl">Điều kiện IF</div></div>
+        <div class="pal-item" onclick="addBlock('highlight')"><div class="pi-icon">&#127775;</div><div class="pi-lbl">Box nổi bật</div></div>
       </div>
     </div>
     <div class="pal-sec">
@@ -521,6 +571,12 @@ const DEF = {
   richtext:{type:"richtext",content:"Kính gửi {{TenKhachHang}}, đơn hàng {{MaDonHang}} đã được xác nhận.",
             align:"left",color:"#1a1a18",size:13,bold:false,italic:false,lineHeight:1.7},
   twocol:{type:"twocol",ratio:"50:50",leftBlocks:[],rightBlocks:[]},
+  pagenum:{type:"pagenum",format:"Trang {{page}} / {{total}}",align:"center",size:11},
+  qrcode:{type:"qrcode",fieldName:"",size:80,label:"",align:"center"},
+  condition:{type:"condition",condField:"",condOp:"eq",condValue:"",
+             innerBlocks:[{...DEF&&DEF.text||{type:"text",text:"Nội dung hiển thị khi điều kiện đúng"}}]},
+  highlight:{type:"highlight",text:"Thông báo quan trọng",bgColor:"#faeeda",
+             borderColor:"#854F0B",textColor:"#854F0B",size:13,bold:false,icon:"&#9888;"},
   divider:{type:"divider"},dividerlight:{type:"dividerlight"},
   spacer:{type:"spacer",height:20},pagebreak:{type:"pagebreak"},
 };
@@ -544,6 +600,8 @@ window.addEventListener("load", function() {
     if ((e.ctrlKey||e.metaKey) && e.key==="s") { e.preventDefault(); saveTpl(); }
   if ((e.ctrlKey||e.metaKey) && e.key==="z") { e.preventDefault(); undo(); }
   if ((e.ctrlKey||e.metaKey) && (e.key==="y"||(e.shiftKey&&e.key==="Z"))) { e.preventDefault(); redo(); }
+  if ((e.ctrlKey||e.metaKey) && e.key==="c" && selId && !e.target.matches("input,textarea,select")) { copyBlock(selId); }
+  if ((e.ctrlKey||e.metaKey) && e.key==="v" && !e.target.matches("input,textarea,select")) { e.preventDefault(); pasteBlock(); }
     if (e.key==="Delete" && selId && !e.target.matches("input,textarea,select")) delBlock(selId);
     if (e.key==="ArrowUp" && selId && !e.target.matches("input,textarea,select")) { e.preventDefault(); moveBlock(selId,-1); }
     if (e.key==="ArrowDown" && selId && !e.target.matches("input,textarea,select")) { e.preventDefault(); moveBlock(selId,1); }
@@ -737,6 +795,16 @@ function attachBlock(el,id) {
 }
 
 // BLOCK HTML
+// Helper: wrap nội dung với background + padding nếu có
+function bgWrap(b, innerHtml) {
+  const bg  = b.bgColor    || "transparent";
+  const pt  = b.paddingTop    !== undefined ? b.paddingTop    : 0;
+  const pb  = b.paddingBottom !== undefined ? b.paddingBottom : 0;
+  const pl  = b.paddingLeft   !== undefined ? b.paddingLeft   : 0;
+  const pr  = b.paddingRight  !== undefined ? b.paddingRight  : 0;
+  if (bg === "transparent" && !pt && !pb && !pl && !pr) return innerHtml;
+  return `<div class="block-inner-wrap" style="background:${bg};padding:${pt}px ${pr}px ${pb}px ${pl}px;border-radius:4px">${innerHtml}</div>`;
+}
 function txStyle(b) {
   // Build inline style cho text formatting
   let s="";
@@ -757,7 +825,13 @@ function tblBorderCSS(ts) {
 }
 function blockHTML(b) {
   const id=b.id;
-  const ctrl=`<div class="blk-ctrl"><button class="cc dh" title="Kéo sắp xếp">&#8597;</button><button class="cc" onclick="moveBlock('${id}',-1)">&#8593;</button><button class="cc" onclick="moveBlock('${id}',1)">&#8595;</button><button class="cc del" onclick="delBlock('${id}')">&#10005;</button></div>`;
+  const ctrl=`<div class="blk-ctrl">
+    <button class="cc dh" title="Kéo để sắp xếp">&#8597;</button>
+    <button class="cc" onclick="moveBlock('${id}',-1)" title="Lên">&#8593;</button>
+    <button class="cc" onclick="moveBlock('${id}',1)" title="Xuống">&#8595;</button>
+    <button class="cc" onclick="copyBlock('${id}')" title="Copy block (Ctrl+C)">&#9113;</button>
+    <button class="cc del" onclick="delBlock('${id}')" title="Xoá">&#10005;</button>
+  </div>`;
   let body="";
   switch(b.type){
     case "docheader": body=`<div class="b-dochd"><div class="dhl"><strong>${esc(b.companyName||"")}</strong>${esc(b.companyInfo||"").replace(/\n/g,"<br>")}</div><div class="dhr"><strong>{{${esc(b.docNumField||"MaDonHang")}}}</strong>${esc(b.docTitle||"")}<br>Ngày: {{${esc(b.dateField||"NgayTao")}}}</div></div>`; break;
@@ -820,9 +894,51 @@ function blockHTML(b) {
     case "dividerlight": body=`<hr class="b-divl">`; break;
     case "spacer": body=`<div style="height:${b.height||20}px"></div>`; break;
     case "pagebreak": body=`<div class="b-pb">─── Ngắt trang ───</div>`; break;
+    case "pagenum":
+      body=`<div class="b-pagenum" style="text-align:${b.align||"center"};font-size:${b.size||11}px">
+        ${esc(b.format||"Trang {{page}} / {{total}}").replace("{{page}}","<em>1</em>").replace("{{total}}","<em>N</em>")}
+        <span style="font-size:9px;color:var(--tx3)">(tự động khi in)</span>
+      </div>`; break;
+
+    case "qrcode": {
+      const qrLabel = b.fieldName ? `QR: {{${esc(b.fieldName)}}}` : "QR Code";
+      const sz = b.size||80;
+      body=`<div class="b-qr-wrap" style="align-items:${b.align==="right"?"flex-end":b.align==="left"?"flex-start":"center"}">
+        <div class="b-qr-box" style="width:${sz}px;height:${sz}px;font-size:${sz>60?11:9}px">
+          &#9638;<br>${esc(qrLabel)}
+        </div>
+        ${b.label?`<div style="font-size:10px;color:var(--tx2)">${esc(b.label)}</div>`:""}
+      </div>`; break;
+    }
+
+    case "condition": {
+      const cf  = b.condField||"?";
+      const cop = {eq:"=",neq:"≠",gt:">",lt:"<",contains:"chứa",empty:"trống",notempty:"không trống"}[b.condOp||"eq"]||"=";
+      const cv  = b.condValue||"?";
+      const innerHtml = (b.innerBlocks||[]).map(cb=>blockHTML(cb)).join("") ||
+        `<div style="font-size:11px;color:var(--tx3);padding:6px;font-style:italic">Thêm block nội dung vào đây</div>`;
+      body=`<div class="b-cond-wrap">
+        <div class="b-cond-label">&#10067; NẾU ${esc(cf)} ${cop} "${esc(cv)}"</div>
+        <div class="b-cond-inner">${innerHtml}</div>
+      </div>`; break;
+    }
+
+    case "highlight": {
+      const bg  = b.bgColor||"#faeeda";
+      const bc  = b.borderColor||"#854F0B";
+      const tc  = b.textColor||"#854F0B";
+      body=`<div style="background:${bg};border:1.5px solid ${bc};border-radius:6px;
+              padding:8px 12px;display:flex;align-items:flex-start;gap:8px">
+        ${b.icon?`<span style="font-size:16px;flex-shrink:0">${b.icon}</span>`:""}
+        <span style="font-size:${b.size||13}px;color:${tc};font-weight:${b.bold?"700":"400"}">${esc(b.text||"")}</span>
+      </div>`; break;
+    }
+
     default: body=`<span style="color:var(--tx3);font-size:11px">[${b.type}]</span>`;
   }
-  return `<div class="block" id="blk-${id}">${ctrl}${body}</div>`;
+  // Bọc trong bgWrap nếu có background/padding
+  const wrappedBody = bgWrap(b, body);
+  return `<div class="block" id="blk-${id}">${ctrl}${wrappedBody}</div>`;
 }
 
 // DRAG & DROP (mouse-based)
@@ -915,6 +1031,57 @@ function toggleFmt(id, key) {
   const el=document.getElementById("blk-"+id);
   if(el){const t=document.createElement("div");t.innerHTML=blockHTML(b);const ne=t.firstElementChild;el.replaceWith(ne);ne.classList.add("selected");attachBlock(ne,id);}
   renderProps(id);
+}
+
+
+function appearanceProps(id, b) {
+  const bgColors = [
+    ["transparent","Không"],["#ffffff","Trắng"],["#f7f7f5","Xám nhạt"],
+    ["#e6f1fb","Xanh nhạt"],["#e1f5ee","Xanh lá nhạt"],["#faeeda","Vàng nhạt"],
+    ["#fcebeb","Đỏ nhạt"],["#eeedfe","Tím nhạt"],["#fff9c4","Vàng chanh"],
+  ];
+  const pt=b.paddingTop||0, pb=b.paddingBottom||0, pl=b.paddingLeft||0, pr=b.paddingRight||0;
+  return `<hr class="props-sep">
+    <div class="props-subsec">Màu nền & khoảng cách</div>
+    <div class="pr"><label>Màu nền block</label>
+      <div class="blk-bg-picker">
+        ${bgColors.map(([v,n])=>`<div class="bg-swatch ${(b.bgColor||"transparent")===v?"on":""}"
+          title="${n}" style="background:${v==="transparent"?"":""+v};${v==="transparent"?"background:repeating-linear-gradient(45deg,#ddd,#ddd 2px,#fff 2px,#fff 6px)":""}"
+          onclick="setProp('${id}','bgColor','${v}')"></div>`).join("")}
+        <input type="color" title="Màu tuỳ chỉnh"
+          value="${b.bgColor&&b.bgColor!=="transparent"?b.bgColor:"#ffffff"}"
+          oninput="setProp('${id}','bgColor',this.value)"
+          style="width:18px;height:18px;padding:0;border:1px solid var(--bd2);border-radius:3px;cursor:pointer">
+      </div>
+    </div>
+    <div class="pr"><label>Padding (px)</label>
+      <div class="spacing-grid">
+        <div class="spacing-item">
+          <label>Trên</label>
+          <input type="range" min="0" max="40" value="${pt}"
+            oninput="setProp('${id}','paddingTop',+this.value);this.nextElementSibling.textContent=this.value+'px'">
+          <span class="spacing-val">${pt}px</span>
+        </div>
+        <div class="spacing-item">
+          <label>Dưới</label>
+          <input type="range" min="0" max="40" value="${pb}"
+            oninput="setProp('${id}','paddingBottom',+this.value);this.nextElementSibling.textContent=this.value+'px'">
+          <span class="spacing-val">${pb}px</span>
+        </div>
+        <div class="spacing-item">
+          <label>Trái</label>
+          <input type="range" min="0" max="40" value="${pl}"
+            oninput="setProp('${id}','paddingLeft',+this.value);this.nextElementSibling.textContent=this.value+'px'">
+          <span class="spacing-val">${pl}px</span>
+        </div>
+        <div class="spacing-item">
+          <label>Phải</label>
+          <input type="range" min="0" max="40" value="${pr}"
+            oninput="setProp('${id}','paddingRight',+this.value);this.nextElementSibling.textContent=this.value+'px'">
+          <span class="spacing-val">${pr}px</span>
+        </div>
+      </div>
+    </div>`;
 }
 
 function propsHTML(b) {
@@ -1036,7 +1203,111 @@ function propsHTML(b) {
     `;break;
     case "sign":h+=`<div class="pr"><label>Số ô chữ ký</label><select onchange="setProp('${id}','count',+this.value)">${[1,2,3].map(n=>`<option value="${n}" ${b.count===n?"selected":""}>${n} ô</option>`).join("")}</select></div>${(b.labels||["Người lập","Người duyệt","Người nhận"]).slice(0,b.count||3).map((l,i)=>`<div class="pr"><label>Nhãn ô ${i+1}</label><input value="${esc(l)}" oninput="setProp('${id}','labels.${i}',this.value)"></div>`).join("")}`;break;
     case "spacer":h+=`<div class="pr"><label>Chiều cao (px)</label><input type="number" min="4" max="200" value="${b.height||20}" oninput="setProp('${id}','height',+this.value)"></div>`;break;
+
+    case "pagenum": h+=`
+      <div class="pr"><label>Định dạng số trang</label>
+        <select onchange="setProp('${id}','format',this.value)">
+          ${["Trang {{page}} / {{total}}","Trang {{page}}","{{page}} / {{total}}","Trang {{page}} trong {{total}} trang"]
+            .map(f=>`<option value="${f}" ${b.format===f?"selected":""}>${f}</option>`).join("")}
+        </select></div>
+      <div class="pr"><label>Căn lề</label>
+        <div class="fmt-row">${["left","center","right"].map(v=>
+          `<button class="fb ${(b.align||"center")===v?"on":""}"
+            onclick="setProp('${id}','align','${v}')">${v==="left"?"&#8676;":v==="center"?"&#8596;":"&#8677;"}</button>`).join("")}
+        </div></div>
+      <div class="pr"><label>Cỡ chữ (px)</label>
+        <input type="number" min="8" max="20" value="${b.size||11}"
+               oninput="setProp('${id}','size',+this.value)"></div>
+      <div style="font-size:11px;color:var(--tx2);padding:6px;background:var(--blue-bg);border-radius:var(--r)">
+        <strong>CSS @page counter</strong> — số trang tự động khi in qua trình duyệt.
+        Không hiện số thật trong editor, chỉ hiện khi nhấn In.
+      </div>
+    `; break;
+
+    case "qrcode": h+=`
+      <div class="pr"><label>Chọn cột dữ liệu tạo QR</label>
+        <div class="fld-pick">${cols.length
+          ? cols.map(c=>`<div class="fp ${c===b.fieldName?"on":""}" onclick="setProp('${id}','fieldName','${esc(c)}')">${esc(c)}</div>`).join("")
+          : `<div class="no-col-hint">Chọn sheet để xem cột</div>`}</div></div>
+      <div class="pr2">
+        <div class="pr"><label>Kích thước (px)</label>
+          <input type="number" min="40" max="200" value="${b.size||80}"
+                 oninput="setProp('${id}','size',+this.value)"></div>
+        <div class="pr"><label>Căn lề</label>
+          <select onchange="setProp('${id}','align',this.value)">
+            <option value="left" ${(b.align||"center")==="left"?"selected":""}>Trái</option>
+            <option value="center" ${(b.align||"center")==="center"?"selected":""}>Giữa</option>
+            <option value="right" ${b.align==="right"?"selected":""}>Phải</option>
+          </select></div>
+      </div>
+      <div class="pr"><label>Nhãn dưới QR (tuỳ chọn)</label>
+        <input value="${esc(b.label||"")}" placeholder="Vd: Mã đơn hàng"
+               oninput="setProp('${id}','label',this.value)"></div>
+      <div style="font-size:11px;color:var(--tx2);padding:6px;background:var(--blue-bg);border-radius:var(--r);margin-top:4px">
+        QR sẽ được tạo tự động khi in bằng thư viện QRCode.js.<br>
+        Nội dung QR = giá trị của cột <strong>{{${esc(b.fieldName||"TenCot")}}}</strong>.
+      </div>
+    `; break;
+
+    case "condition": {
+      const ops=[["eq","= bằng"],["neq","≠ khác"],["gt","> lớn hơn"],["lt","< nhỏ hơn"],
+                 ["contains","chứa chuỗi"],["empty","trống (rỗng)"],["notempty","không trống"]];
+      h+=`<div class="pr"><label>Cột kiểm tra điều kiện</label>
+        <div class="fld-pick">${cols.length
+          ? cols.map(c=>`<div class="fp ${c===b.condField?"on":""}" onclick="setProp('${id}','condField','${esc(c)}')">${esc(c)}</div>`).join("")
+          : `<div class="no-col-hint">Chọn sheet để xem cột</div>`}</div></div>
+      <div class="pr"><label>Phép so sánh</label>
+        <select onchange="setProp('${id}','condOp',this.value)">
+          ${ops.map(([v,l])=>`<option value="${v}" ${b.condOp===v?"selected":""}>${l}</option>`).join("")}
+        </select></div>
+      ${b.condOp!=="empty"&&b.condOp!=="notempty"?
+        `<div class="pr"><label>Giá trị so sánh</label>
+          <input value="${esc(b.condValue||"")}" placeholder="Vd: Đã thanh toán"
+                 oninput="setProp('${id}','condValue',this.value)"></div>` : ""}
+      <div style="font-size:11px;color:var(--amber);padding:6px;background:var(--amber-bg);border-radius:var(--r);margin:6px 0">
+        Block này chỉ in khi: <strong>${esc(b.condField||"?")} ${
+          {eq:"=",neq:"≠",gt:">",lt:"<",contains:"chứa",empty:"trống",notempty:"không trống"}[b.condOp||"eq"]
+        } "${esc(b.condValue||"?")}"</strong>
+      </div>
+      <button style="width:100%;padding:6px;border-radius:var(--r);border:1px solid var(--amber);
+        background:var(--amber-bg);color:var(--amber);cursor:pointer;font-size:12px;margin-top:2px;font-family:inherit"
+        onclick="addToCondition('${id}')">+ Thêm block nội dung</button>
+      ${(b.innerBlocks||[]).length?`<div style="font-size:11px;color:var(--tx2);margin-top:6px">
+        Hiện có <strong>${b.innerBlocks.length}</strong> block bên trong.
+        <span style="color:var(--red);cursor:pointer" onclick="setProp('${id}','innerBlocks',[])"> Xoá tất cả</span>
+      </div>`:""}
+      `; break;
+    }
+
+    case "highlight": h+=`
+      <div class="pr"><label>Nội dung</label>
+        <textarea rows="2" oninput="setProp('${id}','text',this.value)">${esc(b.text||"")}</textarea></div>
+      <div class="pr"><label>Icon (emoji hoặc để trống)</label>
+        <input value="${esc(b.icon||"")}" placeholder="&#9888; &#9989; &#128308;"
+               oninput="setProp('${id}','icon',this.value)"></div>
+      <div class="pr2">
+        <div class="pr"><label>Màu nền</label>
+          <input type="color" value="${b.bgColor||"#faeeda"}"
+                 oninput="setProp('${id}','bgColor',this.value)"
+                 style="height:30px;padding:1px 4px;cursor:pointer"></div>
+        <div class="pr"><label>Màu viền & chữ</label>
+          <input type="color" value="${b.borderColor||"#854F0B"}"
+                 oninput="setProp('${id}','borderColor',this.value);setProp('${id}','textColor',this.value)"
+                 style="height:30px;padding:1px 4px;cursor:pointer"></div>
+      </div>
+      <div class="pr2">
+        <div class="pr"><label>Cỡ chữ (px)</label>
+          <input type="number" min="10" max="24" value="${b.size||13}"
+                 oninput="setProp('${id}','size',+this.value)"></div>
+        <div class="pr"><label>Chữ đậm</label>
+          <select onchange="setProp('${id}','bold',this.value==='true')">
+            <option value="false" ${!b.bold?"selected":""}>Không</option>
+            <option value="true" ${b.bold?"selected":""}>Có</option>
+          </select></div>
+      </div>
+    `; break;
   }
+  h += appearanceProps(id, b);
   return h+`<button class="del-btn" onclick="delBlock('${id}')">&#128465; Xoá block này</button>`;
 }
 
@@ -1354,13 +1625,87 @@ function duplicateTpl() {
 }
 
 function typeName(t){
-  const m={docheader:"Header HĐ",logo:"Logo",heading:"Tiêu đề lớn",subheading:"Tiêu đề nhỏ",
+  const m={
+    docheader:"Header HĐ",logo:"Logo",heading:"Tiêu đề lớn",subheading:"Tiêu đề nhỏ",
     text:"Đoạn văn",field:"Field đơn",fieldrow:"Label+Giá trị",infogrid:"Thông tin 2 cột",
     datatable:"Bảng dữ liệu",amount:"Tổng tiền",custom:"Tính toán",sign:"Chữ ký",
     divider:"Đường đậm",dividerlight:"Đường mờ",spacer:"Khoảng trống",pagebreak:"Ngắt trang",
-    richtext:"Text+Field inline",twocol:"2 cột tự do"};
+    richtext:"Text+Field inline",twocol:"2 cột tự do",
+    pagenum:"Số trang",qrcode:"QR Code",condition:"Điều kiện IF",highlight:"Box nổi bật"
+  };
   return m[t]||t;
 }
+
+
+// ══════════════════════════════════════════════════════════════
+//  SPRINT 3 — CONDITION BLOCK
+// ══════════════════════════════════════════════════════════════
+function addToCondition(parentId) {
+  const types = Object.keys(DEF).filter(t=>!["condition","twocol"].includes(t));
+  const list  = types.map((t,i)=>`${i+1}. ${typeName(t)}`).join("\n");
+  const choice = prompt("Chọn loại block (nhập số):\n"+list);
+  if (!choice) return;
+  const idx = parseInt(choice)-1;
+  if (idx<0||idx>=types.length) return;
+  const b = blks.find(b=>b.id===parentId); if(!b) return;
+  if (!b.innerBlocks) b.innerBlocks=[];
+  const nb = JSON.parse(JSON.stringify(DEF[types[idx]]||{type:types[idx]}));
+  nb.id = uid();
+  b.innerBlocks.push(nb);
+  markDirty(); renderCanvas(); selectBlock(parentId);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SPRINT 3 — QR CODE (render khi in, dùng qrcode.js CDN)
+//  Inject QR script vào print-block.html thông qua URL param
+// ══════════════════════════════════════════════════════════════
+// QR được render bởi print-block.html khi nó load qrcode.js từ CDN
+// Editor chỉ hiện placeholder
+
+// ══════════════════════════════════════════════════════════════
+//  SPRINT 3 — PAGE NUMBER CSS COUNTER (inject khi preview/save)
+// ══════════════════════════════════════════════════════════════
+function getPageNumCSS() {
+  // CSS counter cho số trang — chỉ hoạt động khi @media print
+  return `
+    @media print {
+      .b-pagenum { counter-increment: page; }
+      .b-pagenum::before { content: none; }
+      body { counter-reset: page; }
+    }
+    @page { counter-increment: page; }
+  `;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SPRINT 3 — PRESET: thêm highlight block vào danh sách preset
+// ══════════════════════════════════════════════════════════════
+// Đã có trong PRESETS array ở Sprint 2
+
+// ══════════════════════════════════════════════════════════════
+//  SPRINT 3 — COPY BLOCK
+// ══════════════════════════════════════════════════════════════
+let clipboard = null;
+function copyBlock(id) {
+  const b = blks.find(b=>b.id===id);
+  if (!b) return;
+  clipboard = JSON.parse(JSON.stringify(b));
+  alert("Đã copy block. Nhấn Ctrl+V để dán.");
+}
+function pasteBlock() {
+  if (!clipboard||!curId) return;
+  const nb = JSON.parse(JSON.stringify(clipboard));
+  nb.id = uid();
+  if (selId) {
+    const i=blks.findIndex(b=>b.id===selId);
+    blks.splice(i>=0?i+1:blks.length,0,nb);
+  } else blks.push(nb);
+  markDirty(); renderCanvas(); selectBlock(nb.id);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SPRINT 3 — TYPENAMES updated
+// ══════════════════════════════════════════════════════════════
 
 // MISC
 function markDirty(){dirty=true;updateBadge();snapshot();}
