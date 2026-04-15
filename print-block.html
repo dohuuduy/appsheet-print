@@ -6,90 +6,98 @@
 <title>Báo cáo</title>
 <style>
 *,::before,::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"Times New Roman",Georgia,serif;font-size:14px;color:#1a1a18;background:#e0e0db}
-.toolbar{background:#1e1e1c;color:#fff;padding:0 20px;height:46px;display:flex;
-         align-items:center;gap:10px;font-family:-apple-system,sans-serif}
-.toolbar h1{font-size:13px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+:root{
+  --tx:#1a1a18;--tx2:#6b6b67;--tx3:#9b9b96;
+  --bg:#fff;--bg2:#f7f7f5;--bd:rgba(0,0,0,.1);--bd2:rgba(0,0,0,.2);
+  --blue:#185FA5;--r:8px;
+}
+body{font-family:"Times New Roman",Georgia,serif;font-size:13px;
+     color:var(--tx);background:#e0e0db}
+/* Toolbar */
+.toolbar{background:#1e1e1c;color:#fff;padding:0 20px;height:46px;
+  display:flex;align-items:center;gap:10px;font-family:-apple-system,sans-serif;
+  position:sticky;top:0;z-index:100}
+.toolbar h1{font-size:13px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tb-btn{padding:6px 13px;border-radius:6px;border:1px solid rgba(255,255,255,.2);
-        background:none;color:#fff;cursor:pointer;font-size:12px}
+  background:none;color:#fff;cursor:pointer;font-size:12px;transition:background .15s;white-space:nowrap}
 .tb-btn:hover{background:rgba(255,255,255,.1)}
-.tb-btn.primary{background:#185FA5;border-color:#185FA5}
+.tb-btn.primary{background:var(--blue);border-color:var(--blue)}
+.preview-badge{font-size:11px;padding:3px 8px;border-radius:12px;
+  background:rgba(239,159,39,.3);color:#fbbf24}
+/* Paper */
 .pw{padding:24px;display:flex;flex-direction:column;align-items:center;gap:20px}
-.paper{background:#fff;width:210mm;padding:16mm 18mm;box-shadow:0 3px 24px rgba(0,0,0,.14)}
-.spin{width:20px;height:20px;border:2px solid #ddd;border-top-color:#185FA5;
-      border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+.paper{background:#fff;width:210mm;padding:16mm 18mm;box-shadow:0 3px 24px rgba(0,0,0,.14);
+  position:relative}
+/* Loading */
+.spin{width:20px;height:20px;border:2px solid #ddd;border-top-color:var(--blue);
+  border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
 @keyframes spin{to{transform:rotate(360deg)}}
-.state{display:flex;flex-direction:column;align-items:center;gap:14px;padding:60px 20px;
-       text-align:center;color:#6b6b67}
-.err{background:#fcebeb;border:1px solid rgba(163,45,45,.2);border-radius:8px;
-     padding:14px;color:#A32D2D;font-size:13px;font-family:-apple-system,sans-serif;margin:20px}
-
-/* ── BLOCK PRINT STYLES ── */
+.state{display:flex;flex-direction:column;align-items:center;gap:14px;
+  padding:60px 20px;text-align:center;color:var(--tx2)}
+.err{background:#fcebeb;border:1px solid rgba(163,45,45,.2);border-radius:var(--r);
+  padding:14px;color:#A32D2D;font-size:13px;font-family:-apple-system,sans-serif;margin:20px}
+/* Block styles */
 .bp-heading{font-size:20px;font-weight:700;line-height:1.3;margin:4px 0}
-.bp-subheading{font-size:15px;font-weight:600;line-height:1.4;margin:3px 0}
+.bp-sub{font-size:15px;font-weight:600;line-height:1.4;margin:3px 0}
 .bp-text{font-size:13px;line-height:1.7;margin:2px 0;white-space:pre-wrap}
-.bp-field{font-size:13px;margin:2px 0}
-.bp-field .fl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9b9b96;margin-right:6px}
-.bp-field .fv{font-weight:500}
-
-.bp-fieldrow{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:12px;margin:2px 0;align-items:baseline}
-.bp-fieldrow .fr-l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9b9b96;white-space:nowrap}
-.bp-fieldrow .fr-v{font-weight:500}
-
-.bp-infogrid{display:grid;grid-template-columns:1fr 1fr;gap:0 22px;margin:6px 0}
-.bp-infogrid dt{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9b9b96;margin-top:7px}
-.bp-infogrid dd{font-size:13px;font-weight:500}
-
-.bp-docheader{display:flex;justify-content:space-between;align-items:flex-start;
-              margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid #1a1a18}
-.bp-docheader .dh-l{font-size:11px;color:#6b6b67;line-height:1.8}
-.bp-docheader .dh-l strong{font-size:17px;font-weight:700;color:#1a1a18;display:block;margin-bottom:2px}
-.bp-docheader .dh-r{text-align:right;font-size:11px;color:#6b6b67;line-height:1.8}
-.bp-docheader .dh-r strong{font-size:18px;font-weight:700;color:#1a1a18;display:block;letter-spacing:.02em}
-
-.bp-logo{display:flex;align-items:center;gap:12px;margin:4px 0}
-.bp-logo .lo-box{width:60px;height:60px;border:2px solid #eee;border-radius:8px;
-                 display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa}
-.bp-logo .lo-name{font-size:16px;font-weight:700}
-.bp-logo .lo-sub{font-size:11px;color:#6b6b67}
-
-.bp-table{width:100%;border-collapse:collapse;font-size:12px;margin:4px 0}
-.bp-table th{background:#1a1a18;color:#fff;padding:6px 8px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
-.bp-table td{padding:5px 8px;border-bottom:1px solid rgba(0,0,0,.1)}
-.bp-table tr:nth-child(even) td{background:#f7f7f5}
-.bp-table tfoot td{font-weight:700;background:#f7f7f5;border-top:2px solid rgba(0,0,0,.2)}
-
-.bp-amount{display:flex;justify-content:flex-end;margin:6px 0}
-.bp-amount-inner{border:1px solid rgba(0,0,0,.2);border-radius:8px;padding:8px 16px;text-align:right}
-.bp-amount-inner .am-l{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#6b6b67}
-.bp-amount-inner .am-v{font-size:18px;font-weight:700}
-.bp-amount-inner .am-w{font-size:10px;color:#9b9b96;font-style:italic;margin-top:2px}
-
+.bp-fr{display:flex;gap:8px;align-items:baseline;font-size:12px;margin:2px 0}
+.bp-fr .lbl{font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.05em;color:var(--tx3);white-space:nowrap;min-width:80px}
+.bp-fr .val{font-weight:500}
+.bp-ig{display:grid;grid-template-columns:1fr 1fr;gap:0 22px;margin:6px 0}
+.bp-ig dt{font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.05em;color:var(--tx3);margin-top:7px}
+.bp-ig dd{font-size:12px;font-weight:500}
+.bp-dochd{display:flex;justify-content:space-between;align-items:flex-start;
+  margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid var(--tx)}
+.dhl{font-size:11px;color:var(--tx2);line-height:1.8}
+.dhl strong{font-size:17px;font-weight:700;color:var(--tx);display:block;margin-bottom:2px}
+.dhr{text-align:right;font-size:11px;color:var(--tx2);line-height:1.8}
+.dhr strong{font-size:18px;font-weight:700;color:var(--tx);display:block;letter-spacing:.02em}
+.bp-tbl{width:100%;border-collapse:collapse;font-size:12px;margin:4px 0}
+.bp-tbl th{background:var(--tx);color:#fff;padding:6px 8px;text-align:left;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.bp-tbl td{padding:5px 8px;border-bottom:1px solid var(--bd);vertical-align:top}
+.bp-tbl tr:nth-child(even) td{background:var(--bg2)}
+.bp-tbl tfoot td{font-weight:700;background:var(--bg2);border-top:2px solid var(--bd2)}
+.bp-amt{display:flex;justify-content:flex-end;margin:6px 0}
+.bp-amt-inner{border:1px solid var(--bd2);border-radius:var(--r);padding:8px 16px;text-align:right}
+.bp-amt-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx2)}
+.bp-amt-val{font-size:18px;font-weight:700}
+.bp-amt-wrd{font-size:10px;color:var(--tx3);font-style:italic;margin-top:2px}
 .bp-sign{display:flex;justify-content:space-around;margin:20px 0 4px}
-.bp-sign .sc{text-align:center;font-size:11px;color:#6b6b67}
-.bp-sign .sc .sl{width:100px;border-bottom:1px solid rgba(0,0,0,.2);height:32px;margin:0 auto 4px}
-.bp-sign .sc .sn{font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+.bp-sc{text-align:center;font-size:11px;color:var(--tx2)}
+.bp-sl{width:100px;border-bottom:1px solid var(--bd2);height:32px;margin:0 auto 4px}
+.bp-sn{font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+.bp-logo{display:flex;align-items:center;gap:12px;margin:4px 0}
+.bp-div{border:none;border-top:2px solid var(--tx);margin:6px 0}
+.bp-divl{border:none;border-top:1px solid var(--bd);margin:4px 0}
+.bp-cond{} /* shown/hidden by condition logic */
+.bp-hl{display:flex;align-items:flex-start;gap:8px;border-radius:6px;padding:8px 12px;margin:4px 0}
+.bp-richtext{font-size:13px;line-height:1.7;margin:2px 0}
+.bp-2col{display:grid;gap:12px;margin:4px 0}
+.bp-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px;margin:4px 0}
+.bp-qr-label{font-size:10px;color:var(--tx2)}
+/* Page number CSS counter */
+.bp-pagenum{text-align:center;font-size:11px;color:var(--tx3);font-style:italic;margin:4px 0}
+.bp-footer{margin-top:16px;padding-top:10px;border-top:1px solid var(--bd);
+  font-size:10px;color:var(--tx3);text-align:center;line-height:1.9}
+/* Highlight */
+.preview-data-badge{background:rgba(239,159,39,.15);border:1px solid rgba(239,159,39,.4);
+  color:#854F0B;font-size:10px;padding:2px 8px;border-radius:10px;margin-left:6px}
 
-.bp-divider{border:none;border-top:2px solid #1a1a18;margin:6px 0}
-.bp-divider-light{border:none;border-top:1px solid rgba(0,0,0,.1);margin:4px 0}
-.bp-footer{margin-top:16px;padding-top:10px;border-top:1px solid rgba(0,0,0,.1);
-           font-size:10px;color:#9b9b96;text-align:center;line-height:1.9}
-
-/* QR + page number */
-.qr-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px}
-.qr-label{font-size:10px;color:#6b6b67}
-.b-cond-block{} /* shown/hidden by JS at print time */
-.b-highlight{display:flex;align-items:flex-start;gap:8px;border-radius:6px;padding:8px 12px}
-.b-pagenum-print{text-align:center;font-size:11px;color:#9b9b96;font-style:italic}
 @media print{
-  .b-pagenum-print::after{content:" " counter(page) " / " counter(pages);}
-  @page{counter-increment:page;}
-  body{counter-reset:page;}
   body{background:#fff}
   .toolbar,.no-print{display:none!important}
   .pw{padding:0}
   .paper{box-shadow:none;width:100%;padding:0;margin:0}
-  @page{margin:12mm 14mm}
+  .bp-tbl tr{page-break-inside:avoid}
+  .bp-tbl thead{display:table-header-group}
+  /* CSS counter for page numbers */
+  @page{margin:12mm 14mm;counter-increment:page}
+  body{counter-reset:page}
+  .bp-pagenum::after{content:" " counter(page)}
+  .bp-pagenum.with-total::after{content:" " counter(page) " / " counter(pages)}
 }
 </style>
 </head>
@@ -97,295 +105,333 @@ body{font-family:"Times New Roman",Georgia,serif;font-size:14px;color:#1a1a18;ba
 
 <div class="toolbar no-print">
   <h1 id="tb-title">Đang tải báo cáo...</h1>
+  <span id="preview-badge" class="preview-badge" style="display:none">&#128065; XEM THỬ</span>
   <button class="tb-btn" onclick="window.close()">&#10005; Đóng</button>
   <button class="tb-btn primary" onclick="window.print()">&#128438; In / PDF</button>
 </div>
 
-<div class="pw">
+<div class="pw" id="pw">
   <div class="paper" id="paper">
-    <div class="state"><div class="spin"></div><p>Đang tải...</p></div>
+    <div class="state"><div class="spin"></div><p>Đang tải dữ liệu...</p></div>
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-// ─── CONFIG (sửa duy nhất dòng này) ───
+// ── CONFIG ──
 const API_URL       = "https://script.google.com/macros/s/AKfycbwqwRgBqKmL5yGY8YD0MrJi-iQUusgQPplEOfqzWsXHpDf-HZus900DueXzxYIe9V-i/exec";
 
-// ──────────────────────────────────────
+// ── URL PARAMS ──
+const Q           = new URLSearchParams(location.search);
+const ROW_ID      = Q.get("id")             || "";
+const TPL_ID      = Q.get("tpl")            || "";
+const SHEET       = Q.get("sheet")          || "";
+const PREVIEW     = Q.get("preview")        === "1";
+const AUTOPRINT   = Q.get("autoprint")      === "1";
+const USE_BLOCK   = Q.get("useBlockTemplate")=== "1" || !!TPL_ID;
+const LS_KEY      = "ps_tpl_v4";
 
-const Q          = new URLSearchParams(location.search);
-const ROW_ID     = Q.get("id")      || "";
-const TPL_ID     = Q.get("tpl")     || "";
-const SHEET      = Q.get("sheet")   || "";
-const PREVIEW    = Q.get("preview") === "1";
-const USE_BLOCKS = Q.get("useBlockTemplate") === "1";
-const LS_KEY     = "ps_templates_editor_v1";
-
+// ── DEMO DATA ──
 const DEMO = {
   MaDonHang:"DH-001",NgayTao:"15/04/2024",NgayDat:"15/04/2024",
   TenKhachHang:"Nguyễn Văn An",SoDienThoai:"0901 234 567",
   DiaChi:"123 Lê Lợi, Q.1, TP.HCM",Email:"an@email.com",
   TenSanPham:"Laptop Dell XPS 15",SoLuong:"2",DonGia:"28500000",
-  ThanhTien:"57000000",TongTien:"57000000",
+  ThanhTien:"57000000",TongTien:"57000000",SoTien:"57000000",
   TrangThai:"Đã thanh toán",GhiChu:"Giao trước 5pm",
   NguoiPhuTrach:"Trần Thị Bình",PhuongThucThanhToan:"Chuyển khoản",
+  SoPhieu:"PX-001",NgayXuat:"15/04/2024",TenKho:"Kho A",
+  NguoiXuat:"Nguyễn Văn B",LyDoXuat:"Xuất bán",
+  HoTen:"Nguyễn Văn An",MaNhanVien:"NV001",
+  PhongBan:"Kinh doanh",ChucVu:"Nhân viên",
+  LuongThucNhan:"15000000",Thang:"4",Nam:"2024",KyBaoCao:"Q1/2024",
 };
 
-async function api(params) {
-  const r = await fetch(API_URL+"?"+new URLSearchParams(params));
-  const d = await r.json();
-  if (d.error) throw new Error(d.error);
-  return d;
+// ── API ──
+async function api(p) {
+  const r = await fetch(API_URL+"?"+new URLSearchParams(p));
+  const d = await r.json(); if(d.error) throw new Error(d.error); return d;
 }
 
+// ── MAIN ──
 async function main() {
   try {
-    // 1. Load block template
-    let blocks = null;
-    let tplName = "BÁO CÁO";
+    // 1. Load block template config
+    let blocks = null, tplName = "BÁO CÁO", po = {};
 
-    // Thử localStorage trước (nhanh)
+    // Thử localStorage trước (nhanh, offline)
     if (TPL_ID) {
       try {
         const ls = JSON.parse(localStorage.getItem(LS_KEY)||"{}");
         if (ls[TPL_ID]) {
-          blocks = ls[TPL_ID].blocks || [];
-          tplName = ls[TPL_ID].name || tplName;
+          blocks  = ls[TPL_ID].blocks || [];
+          tplName = ls[TPL_ID].name   || tplName;
+          po      = ls[TPL_ID].pageSettings || {};
         }
-      } catch(e){}
+      } catch(e) {}
     }
-
     // Fallback: load từ API
     if (!blocks && TPL_ID) {
       try {
         const d = await api({action:"getConfig",tplId:TPL_ID});
-        const cfg = d.template;
-        if (cfg?.printOptions?.templateBlocks) {
-          blocks = cfg.printOptions.templateBlocks;
-          tplName = cfg.tplName || tplName;
+        if (d.template?.printOptions?.templateBlocks) {
+          blocks  = d.template.printOptions.templateBlocks;
+          tplName = d.template.tplName || tplName;
+          po      = d.template.printOptions || {};
         }
-      } catch(e){}
+      } catch(e) {}
     }
+    if (!blocks?.length) throw new Error("Không tìm thấy template hoặc template trống. tplId="+TPL_ID);
 
-    if (!blocks || !blocks.length) {
-      throw new Error("Không tìm thấy template hoặc template trống. Kiểm tra lại tplId="+TPL_ID);
-    }
-
-    // 2. Lấy data
-    let row = null;
-    let extraRows = {};  // sheet → rows[] (cho datatable nhiều dòng)
-
-    if (PREVIEW) {
-      row = {...DEMO};
-    } else {
-      if (!ROW_ID || !SHEET) throw new Error("Thiếu tham số id hoặc sheet");
+    // 2. Lấy data row
+    let row = DEMO;
+    if (!PREVIEW) {
+      if (!ROW_ID || !SHEET) throw new Error("Thiếu tham số id hoặc sheet trong URL");
       const d = await api({action:"getData",sheet:SHEET,id:ROW_ID});
+      if (!d.row) throw new Error("Không tìm thấy dòng id="+ROW_ID);
       row = d.row;
-      if (!row) throw new Error("Không tìm thấy dòng id="+ROW_ID);
     }
 
-    // 3. Pre-load data bảng (datatable blocks)
-    const dtBlocks = blocks.filter(b=>b.type==="datatable"&&b.sheet&&b.sheet!==SHEET);
-    for (const b of dtBlocks) {
-      if (extraRows[b.sheet]) continue;
-      try {
-        if (PREVIEW) { extraRows[b.sheet]=[{...DEMO}]; }
-        else {
-          const d = await api({action:"getData",sheet:b.sheet,all:"true"});
-          extraRows[b.sheet] = d.rows||[];
-        }
-      } catch(e) { extraRows[b.sheet]=[]; }
-    }
+    // 3. Apply page settings
+    applyPageStyle(po);
 
-    // 4. Render
-    document.getElementById("paper").innerHTML = renderBlocks(blocks, row, extraRows) +
-      `<div class="bp-footer">In lúc: ${new Date().toLocaleString("vi-VN")}${PREVIEW?' &nbsp;·&nbsp; <strong>[DỮ LIỆU XEM THỬ]</strong>':""}</div>`;
+    // 4. Render blocks
+    const html = blocks.map(b => renderBlock(b, row)).join("") + renderFooter(row, po);
+    document.getElementById("paper").innerHTML = html;
+
+    // 5. Render QR codes
+    setTimeout(() => renderQRAll(row), 300);
+
+    // 6. UI
     document.title = tplName;
     document.getElementById("tb-title").textContent = (PREVIEW?"[XEM THỬ] ":"")+tplName;
-    // Sprint 3: render QR codes
-    if (window._renderQR) setTimeout(()=>window._renderQR(row), 200);
+    if (PREVIEW) document.getElementById("preview-badge").style.display = "";
+    if (AUTOPRINT || po.autoprint) setTimeout(()=>window.print(), 800);
 
   } catch(e) {
     document.getElementById("paper").innerHTML =
-      `<div class="err"><strong>Lỗi:</strong> ${e.message}</div>`;
+      `<div class="err"><strong>Lỗi tải báo cáo:</strong><br>${e.message}<br>
+       <small style="color:#9b9b96">Kiểm tra URL · API · tên sheet · ID block template</small></div>`;
   }
 }
 
-// ═══════════════ RENDER ENGINE ═══════════════
-function renderBlocks(blocks, row, extraRows) {
-  return blocks.map(b => renderBlock(b, row, extraRows)).join("");
+// ── PAGE STYLE ──
+function applyPageStyle(po) {
+  const sizes = {
+    A4:{w:"210mm",h:"297mm"},A5:{w:"148mm",h:"210mm"},
+    letter:{w:"216mm",h:"279mm"},"80mm":{w:"80mm",h:"auto"},K57:{w:"57mm",h:"auto"}
+  };
+  const sz = sizes[po.paper||"A4"]||sizes.A4;
+  const isL = po.orient==="landscape";
+  const w = isL&&sz.h!=="auto"?sz.h:sz.w;
+  const h = isL&&sz.h!=="auto"?sz.w:sz.h;
+  const s = document.createElement("style");
+  s.textContent = `
+    @page{size:${w} ${h==="auto"?"":h};margin:${po.marginTop||12}mm ${po.marginRight||14}mm ${po.marginBottom||12}mm ${po.marginLeft||14}mm}
+    .paper{width:${w};${h!=="auto"?`min-height:${h}`:""};}
+  `;
+  if (po.fontFamily) s.textContent += `.paper{font-family:${po.fontFamily};}`;
+  if (po.baseFontSize) s.textContent += `.paper{font-size:${po.baseFontSize}px;}`;
+  if (po.css) s.textContent += "
+"+po.css;
+  document.head.appendChild(s);
 }
 
-function renderBlock(b, row, extraRows) {
-  const fv = (field) => {
-    if (!field) return "—";
-    // Tính toán nếu có
-    if (field.includes("*")||field.includes("+")||field.includes("-")||field.includes("/")) {
-      return calcFormula(field, row);
-    }
-    return fv2(row[field]);
+// ── RENDER ENGINE ──
+function renderBlock(b, row) {
+  if (!b || !b.type) return "";
+  const wbg = (html) => {
+    const bg=b.bgColor||"transparent";
+    const pt=b.paddingTop||0,pb2=b.paddingBottom||0,pl=b.paddingLeft||0,pr=b.paddingRight||0;
+    if (bg==="transparent"&&!pt&&!pb2&&!pl&&!pr) return html;
+    return `<div style="background:${bg};padding:${pt}px ${pr}px ${pb2}px ${pl}px;border-radius:4px">${html}</div>`;
+  };
+  const fv = k => { const v=row[k]; return (v===null||v===undefined||v==="")?"—":String(v); };
+  const tpl = str => String(str||"").replace(/\{\{([^}]+)\}\}/g,(_,k)=>{
+    if (k.endsWith("_words")) return soThanhChu(row[k.replace("_words","")]);
+    return fv(k.trim());
+  });
+  const txSt = b => {
+    let s="";
+    if(b.bold)s+="font-weight:700;";if(b.italic)s+="font-style:italic;";
+    if(b.underline)s+="text-decoration:underline;";
+    if(b.fontFamily)s+=`font-family:${b.fontFamily};`;
+    if(b.lineHeight)s+=`line-height:${b.lineHeight};`;
+    return s;
   };
 
-  const fv2 = (v) => (v===null||v===undefined||v==="") ? "—" : String(v);
-
-  // Thay {{field}} trong text
-  const tpl = (str) => String(str||"").replace(/\{\{([^}]+)\}\}/g, (_,f) => {
-    if (f.endsWith("_words")) return soThanhChu(row[f.replace("_words","")]);
-    return fv(f.trim());
-  });
-
+  let html = "";
   switch(b.type) {
-
     case "docheader":
-      return `<div class="bp-docheader">
-        <div class="dh-l"><strong>${esc(b.companyName||"")}</strong>${esc(b.companyInfo||"").replace(/\n/g,"<br>")}</div>
-        <div class="dh-r"><strong>${fv(b.docNumField)}</strong>${esc(b.docTitle||"")}<br>Ngày: ${fv(b.dateField)}</div>
-      </div>`;
+      html=`<div class="bp-dochd">
+        <div class="dhl"><strong>${esc(b.companyName||"")}</strong>${esc(b.companyInfo||"").replace(/\n/g,"<br>")}</div>
+        <div class="dhr"><strong>${fv(b.docNumField||"MaDonHang")}</strong>${esc(b.docTitle||"")}<br>Ngày: ${fv(b.dateField||"NgayTao")}</div>
+      </div>`; break;
 
-    case "logo":
-      return `<div class="bp-logo">
-        <div class="lo-box">LOGO</div>
-        <div><div class="lo-name">${esc(b.companyName||"")}</div>
-        <div class="lo-sub">${esc(b.subTitle||"")}</div></div>
-      </div>`;
+    case "logo": {
+      const al=b.logoAlign||"left";
+      const logoEl=b.logoData
+        ?`<img src="${b.logoData}" style="width:${b.logoWidth||80}px;height:auto;max-height:80px;object-fit:contain">`
+        :`<div style="width:${b.logoWidth||80}px;height:50px;border:1px solid #ddd;display:flex;align-items:center;justify-content:center;font-size:9px;color:#aaa">LOGO</div>`;
+      html=`<div class="bp-logo" style="justify-content:${al==="right"?"flex-end":al==="center"?"center":"flex-start"}">
+        ${logoEl}
+        <div style="margin-left:10px">
+          <div style="font-size:16px;font-weight:700">${esc(b.companyName||"")}</div>
+          <div style="font-size:11px;color:var(--tx2)">${esc(b.subTitle||"")}</div>
+        </div>
+      </div>`; break; }
 
     case "heading":
-      return `<div class="bp-heading" style="text-align:${b.align||"center"};color:${b.color||"#1a1a18"};font-size:${b.size||20}px">${tpl(b.text)}</div>`;
-
+      html=`<div class="bp-heading" style="text-align:${b.align||"center"};color:${b.color||"#1a1a18"};font-size:${b.size||20}px;${txSt(b)}">${tpl(b.text)}</div>`; break;
     case "subheading":
-      return `<div class="bp-subheading" style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||15}px">${tpl(b.text)}</div>`;
-
+      html=`<div class="bp-sub" style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||15}px;${txSt(b)}">${tpl(b.text)}</div>`; break;
     case "text":
-      return `<div class="bp-text" style="text-align:${b.align||"left"};color:${b.color||"#6b6b67"};font-size:${b.size||13}px">${tpl(b.text)}</div>`;
+      html=`<div class="bp-text" style="text-align:${b.align||"left"};color:${b.color||"#6b6b67"};font-size:${b.size||13}px;${txSt(b)}">${tpl(b.text)}</div>`; break;
+
+    case "richtext":
+      html=`<div class="bp-richtext" style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||13}px;${txSt(b)}">${tpl(b.content||"")}</div>`; break;
 
     case "field":
-      return `<div class="bp-field">
-        ${b.showLabel&&b.label?`<span class="fl">${esc(b.label)}:</span>`:""}
-        <span class="fv">${fv(b.fieldName)}</span>
-      </div>`;
+      html=`<div style="font-size:12px;margin:2px 0">
+        ${b.showLabel&&b.label?`<span style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--tx3);margin-right:6px">${esc(b.label)}:</span>`:""}
+        <span style="font-weight:500">${fv(b.fieldName)}</span>
+      </div>`; break;
 
     case "fieldrow":
-      return `<div class="bp-fieldrow">
-        <span class="fr-l">${esc(b.label||b.fieldName||"")}:</span>
-        <span class="fr-v">${fv(b.fieldName)}</span>
-      </div>`;
+      html=`<div class="bp-fr"><span class="lbl">${esc(b.label||b.fieldName||"")}:</span><span class="val">${fv(b.fieldName)}</span></div>`; break;
 
-    case "infogrid":
-      const igFields = b.fields||[];
-      return `<dl class="bp-infogrid">${igFields.map(f=>
-        `<div><dt>${esc(f.label||f.field)}</dt><dd>${fv(f.field)}</dd></div>`
-      ).join("")}</dl>`;
+    case "infogrid": {
+      const fields=b.fields||[];
+      html=`<dl class="bp-ig">${fields.map(f=>`<div><dt>${esc(f.label||f.field)}</dt><dd>${fv(f.field)}</dd></div>`).join("")}</dl>`; break; }
 
-    case "datatable":
-      const dtCols = b.columns||[];
-      // Lấy rows từ cùng sheet chính hoặc sheet phụ
-      const dtRows = b.sheet && b.sheet!==SHEET
-        ? (extraRows[b.sheet]||[])
-        : [row];
-      const thead = dtCols.map(c=>`<th>${esc(c)}</th>`).join("");
-      const tbody = dtRows.map(r=>
-        `<tr>${dtCols.map(c=>`<td>${fv2(r[c])}</td>`).join("")}</tr>`
-      ).join("");
-      // Tổng các cột số
-      const sums = dtCols.map(c=>{
-        const nums = dtRows.map(r=>parseFloat(String(r[c]||"").replace(/[^0-9.\-]/g,""))).filter(n=>!isNaN(n));
-        return nums.length ? nums.reduce((a,b)=>a+b,0) : null;
-      });
-      const tfoot = b.showTotal&&sums.some(s=>s!==null)
-        ? `<tfoot><tr>${sums.map((s,i)=>`<td>${i===0?"Tổng":s!==null?fmtMoney(s):""}</td>`).join("")}</tr></tfoot>` : "";
-      return `<table class="bp-table"><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody>${tfoot}</table>`;
+    case "datatable": {
+      const dc=b.columns||[],ts=b.tblStyle||{};
+      const hbg=ts.headerBg||"#1a1a18",hcl=ts.headerColor||"#fff";
+      const bs=ts.borderStyle||"all",bw=ts.borderWidth||1,bc=ts.borderColor||"rgba(0,0,0,.1)";
+      const thB=bs==="none"?"border:none":`border:${bw}px solid ${bc}`;
+      const tdB=bs==="none"?"border:none":`border-bottom:${bw}px solid ${bc}`;
+      // Demo row hoặc row thật
+      const rows = PREVIEW ? [row] : [row];
+      html=`<table class="bp-tbl" style="${bs==="outer"?`border:${bw}px solid ${bc}`:""}">
+        <thead><tr style="background:${hbg};color:${hcl}">${dc.map(c=>`<th style="${thB}">${esc(c)}</th>`).join("")}</tr></thead>
+        <tbody>${rows.map(r=>`<tr>${dc.map(c=>`<td style="${tdB}">${String(r[c]||"—")}</td>`).join("")}</tr>`).join("")}</tbody>
+        ${b.showTotal&&dc.length?`<tfoot><tr>
+          ${dc.slice(0,-1).map(c=>`<td style="${tdB}"></td>`).join("")}
+          <td style="${tdB};font-weight:700">${fmtMoney(row[dc[dc.length-1]])}</td>
+        </tr></tfoot>`:""}
+      </table>`; break; }
 
-    case "amount":
-      const amtRaw = row[b.fieldName]||"0";
-      return `<div class="bp-amount"><div class="bp-amount-inner">
-        <div class="am-l">${esc(b.label||"TỔNG CỘNG")}</div>
-        <div class="am-v">${fmtMoney(amtRaw)} ₫</div>
-        ${b.showWords?`<div class="am-w">(${soThanhChu(amtRaw)})</div>`:""}
-      </div></div>`;
+    case "amount": {
+      const amt=row[b.fieldName]||"0";
+      html=`<div class="bp-amt"><div class="bp-amt-inner">
+        <div class="bp-amt-lbl">${esc(b.label||"TỔNG CỘNG")}</div>
+        <div class="bp-amt-val">${fmtMoney(amt)} ₫</div>
+        ${b.showWords?`<div class="bp-amt-wrd">(${soThanhChu(amt)})</div>`:""}
+      </div></div>`; break; }
 
-    case "custom":
-      const cfVal = calcFormula(b.formula||"0", row);
-      return `<div class="bp-fieldrow">
-        <span class="fr-l">${esc(b.label||"Tính toán")}:</span>
-        <span class="fr-v">${fmtMoney(cfVal)} ₫</span>
-      </div>`;
+    case "custom": {
+      const val = calcFormula(b.formula||"0", row);
+      html=`<div class="bp-fr"><span class="lbl">${esc(b.label||"")}:</span><span class="val">${fmtMoney(val)} ₫</span></div>`; break; }
 
-    case "sign":
-      const labels = (b.labels||["Người lập","Người duyệt","Người nhận"]).slice(0,b.count||3);
-      return `<div class="bp-sign">${labels.map(l=>`
-        <div class="sc"><div class="sl"></div>
-        <div class="sn">${esc(l)}</div>
-        <div style="font-size:10px;margin-top:2px">(Ký, ghi rõ họ tên)</div></div>`).join("")}</div>`;
+    case "sign": {
+      const labels=(b.labels||["Người lập","Người duyệt","Người nhận"]).slice(0,b.count||3);
+      html=`<div class="bp-sign">${labels.map(l=>`<div class="bp-sc">
+        <div class="bp-sl"></div>
+        <div class="bp-sn">${esc(l)}</div>
+        <div style="font-size:10px;margin-top:2px">(Ký, ghi rõ họ tên)</div>
+      </div>`).join("")}</div>`; break; }
 
-    case "divider":      return `<hr class="bp-divider">`;
-    case "dividerlight": return `<hr class="bp-divider-light">`;
-    case "spacer":       return `<div style="height:${b.height||20}px"></div>`;
-    case "pagebreak":    return `<div style="page-break-after:always"></div>`;
+    case "divider":      html=`<hr class="bp-div">`; break;
+    case "dividerlight": html=`<hr class="bp-divl">`; break;
+    case "spacer":       html=`<div style="height:${b.height||20}px"></div>`; break;
+    case "pagebreak":    html=`<div style="page-break-after:always"></div>`; break;
+
     case "pagenum":
-      return `<div class="b-pagenum-print" style="text-align:${b.align||"center"};font-size:${b.size||11}px">
-        Trang <span class="pg-num"></span>
-      </div>`;
+      html=`<div class="bp-pagenum ${b.format&&b.format.includes("total")?"with-total":""}"
+        style="text-align:${b.align||"center"};font-size:${b.size||11}px">
+        ${esc((b.format||"Trang {{page}} / {{total}}").replace("{{page}}","").replace("{{total}}","")).trim()||"Trang "}
+      </div>`; break;
 
     case "qrcode": {
-      const sz=b.size||80;
-      const align=b.align||"center";
-      return `<div class="qr-wrap" style="align-items:${align==="right"?"flex-end":align==="left"?"flex-start":"center"}">
-        <div class="qr-placeholder" data-field="${esc(b.fieldName||"")}" data-size="${sz}"
-             style="width:${sz}px;height:${sz}px;display:flex;align-items:center;justify-content:center"></div>
-        ${b.label?`<div class="qr-label">${esc(b.label)}</div>`:""}
-      </div>`;
-    }
+      const sz=b.size||80,al=b.align||"center";
+      const qrId="qr-"+Math.random().toString(36).slice(2,7);
+      html=`<div class="bp-qr-wrap" style="align-items:${al==="right"?"flex-end":al==="left"?"flex-start":"center"}">
+        <div id="${qrId}" data-field="${esc(b.fieldName||"")}" data-size="${sz}"
+             style="width:${sz}px;height:${sz}px;display:inline-block"></div>
+        ${b.label?`<div class="bp-qr-label">${esc(b.label)}</div>`:""}
+      </div>`; break; }
 
     case "condition": {
-      // Điều kiện được evaluate ở client khi load
-      const val = String(row[b.condField]||"");
-      const cval = String(b.condValue||"");
-      let show = false;
-      switch(b.condOp) {
-        case "eq":       show = val === cval; break;
-        case "neq":      show = val !== cval; break;
-        case "gt":       show = parseFloat(val) > parseFloat(cval); break;
-        case "lt":       show = parseFloat(val) < parseFloat(cval); break;
-        case "contains": show = val.includes(cval); break;
-        case "empty":    show = !val || val.trim()===""; break;
-        case "notempty": show = val && val.trim()!==""; break;
-        default:         show = true;
+      // Evaluate condition
+      const val=String(row[b.condField]||"");
+      const cval=String(b.condValue||"");
+      let show=false;
+      switch(b.condOp){
+        case "eq":       show=val===cval; break;
+        case "neq":      show=val!==cval; break;
+        case "gt":       show=parseFloat(val)>parseFloat(cval); break;
+        case "lt":       show=parseFloat(val)<parseFloat(cval); break;
+        case "contains": show=val.includes(cval); break;
+        case "empty":    show=!val||val.trim()===""; break;
+        case "notempty": show=!!val&&val.trim()!==""; break;
+        default:         show=true;
       }
-      if (!show) return ""; // Ẩn hoàn toàn nếu điều kiện sai
-      return (b.innerBlocks||[]).map(cb=>renderBlock(cb,row,extraRows)).join("");
-    }
+      if (!show) return "";
+      html=(b.innerBlocks||[]).map(cb=>renderBlock(cb,row)).join(""); break; }
 
     case "highlight": {
-      const bg=b.bgColor||"#faeeda", bc=b.borderColor||"#854F0B", tc=b.textColor||"#854F0B";
-      return `<div class="b-highlight" style="background:${bg};border:1.5px solid ${bc}">
+      const bg=b.bgColor||"#faeeda",brd=b.borderColor||"#854F0B",tc=b.textColor||"#854F0B";
+      html=`<div class="bp-hl" style="background:${bg};border:1.5px solid ${brd}">
         ${b.icon?`<span style="font-size:16px;flex-shrink:0">${b.icon}</span>`:""}
         <span style="font-size:${b.size||13}px;color:${tc};font-weight:${b.bold?"700":"400"}">${tpl(b.text||"")}</span>
-      </div>`;
-    }
+      </div>`; break; }
 
-    default:             return "";
+    case "twocol": {
+      const r=(b.ratio||"50:50").split(":");const l=parseInt(r[0]),ri=100-l;
+      const lHtml=(b.leftBlocks||[]).map(cb=>renderBlock(cb,row)).join("");
+      const rHtml=(b.rightBlocks||[]).map(cb=>renderBlock(cb,row)).join("");
+      html=`<div class="bp-2col" style="grid-template-columns:${l}fr ${ri}fr">${lHtml}${rHtml}</div>`; break; }
+
+    default: html=""; break;
   }
+  return wbg(html);
 }
 
-// ═══════════════ HELPERS ═══════════════
-function calcFormula(formula, row) {
-  try {
-    let expr = String(formula).replace(/([0-9]),([0-9])/g,"$1.$2")
-      .replace(/\{([^}]+)\}/g,(_,k)=>{
-        const v=parseFloat(String(row[k.trim()]||"0").replace(/[^0-9.\-]/g,""));
-        return isNaN(v)?0:v;
-      });
-    const val = Function('"use strict";return('+expr+')')();
+function renderFooter(row, po) {
+  const parts=[];
+  if (po.footer)  parts.push(esc(po.footer));
+  if (po.showDate!==false) parts.push(`In lúc: ${new Date().toLocaleString("vi-VN")}`);
+  if (PREVIEW) parts.push(`<strong style="color:#b45309">[DỮ LIỆU XEM THỬ]</strong>`);
+  return parts.length ? `<div class="bp-footer">${parts.join(" &nbsp;·&nbsp; ")}</div>` : "";
+}
+
+// ── QR CODE RENDER ──
+function renderQRAll(row) {
+  document.querySelectorAll("[data-field][data-size]").forEach(el => {
+    const field=el.dataset.field, sz=parseInt(el.dataset.size)||80;
+    const val=row[field]?String(row[field]):"";
+    if (!val || !window.QRCode) { el.innerHTML=`<div style="font-size:8px;color:#aaa;text-align:center;padding:4px">QR<br>${esc(field)}</div>`; return; }
+    try {
+      el.innerHTML="";
+      new QRCode(el,{text:val,width:sz,height:sz,
+        colorDark:"#000000",colorLight:"#ffffff",
+        correctLevel:QRCode.CorrectLevel.M});
+    } catch(e) { el.textContent="QR: "+val; }
+  });
+}
+
+// ── HELPERS ──
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function fmtMoney(v){const n=parseFloat(String(v||"0").replace(/[^0-9.\-]/g,""));return isNaN(n)?String(v||"—"):n.toLocaleString("vi-VN");}
+function parseNum(v){return parseFloat(String(v||"0").replace(/[^0-9.\-]/g,""))||0;}
+function calcFormula(formula,row){
+  try{
+    let expr=String(formula).replace(/([0-9]),([0-9])/g,"$1.$2")
+      .replace(/\{([^}]+)\}/g,(_,k)=>{const v=parseNum(row[k.trim()]);return v;});
+    const val=Function('"use strict";return('+expr+')')();
     return isNaN(val)?formula:val;
-  } catch(e){ return formula; }
+  }catch(e){return formula;}
 }
-
-function fmtMoney(v) {
-  const n=parseFloat(String(v||"0").replace(/[^0-9.\-]/g,""));
-  return isNaN(n)?"—":n.toLocaleString("vi-VN");
-}
-
-function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
 // Số thành chữ tiếng Việt
 const _dv=["","một","hai","ba","bốn","năm","sáu","bảy","tám","chín"],_h=["","nghìn","triệu","tỷ"];
@@ -398,26 +444,6 @@ function soThanhChu(raw){let n=parseInt(String(raw||"0").replace(/[^0-9]/g,""))|
   res=res.trim();return res.charAt(0).toUpperCase()+res.slice(1)+" đồng";}
 
 main();
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script>
-// Sprint 3: render QR codes sau khi page load
-function renderQRCodes(row) {
-  document.querySelectorAll(".qr-placeholder[data-field]").forEach(el=>{
-    const field=el.dataset.field;
-    const val=row&&row[field]?String(row[field]):"";
-    if (!val) { el.textContent="(trống)"; return; }
-    try {
-      el.innerHTML="";
-      const size=parseInt(el.dataset.size)||80;
-      new QRCode(el,{text:val,width:size,height:size,
-        colorDark:"#000000",colorLight:"#ffffff",
-        correctLevel:QRCode.CorrectLevel.M});
-    } catch(e) { el.textContent="QR: "+val; }
-  });
-}
-// Gọi sau khi data đã load — được gọi từ main()
-window._renderQR = renderQRCodes;
 </script>
 </body>
 </html>
