@@ -260,6 +260,80 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   border:1px solid var(--blue-bd);border-radius:4px;padding:0 5px;font-size:11px;
   font-weight:600;display:inline;white-space:nowrap}
 
+
+/* ── richtext inline field chip ── */
+.b-richtext-fc{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-bd);
+  border-radius:4px;padding:0 4px;font-size:11px;font-weight:600;display:inline}
+/* ── condition block ── */
+.b-cond{border:1.5px dashed var(--amber);border-radius:6px;padding:4px 8px;background:var(--amber-bg)}
+.b-cond-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--amber);margin-bottom:3px}
+/* ── highlight block ── */
+.b-hl{display:flex;align-items:flex-start;gap:8px;border-radius:6px;padding:8px 12px}
+/* ── qr wrap ── */
+.b-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px}
+.b-qr-box{border:1px solid var(--bd2);border-radius:4px;background:var(--bg2);
+  display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--tx3);
+  text-align:center;padding:4px}
+/* ── page number ── */
+.b-pg{display:flex;justify-content:center;align-items:center;
+  padding:3px;font-size:11px;color:var(--tx2);font-style:italic}
+/* ── 2-col ── */
+.b-2col{display:grid;gap:10px}
+.b-2col-inner{border:1px dashed var(--bd2);border-radius:4px;padding:4px;min-height:28px}
+.b-2col-lbl{font-size:9px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.05em;color:var(--tx3);margin-bottom:3px}
+.col-hint{font-size:10px;color:var(--tx3);text-align:center;padding:6px;font-style:italic}
+/* ── logo upload ── */
+.logo-upload{border:2px dashed var(--bd2);border-radius:var(--r);padding:12px;
+  text-align:center;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.logo-upload:hover{border-color:var(--blue);background:var(--blue-bg)}
+.logo-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:2}
+.logo-upload p{font-size:11px;color:var(--tx2);margin-top:4px}
+.logo-clear{font-size:11px;color:var(--red);cursor:pointer;display:inline-block;margin-top:3px}
+/* ── drag line ── */
+.drop-line{height:3px;background:var(--blue);border-radius:2px;
+  pointer-events:none;margin:1px 0;display:none}
+/* ── drag ghost ── */
+.drag-ghost{position:fixed;pointer-events:none;z-index:9999;background:var(--blue);
+  color:#fff;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;
+  box-shadow:0 4px 16px rgba(0,0,0,.3);transform:translate(10px,-50%);white-space:nowrap}
+/* ── props helpers ── */
+.props-sep{border:none;border-top:1px solid var(--bd);margin:10px 0}
+.props-sub{font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.05em;color:var(--tx3);margin:10px 0 6px}
+.bg-swatch-row{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.bgsw{width:18px;height:18px;border-radius:3px;border:2px solid transparent;
+  cursor:pointer;transition:transform .12s}
+.bgsw:hover{transform:scale(1.15)}
+.bgsw.on{border-color:var(--tx)!important}
+.sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.sp-item{display:flex;flex-direction:column;gap:2px}
+.sp-item label{font-size:10px;color:var(--tx2);font-weight:500}
+.sp-item input[type=range]{width:100%;accent-color:var(--blue)}
+.sp-val{font-size:10px;color:var(--tx3);text-align:right}
+.fmt-toolbar{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px}
+.ftb{width:26px;height:26px;border:1px solid var(--bd2);border-radius:5px;background:none;
+  cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;
+  color:var(--tx);transition:all .12s;flex-shrink:0}
+.ftb:hover{background:var(--bg2)}
+.ftb.on{background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue)}
+.fld-pick{display:flex;flex-direction:column;gap:2px;max-height:110px;overflow-y:auto;
+  border:1px solid var(--bd);border-radius:var(--r);padding:3px}
+.fp{padding:4px 7px;border-radius:5px;font-size:11px;cursor:pointer;transition:all .12s}
+.fp:hover{background:var(--blue-bg);color:var(--blue)}
+.fp.on{background:var(--blue-bg);color:var(--blue);font-weight:600}
+.del-btn{width:100%;padding:6px;border-radius:var(--r);border:1px solid var(--red-bd);
+  background:none;cursor:pointer;font-size:12px;color:var(--red);
+  margin-top:6px;font-family:inherit;transition:all .15s}
+.del-btn:hover{background:var(--red-bg)}
+/* ── preset modal ── */
+.pcard{border:1px solid var(--bd);border-radius:var(--r);padding:10px;
+  cursor:pointer;transition:all .13s;text-align:center}
+.pcard:hover{border-color:var(--blue-bd);background:var(--blue-bg)}
+.pci{font-size:22px;margin-bottom:5px}
+.pcn{font-size:12px;font-weight:600}
+.pcd{font-size:10px;color:var(--tx2);margin-top:2px;line-height:1.4}
+
 @media print{
   .topbar,.palette,.props-panel,.blk-ctrl,.canvas-hint{display:none!important}
   .app{display:block}
@@ -405,6 +479,50 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
         <code>autoprint=1</code> — Tự mở hộp thoại in<br>
         <code>useBlockTemplate=1</code> — Dùng Block Editor
       </div>
+
+      <div class="props-sep"></div>
+      <div class="props-sub">Sprint 5 — Gửi Email / Lưu PDF</div>
+      <div style="font-size:11px;background:var(--amber-bg);border:1px solid rgba(133,79,11,.2);
+                  border-radius:var(--r);padding:8px 10px;color:var(--amber);line-height:1.6;margin-bottom:8px">
+        &#9888; Tính năng này cần kết nối <strong>Gmail</strong> và <strong>Google Drive</strong>
+        trong AppSheet hoặc Apps Script.
+      </div>
+      <div class="pr"><label>Email gửi đến (cột email)</label>
+        <div class="fld-pick" id="email-col-pick" style="max-height:80px">
+          <div class="no-col">Chọn sheet để xem cột</div>
+        </div>
+        <input type="text" id="action-email-col" placeholder="Vd: EmailKhachHang"
+               oninput="updateEmailConfig()">
+      </div>
+      <div class="pr"><label>Tiêu đề email</label>
+        <input type="text" id="action-email-subject"
+               placeholder="Vd: Hóa đơn {{MaDonHang}} từ Công ty ABC"
+               oninput="updateEmailConfig()" value="Tài liệu từ hệ thống">
+      </div>
+      <div style="border:1px solid var(--bd);border-radius:var(--r);padding:9px;
+                  background:var(--bg2);font-size:11px;margin-bottom:8px" id="email-config-box">
+        <em style="color:var(--tx3)">Chọn cột email để xem cấu hình</em>
+      </div>
+      <div style="font-size:10px;color:var(--tx2);line-height:1.7;background:var(--bg2);
+                  border-radius:var(--r);padding:7px 10px">
+        <strong>Cách tích hợp gửi email:</strong><br>
+        1. Tạo <strong>Apps Script Automation</strong><br>
+        2. Trigger: khi dòng được đánh dấu gửi<br>
+        3. Script gọi <code>print-block.html</code> → chụp HTML → gửi Gmail<br>
+        4. Hoặc dùng AppSheet Automation → Webhook → Apps Script
+      </div>
+      <div style="font-size:10px;color:var(--tx2);line-height:1.7;background:var(--bg2);
+                  border-radius:var(--r);padding:7px 10px;margin-top:6px">
+        <strong>Cách lưu PDF lên Drive:</strong><br>
+        1. AppSheet → Automation → gọi Apps Script<br>
+        2. Script: <code>DriveApp.createFile(blob)</code><br>
+        3. Hoặc dùng <strong>Print to PDF</strong> trong Chrome → Save to Drive
+      </div>
+      <button onclick="showEmailScriptCode()"
+        style="width:100%;padding:7px;border-radius:var(--r);border:1px solid var(--bd2);
+        background:var(--bg2);cursor:pointer;font-size:12px;font-family:inherit;margin-top:6px">
+        &#128196; Xem code Apps Script gửi email
+      </button>
     </div>
   </div>
 
@@ -639,6 +757,7 @@ async function onSheetChange(sheet) {
     const d = await apiFetch({action:"getColumns",sheet});
     cols = d.columns||[]; renderFieldList(); renderActionColPick(); updateActionURL();
     if (selId) renderProps(selId);
+    renderEmailColPick();
   } catch(e) { cols=[]; }
 }
 function renderActionColPick() {
@@ -1248,6 +1367,102 @@ function typeName(t){
     pagebreak:"Ngắt trang",twocol:"2 cột tự do",pagenum:"Số trang",
     qrcode:"QR Code",condition:"Điều kiện IF",highlight:"Box nổi bật"};
   return m[t]||t;
+}
+
+// ════════════════════ SPRINT 5: EMAIL CONFIG ════════════════════
+function updateEmailConfig() {
+  const el = document.getElementById("email-config-box"); if(!el) return;
+  const emailCol = document.getElementById("action-email-col")?.value||"";
+  const subject  = document.getElementById("action-email-subject")?.value||"";
+  if (!curId || !emailCol) {
+    el.innerHTML = "<em style='color:var(--tx3)'>Điền cột email để xem cấu hình</em>"; return;
+  }
+  const sheet = document.getElementById("sheet-sel")?.value||tpls[curId]?.sheet||"";
+  // Apps Script URL để gửi email
+  const gsUrl = `${API_URL}?action=sendEmail&tplId=${curId}&sheet=${sheet}&emailCol=${emailCol}&subject=${encodeURIComponent(subject)}&printUrl=${encodeURIComponent(PRINT_APP_URL)}`;
+  el.innerHTML = `
+    <div style="font-size:10px;color:var(--tx3);margin-bottom:4px;font-weight:700;text-transform:uppercase;letter-spacing:.05em">URL gửi email qua AppSheet Webhook:</div>
+    <code style="font-size:10px;word-break:break-all;color:var(--green)">${esc(gsUrl)}</code>
+    <div style="margin-top:6px;font-size:10px;color:var(--tx3)">
+      AppSheet → Automation → Webhook → dán URL trên → field id=[_UNIQUEID]
+    </div>`;
+}
+function renderEmailColPick() {
+  const el=document.getElementById("email-col-pick"); if(!el) return;
+  const cur=document.getElementById("action-email-col")?.value||"";
+  if(!cols.length){el.innerHTML='<div class="no-col">Chọn sheet để xem cột</div>';return;}
+  el.innerHTML=cols.map(c=>`<div class="fp ${c===cur?"on":""}"
+    onclick="document.getElementById('action-email-col').value='${esc(c)}';renderEmailColPick();updateEmailConfig()"
+    style="padding:4px 7px;border-radius:5px;font-size:11px;cursor:pointer">${esc(c)}</div>`).join("");
+}
+
+// ════════════════════ SPRINT 5: APPS SCRIPT EMAIL HANDLER ════════════════════
+// Code này thêm vào Code.gs (Apps Script) để xử lý gửi email
+function getEmailScriptCode() {
+  return `// Thêm vào Code.gs — xử lý gửi email PDF
+// Gọi từ AppSheet Automation hoặc Webhook
+
+function sendEmailPDF(e) {
+  const p      = e.parameter||{};
+  const tplId  = p.tplId, sheet=p.sheet, id=p.id;
+  const emailCol=p.emailCol, subject=p.subject||"Tài liệu từ hệ thống";
+  const printUrl=p.printUrl;
+  
+  if (!id||!sheet||!emailCol) return ContentService
+    .createTextOutput(JSON.stringify({error:"Thiếu tham số"}))
+    .setMimeType(ContentService.MimeType.JSON);
+  
+  const ss   = SpreadsheetApp.openById(GS_CONFIG.SPREADSHEET_ID);
+  const sheetObj = ss.getSheetByName(sheet);
+  if (!sheetObj) return ContentService.createTextOutput(JSON.stringify({error:"Sheet không tồn tại"}))
+    .setMimeType(ContentService.MimeType.JSON);
+  
+  // Lấy data
+  const data    = sheetObj.getDataRange().getValues();
+  const headers = data[0].map(h=>String(h).trim());
+  const row     = data.slice(1).find(r=>String(r[0]).trim()===String(id).trim());
+  if (!row) return ContentService.createTextOutput(JSON.stringify({error:"Không tìm thấy dòng"}))
+    .setMimeType(ContentService.MimeType.JSON);
+  
+  const obj = {};
+  headers.forEach((h,i)=>obj[h]=row[i]);
+  
+  // Email to
+  const emailIdx = headers.indexOf(emailCol);
+  const emailTo  = emailIdx>=0 ? String(row[emailIdx]) : "";
+  if (!emailTo) return ContentService.createTextOutput(JSON.stringify({error:"Email trống"}))
+    .setMimeType(ContentService.MimeType.JSON);
+  
+  // Build print URL
+  const pUrl = printUrl+"?id="+id+"&tpl="+tplId+"&sheet="+sheet+"&useBlockTemplate=1";
+  
+  // Gửi email với link in
+  const subjectFinal = subject.replace(/\{\{([^}]+)\}\}/g, (_,k)=>obj[k]||"");
+  const body = `
+    <div style="font-family:Arial,sans-serif;max-width:600px">
+      <p>Xin chào,</p>
+      <p>Vui lòng xem tài liệu của bạn tại link sau:</p>
+      <p><a href="${pUrl}" style="background:#185FA5;color:#fff;padding:10px 20px;
+         border-radius:6px;text-decoration:none;display:inline-block">
+         Xem / In tài liệu</a></p>
+      <p style="color:#aaa;font-size:11px">Tự động gửi từ hệ thống</p>
+    </div>`;
+  
+  GmailApp.sendEmail(emailTo, subjectFinal, "", {htmlBody:body});
+  return ContentService.createTextOutput(JSON.stringify({ok:true,to:emailTo}))
+    .setMimeType(ContentService.MimeType.JSON);
+}`;
+}
+
+// Hiện code Apps Script khi cần
+function showEmailScriptCode() {
+  const code = getEmailScriptCode();
+  const w = window.open("","_blank","width=700,height=500");
+  w.document.write(`<html><head><title>Code.gs Email Handler</title></head><body>
+    <h3 style="font-family:sans-serif">Thêm code này vào Code.gs (Apps Script)</h3>
+    <textarea style="width:100%;height:400px;font-family:monospace;font-size:12px">${code.replace(/</g,"&lt;")}</textarea>
+    <br><button onclick="document.querySelector('textarea').select();document.execCommand('copy')">Copy code</button>
+  </body></html>`);
 }
 
 </script>
