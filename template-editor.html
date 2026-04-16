@@ -361,8 +361,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   <span class="tb-badge unsaved" id="badge">Chưa lưu</span>
   <div class="tb-sep"></div>
   <div class="tb-undoredo">
-    <button class="tb-icon" id="btn-undo" onclick="undo()" title="Undo (Ctrl+Z)" disabled>&#8630;</button>
-    <button class="tb-icon" id="btn-redo" onclick="redo()" title="Redo (Ctrl+Y)" disabled>&#8631;</button>
+    <button class="tb-icon" id="btn-undo" onclick="doUndo()" title="Undo (Ctrl+Z)" disabled>&#8630;</button>
+    <button class="tb-icon" id="btn-redo" onclick="doRedo()" title="Redo (Ctrl+Y)" disabled>&#8631;</button>
   </div>
   <div class="tb-sep"></div>
   <button class="tb-btn save" onclick="saveTpl()">&#128190; Lưu</button>
@@ -1290,23 +1290,8 @@ function updateUR(){
 }
 
 // ════════════════════ FIELD LIST ════════════════════
-function renderFieldList(){
-  const el=document.getElementById("field-list");
-  if(!cols.length){el.innerHTML='<div class="no-col">Chọn sheet để xem cột</div>';return;}
-  el.innerHTML=cols.map(c=>`<div class="fc" onclick="addFRBlock('${esc(c)}')"><span class="fc-dot"></span>${esc(c)}</div>`).join("");
-}
-function addFRBlock(col){
-  if(!curId){
-    const id="t"+Date.now(),pg=clone(PAGE_DEF);
-    tpls[id]={name:"Template mới",sheet:"",blocks:[],pageSettings:pg};
-    curId=id;blks=[];loadPGForm(pg);applyPGCanvas(pg);
-    saveLS();renderTplList();const hb=document.getElementById("hint-box");if(hb)hb.style.display="none";
-  }
-  const b=clone(DEF.fieldrow);b.id=uid();b.fieldName=col;b.label=col;
-  if(selId){const i=blks.findIndex(x=>x.id===selId);blks.splice(i>=0?i+1:blks.length,0,b);}
-  else blks.push(b);
-  markDirty();renderCanvas();selectBlock(b.id);
-}
+
+
 
 // ════════════════════ PRESETS ════════════════════
 function mk(type,extra){return Object.assign(clone(DEF[type]||{type}),{id:uid()},extra||{});}
@@ -1399,59 +1384,36 @@ function renderEmailColPick() {
 // ════════════════════ SPRINT 5: APPS SCRIPT EMAIL HANDLER ════════════════════
 // Code này thêm vào Code.gs (Apps Script) để xử lý gửi email
 function getEmailScriptCode() {
-  return `// Thêm vào Code.gs — xử lý gửi email PDF
-// Gọi từ AppSheet Automation hoặc Webhook
-
-function sendEmailPDF(e) {
-  const p      = e.parameter||{};
-  const tplId  = p.tplId, sheet=p.sheet, id=p.id;
-  const emailCol=p.emailCol, subject=p.subject||"Tài liệu từ hệ thống";
-  const printUrl=p.printUrl;
-  
-  if (!id||!sheet||!emailCol) return ContentService
-    .createTextOutput(JSON.stringify({error:"Thiếu tham số"}))
-    .setMimeType(ContentService.MimeType.JSON);
-  
-  const ss   = SpreadsheetApp.openById(GS_CONFIG.SPREADSHEET_ID);
-  const sheetObj = ss.getSheetByName(sheet);
-  if (!sheetObj) return ContentService.createTextOutput(JSON.stringify({error:"Sheet không tồn tại"}))
-    .setMimeType(ContentService.MimeType.JSON);
-  
-  // Lấy data
-  const data    = sheetObj.getDataRange().getValues();
-  const headers = data[0].map(h=>String(h).trim());
-  const row     = data.slice(1).find(r=>String(r[0]).trim()===String(id).trim());
-  if (!row) return ContentService.createTextOutput(JSON.stringify({error:"Không tìm thấy dòng"}))
-    .setMimeType(ContentService.MimeType.JSON);
-  
-  const obj = {};
-  headers.forEach((h,i)=>obj[h]=row[i]);
-  
-  // Email to
-  const emailIdx = headers.indexOf(emailCol);
-  const emailTo  = emailIdx>=0 ? String(row[emailIdx]) : "";
-  if (!emailTo) return ContentService.createTextOutput(JSON.stringify({error:"Email trống"}))
-    .setMimeType(ContentService.MimeType.JSON);
-  
-  // Build print URL
-  const pUrl = printUrl+"?id="+id+"&tpl="+tplId+"&sheet="+sheet+"&useBlockTemplate=1";
-  
-  // Gửi email với link in
-  const subjectFinal = subject.replace(/\{\{([^}]+)\}\}/g, (_,k)=>obj[k]||"");
-  const body = `
-    <div style="font-family:Arial,sans-serif;max-width:600px">
-      <p>Xin chào,</p>
-      <p>Vui lòng xem tài liệu của bạn tại link sau:</p>
-      <p><a href="${pUrl}" style="background:#185FA5;color:#fff;padding:10px 20px;
-         border-radius:6px;text-decoration:none;display:inline-block">
-         Xem / In tài liệu</a></p>
-      <p style="color:#aaa;font-size:11px">Tự động gửi từ hệ thống</p>
-    </div>`;
-  
-  GmailApp.sendEmail(emailTo, subjectFinal, "", {htmlBody:body});
-  return ContentService.createTextOutput(JSON.stringify({ok:true,to:emailTo}))
-    .setMimeType(ContentService.MimeType.JSON);
-}`;
+  var L = "\n";
+  return "// Thêm vào Code.gs — xử lý gửi email PDF" + L +
+    "// Gọi từ AppSheet Automation hoặc Webhook" + L + L +
+    "function sendEmailPDF(e) {" + L +
+    "  var p=e.parameter||{};" + L +
+    "  var tplId=p.tplId, sheet=p.sheet, id=p.id;" + L +
+    "  var emailCol=p.emailCol, subject=p.subject||'Tài liệu từ hệ thống';" + L +
+    "  var printUrl=p.printUrl||'';" + L + L +
+    "  if (!id||!sheet||!emailCol) return buildResponse({error:'Thiếu tham số'});" + L + L +
+    "  var ss=SpreadsheetApp.openById(GS_CONFIG.SPREADSHEET_ID);" + L +
+    "  var sh=ss.getSheetByName(sheet);" + L +
+    "  if (!sh) return buildResponse({error:'Sheet không tồn tại'});" + L + L +
+    "  var data=sh.getDataRange().getValues();" + L +
+    "  var headers=data[0].map(function(h){return String(h).trim();});" + L +
+    "  var row=data.slice(1).find(function(r){return String(r[0]).trim()===String(id).trim();});" + L +
+    "  if (!row) return buildResponse({error:'Không tìm thấy dòng id='+id});" + L + L +
+    "  var obj={}; headers.forEach(function(h,i){obj[h]=row[i];});" + L + L +
+    "  var emailIdx=headers.indexOf(emailCol);" + L +
+    "  var emailTo=emailIdx>=0?String(row[emailIdx]):'';" + L +
+    "  if (!emailTo) return buildResponse({error:'Email trống'});" + L + L +
+    "  var pUrl=printUrl+'?id='+id+'&tpl='+tplId+'&sheet='+sheet+'&useBlockTemplate=1';" + L +
+    "  var subj=subject.replace(/\\{\\{([^}]+)\\}\\}/g,function(_,k){return obj[k]||'';});" + L + L +
+    "  var body='<div style=\"font-family:Arial,sans-serif;max-width:600px\">' +" + L +
+    "    '<p>Xin chào,</p>' +" + L +
+    "    '<p>Vui lòng xem tài liệu:</p>' +" + L +
+    "    '<p><a href=\"'+pUrl+'\" style=\"background:#185FA5;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none\">Xem / In tài liệu</a></p>' +" + L +
+    "    '<p style=\"color:#aaa;font-size:11px\">Tự động gửi từ hệ thống</p></div>';" + L + L +
+    "  GmailApp.sendEmail(emailTo, subj, '', {htmlBody:body});" + L +
+    "  return buildResponse({ok:true,to:emailTo});" + L +
+    "}" + L;
 }
 
 // Hiện code Apps Script khi cần
