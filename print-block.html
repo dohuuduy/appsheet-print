@@ -2,136 +2,91 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Báo cáo</title>
 <style>
 *,::before,::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --tx:#1a1a18;--tx2:#6b6b67;--tx3:#9b9b96;
-  --bg:#fff;--bg2:#f7f7f5;--bd:rgba(0,0,0,.1);--bd2:rgba(0,0,0,.2);
-  --blue:#185FA5;--r:8px;
-}
-body{font-family:"Times New Roman",Georgia,serif;font-size:13px;
-     color:var(--tx);background:#e0e0db}
-/* Toolbar */
+body{font-family:"Times New Roman",serif;font-size:13px;color:#1a1a18;background:#e0e0db}
 .toolbar{background:#1e1e1c;color:#fff;padding:0 20px;height:46px;
   display:flex;align-items:center;gap:10px;font-family:-apple-system,sans-serif;
   position:sticky;top:0;z-index:100}
-.toolbar h1{font-size:13px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.toolbar h1{font-size:13px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tb-btn{padding:6px 13px;border-radius:6px;border:1px solid rgba(255,255,255,.2);
-  background:none;color:#fff;cursor:pointer;font-size:12px;transition:background .15s;white-space:nowrap}
+  background:none;color:#fff;cursor:pointer;font-size:12px}
 .tb-btn:hover{background:rgba(255,255,255,.1)}
-.tb-btn.primary{background:var(--blue);border-color:var(--blue)}
-.preview-badge{font-size:11px;padding:3px 8px;border-radius:12px;
-  background:rgba(239,159,39,.3);color:#fbbf24}
-/* Paper */
-.pw{padding:24px;display:flex;flex-direction:column;align-items:center;gap:20px}
-.paper{background:#fff;width:210mm;padding:16mm 18mm;box-shadow:0 3px 24px rgba(0,0,0,.14);
-  position:relative}
-/* Loading */
-.spin{width:20px;height:20px;border:2px solid #ddd;border-top-color:var(--blue);
+.tb-btn.primary{background:#185FA5;border-color:#185FA5}
+.preview-badge{font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(239,159,39,.3);color:#fbbf24}
+.pw{padding:24px;display:flex;flex-direction:column;align-items:center}
+.paper{background:#fff;width:210mm;padding:16mm 18mm;box-shadow:0 3px 24px rgba(0,0,0,.14)}
+.spin{width:20px;height:20px;border:2px solid #ddd;border-top-color:#185FA5;
   border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
 @keyframes spin{to{transform:rotate(360deg)}}
-.state{display:flex;flex-direction:column;align-items:center;gap:14px;
-  padding:60px 20px;text-align:center;color:var(--tx2)}
-.err{background:#fcebeb;border:1px solid rgba(163,45,45,.2);border-radius:var(--r);
-  padding:14px;color:#A32D2D;font-size:13px;font-family:-apple-system,sans-serif;margin:20px}
+.state{display:flex;flex-direction:column;align-items:center;gap:14px;padding:60px 20px;text-align:center;color:#6b6b67}
+.err{background:#fcebeb;border:1px solid rgba(163,45,45,.2);border-radius:8px;
+  padding:14px;color:#A32D2D;font-size:13px;font-family:-apple-system,sans-serif;margin:20px;line-height:1.7}
 /* Block styles */
-.bp-heading{font-size:20px;font-weight:700;line-height:1.3;margin:4px 0}
-.bp-sub{font-size:15px;font-weight:600;line-height:1.4;margin:3px 0}
-.bp-text{font-size:13px;line-height:1.7;margin:2px 0;white-space:pre-wrap}
-.bp-fr{display:flex;gap:8px;align-items:baseline;font-size:12px;margin:2px 0}
-.bp-fr .lbl{font-size:10px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.05em;color:var(--tx3);white-space:nowrap;min-width:80px}
-.bp-fr .val{font-weight:500}
-.bp-ig{display:grid;grid-template-columns:1fr 1fr;gap:0 22px;margin:6px 0}
-.bp-ig dt{font-size:10px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.05em;color:var(--tx3);margin-top:7px}
-.bp-ig dd{font-size:12px;font-weight:500}
-.bp-dochd{display:flex;justify-content:space-between;align-items:flex-start;
-  margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid var(--tx)}
-.dhl{font-size:11px;color:var(--tx2);line-height:1.8}
-.dhl strong{font-size:17px;font-weight:700;color:var(--tx);display:block;margin-bottom:2px}
-.dhr{text-align:right;font-size:11px;color:var(--tx2);line-height:1.8}
-.dhr strong{font-size:18px;font-weight:700;color:var(--tx);display:block;letter-spacing:.02em}
-.bp-tbl{width:100%;border-collapse:collapse;font-size:12px;margin:4px 0}
-.bp-tbl th{background:var(--tx);color:#fff;padding:6px 8px;text-align:left;
+.b-dochd{display:flex;justify-content:space-between;align-items:flex-start;
+  margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid #1a1a18}
+.dhl{font-size:11px;color:#6b6b67;line-height:1.8}
+.dhl strong{font-size:17px;font-weight:700;color:#1a1a18;display:block;margin-bottom:2px}
+.dhr{text-align:right;font-size:11px;color:#6b6b67;line-height:1.8}
+.dhr strong{font-size:18px;font-weight:700;color:#1a1a18;display:block;letter-spacing:.02em}
+.b-tbl{width:100%;border-collapse:collapse;font-size:12px;margin:4px 0}
+.b-tbl th{background:#1a1a18;color:#fff;padding:6px 8px;text-align:left;
   font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
-.bp-tbl td{padding:5px 8px;border-bottom:1px solid var(--bd);vertical-align:top}
-.bp-tbl tr:nth-child(even) td{background:var(--bg2)}
-.bp-tbl tfoot td{font-weight:700;background:var(--bg2);border-top:2px solid var(--bd2)}
-.bp-amt{display:flex;justify-content:flex-end;margin:6px 0}
-.bp-amt-inner{border:1px solid var(--bd2);border-radius:var(--r);padding:8px 16px;text-align:right}
-.bp-amt-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx2)}
-.bp-amt-val{font-size:18px;font-weight:700}
-.bp-amt-wrd{font-size:10px;color:var(--tx3);font-style:italic;margin-top:2px}
-.bp-sign{display:flex;justify-content:space-around;margin:20px 0 4px}
-.bp-sc{text-align:center;font-size:11px;color:var(--tx2)}
-.bp-sl{width:100px;border-bottom:1px solid var(--bd2);height:32px;margin:0 auto 4px}
-.bp-sn{font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.04em}
-.bp-logo{display:flex;align-items:center;gap:12px;margin:4px 0}
-.bp-div{border:none;border-top:2px solid var(--tx);margin:6px 0}
-.bp-divl{border:none;border-top:1px solid var(--bd);margin:4px 0}
-.bp-cond{} /* shown/hidden by condition logic */
-.bp-hl{display:flex;align-items:flex-start;gap:8px;border-radius:6px;padding:8px 12px;margin:4px 0}
-.bp-richtext{font-size:13px;line-height:1.7;margin:2px 0}
-.bp-2col{display:grid;gap:12px;margin:4px 0}
-.bp-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px;margin:4px 0}
-.bp-qr-label{font-size:10px;color:var(--tx2)}
-/* Page number CSS counter */
-.bp-pagenum{text-align:center;font-size:11px;color:var(--tx3);font-style:italic;margin:4px 0}
-.bp-footer{margin-top:16px;padding-top:10px;border-top:1px solid var(--bd);
-  font-size:10px;color:var(--tx3);text-align:center;line-height:1.9}
-/* Highlight */
-.preview-data-badge{background:rgba(239,159,39,.15);border:1px solid rgba(239,159,39,.4);
-  color:#854F0B;font-size:10px;padding:2px 8px;border-radius:10px;margin-left:6px}
-
+.b-tbl td{padding:5px 8px;border-bottom:1px solid rgba(0,0,0,.1);vertical-align:top}
+.b-tbl tr:nth-child(even) td{background:#f7f7f5}
+.b-tbl tfoot td{font-weight:700;background:#f7f7f5;border-top:2px solid rgba(0,0,0,.2)}
+.b-amt{display:flex;justify-content:flex-end;margin:6px 0}
+.b-amt-in{border:1px solid rgba(0,0,0,.2);border-radius:8px;padding:8px 16px;text-align:right}
+.b-amt-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#6b6b67}
+.b-amt-val{font-size:18px;font-weight:700}
+.b-amt-wrd{font-size:10px;color:#9b9b96;font-style:italic;margin-top:2px}
+.b-sign{display:flex;justify-content:space-around;margin:20px 0 4px}
+.sc{text-align:center;font-size:11px;color:#6b6b67}
+.sl{width:100px;border-bottom:1px solid rgba(0,0,0,.2);height:32px;margin:0 auto 4px}
+.sn{font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+.b-logo{display:flex;align-items:center;gap:12px;margin:4px 0}
+.b-div{border:none;border-top:2px solid #1a1a18;margin:6px 0}
+.b-divl{border:none;border-top:1px solid rgba(0,0,0,.1);margin:4px 0}
+.b-hl{display:flex;align-items:flex-start;gap:8px;border-radius:6px;padding:8px 12px;margin:4px 0}
+.b-2col{display:grid;gap:12px;margin:4px 0}
+.b-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px;margin:4px 0}
+.b-footer{margin-top:16px;padding-top:10px;border-top:1px solid rgba(0,0,0,.1);
+  font-size:10px;color:#9b9b96;text-align:center;line-height:1.9}
 @media print{
   body{background:#fff}
   .toolbar,.no-print{display:none!important}
-  .pw{padding:0}
-  .paper{box-shadow:none;width:100%;padding:0;margin:0}
-  .bp-tbl tr{page-break-inside:avoid}
-  .bp-tbl thead{display:table-header-group}
-  /* CSS counter for page numbers */
-  @page{margin:12mm 14mm;counter-increment:page}
+  .pw{padding:0}.paper{box-shadow:none;width:100%;padding:0;margin:0}
+  .b-tbl tr{page-break-inside:avoid}
+  .b-tbl thead{display:table-header-group}
+  @page{margin:12mm 14mm}
   body{counter-reset:page}
-  .bp-pagenum::after{content:" " counter(page)}
-  .bp-pagenum.with-total::after{content:" " counter(page) " / " counter(pages)}
+  .b-pagenum.with-total::after{content:" " counter(page) " / " counter(pages)}
+  .b-pagenum:not(.with-total)::after{content:" " counter(page)}
 }
 </style>
 </head>
 <body>
-
 <div class="toolbar no-print">
-  <h1 id="tb-title">Đang tải báo cáo...</h1>
+  <h1 id="tb-title">Đang tải...</h1>
   <span id="preview-badge" class="preview-badge" style="display:none">&#128065; XEM THỬ</span>
   <button class="tb-btn" onclick="window.close()">&#10005; Đóng</button>
   <button class="tb-btn primary" onclick="window.print()">&#128438; In / PDF</button>
 </div>
-
-<div class="pw" id="pw">
-  <div class="paper" id="paper">
-    <div class="state"><div class="spin"></div><p>Đang tải dữ liệu...</p></div>
-  </div>
-</div>
-
+<div class="pw"><div class="paper" id="paper">
+  <div class="state"><div class="spin"></div><p>Đang tải dữ liệu...</p></div>
+</div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-// ── CONFIG ──
 const API_URL       = "https://script.google.com/macros/s/AKfycbwqwRgBqKmL5yGY8YD0MrJi-iQUusgQPplEOfqzWsXHpDf-HZus900DueXzxYIe9V-i/exec";
-
-// ── URL PARAMS ──
 const Q           = new URLSearchParams(location.search);
-const ROW_ID      = Q.get("id")             || "";
-const TPL_ID      = Q.get("tpl")            || "";
-const SHEET       = Q.get("sheet")          || "";
-const PREVIEW     = Q.get("preview")        === "1";
-const AUTOPRINT   = Q.get("autoprint")      === "1";
-const USE_BLOCK   = Q.get("useBlockTemplate")=== "1" || !!TPL_ID;
+const ROW_ID      = Q.get("id") || "";
+const TPL_ID      = Q.get("tpl") || "";
+const SHEET       = Q.get("sheet") || "";
+const PREVIEW     = Q.get("preview") === "1";
+const AUTOPRINT   = Q.get("autoprint") === "1";
 const LS_KEY      = "ps_tpl_v4";
 
-// ── DEMO DATA ──
 const DEMO = {
   MaDonHang:"DH-001",NgayTao:"15/04/2024",NgayDat:"15/04/2024",
   TenKhachHang:"Nguyễn Văn An",SoDienThoai:"0901 234 567",
@@ -139,110 +94,122 @@ const DEMO = {
   TenSanPham:"Laptop Dell XPS 15",SoLuong:"2",DonGia:"28500000",
   ThanhTien:"57000000",TongTien:"57000000",SoTien:"57000000",
   TrangThai:"Đã thanh toán",GhiChu:"Giao trước 5pm",
-  NguoiPhuTrach:"Trần Thị Bình",PhuongThucThanhToan:"Chuyển khoản",
-  SoPhieu:"PX-001",NgayXuat:"15/04/2024",TenKho:"Kho A",
-  NguoiXuat:"Nguyễn Văn B",LyDoXuat:"Xuất bán",
-  HoTen:"Nguyễn Văn An",MaNhanVien:"NV001",
-  PhongBan:"Kinh doanh",ChucVu:"Nhân viên",
-  LuongThucNhan:"15000000",Thang:"4",Nam:"2024",KyBaoCao:"Q1/2024",
+  PhuongThucThanhToan:"Chuyển khoản",SoPhieu:"PX-001",NgayXuat:"15/04/2024",
+  TenKho:"Kho A",NguoiXuat:"Nguyễn Văn B",LyDoXuat:"Xuất bán",
+  HoTen:"Nguyễn Văn An",MaNhanVien:"NV001",PhongBan:"Kinh doanh",
+  ChucVu:"Nhân viên",LuongThucNhan:"15000000",Thang:"4",Nam:"2024",
+  KyBaoCao:"Q1/2024",TenNguoiNop:"Nguyễn Văn C",NoiDung:"Thu tiền hàng",NgayThu:"15/04/2024",
 };
 
-// ── API ──
 async function api(p) {
   const r = await fetch(API_URL+"?"+new URLSearchParams(p));
-  const d = await r.json(); if(d.error) throw new Error(d.error); return d;
+  const d = await r.json();
+  if (d.error) throw new Error(d.error);
+  return d;
 }
 
-// ── MAIN ──
 async function main() {
   try {
-    // 1. Load block template config
-    let blocks = null, tplName = "BÁO CÁO", po = {};
-
-    // Thử localStorage trước (nhanh, offline)
+    // 1. Load template config
+    let blocks=null, tplName="BÁO CÁO", po={};
     if (TPL_ID) {
       try {
-        const ls = JSON.parse(localStorage.getItem(LS_KEY)||"{}");
-        if (ls[TPL_ID]) {
-          blocks  = ls[TPL_ID].blocks || [];
-          tplName = ls[TPL_ID].name   || tplName;
-          po      = ls[TPL_ID].pageSettings || {};
-        }
-      } catch(e) {}
+        const ls=JSON.parse(localStorage.getItem(LS_KEY)||"{}");
+        if (ls[TPL_ID]) { blocks=ls[TPL_ID].blocks||[]; tplName=ls[TPL_ID].name||tplName; po=ls[TPL_ID].pageSettings||{}; }
+      } catch(e){}
     }
-    // Fallback: load từ API
     if (!blocks && TPL_ID) {
       try {
-        const d = await api({action:"getConfig",tplId:TPL_ID});
+        const d=await api({action:"getConfig",tplId:TPL_ID});
         if (d.template?.printOptions?.templateBlocks) {
-          blocks  = d.template.printOptions.templateBlocks;
-          tplName = d.template.tplName || tplName;
-          po      = d.template.printOptions || {};
+          blocks=d.template.printOptions.templateBlocks;
+          tplName=d.template.tplName||tplName;
+          po=d.template.printOptions||{};
         }
-      } catch(e) {}
+      } catch(e){}
     }
-    if (!blocks?.length) throw new Error("Không tìm thấy template hoặc template trống. tplId="+TPL_ID);
+    if (!blocks?.length) throw new Error("Không tìm thấy template. tplId="+TPL_ID);
 
-    // 2. Lấy data row
-    let row = DEMO;
+    // 2. Parse dataSources từ URL
+    let dataSources=[];
+    try { const qp=Q.get("queries"); if(qp) dataSources=JSON.parse(decodeURIComponent(qp)); } catch(e){}
+    if (!dataSources.length && po.dataSources) {
+      try { dataSources=JSON.parse(po.dataSources); } catch(e){}
+    }
+
+    // 3. Load data
+    let row=DEMO, extraData={};
     if (!PREVIEW) {
-      if (!ROW_ID || !SHEET) throw new Error("Thiếu tham số id hoặc sheet trong URL");
-      const d = await api({action:"getData",sheet:SHEET,id:ROW_ID});
+      if (!ROW_ID||!SHEET) throw new Error("Thiếu tham số id hoặc sheet");
+      const d=await api({action:"getData",sheet:SHEET,id:ROW_ID});
       if (!d.row) throw new Error("Không tìm thấy dòng id="+ROW_ID);
-      row = d.row;
+      row=d.row;
+
+      // Load sheet phụ song song
+      if (dataSources.length) {
+        const tasks = dataSources.filter(ds=>ds.sheet&&ds.joinOn).map(async ds => {
+          const alias=ds.as||ds.sheet;
+          try {
+            const joinVal=String(row[ds.joinOn]||ROW_ID);
+            // Thử lấy nhiều dòng (1-nhiều)
+            const d2=await api({action:"getData",sheet:ds.sheet,all:"true",filterCol:ds.joinOn,filterVal:joinVal});
+            extraData[alias]={ rows:d2.rows||[], headers:d2.headers||[] };
+            // Nếu không có rows, thử lấy 1 dòng
+            if (!d2.rows?.length) {
+              const d1=await api({action:"getData",sheet:ds.sheet,id:joinVal});
+              if (d1.row) extraData[alias]={ rows:[d1.row], headers:d1.headers||[] };
+            }
+          } catch(e) { extraData[alias]={rows:[],headers:[],error:e.message}; }
+        });
+        await Promise.all(tasks);
+      }
+    } else {
+      for (const ds of dataSources) {
+        const alias=ds.as||ds.sheet;
+        extraData[alias]={rows:[DEMO],headers:Object.keys(DEMO)};
+      }
     }
 
-    // 3. Apply page settings
+    // 4. Apply page style
     applyPageStyle(po);
 
-    // 4. Render blocks
-    const html = blocks.map(b => renderBlock(b, row)).join("") + renderFooter(row, po);
+    // 5. Render
+    const html = blocks.map(b=>renderBlock(b,row,extraData)).join("") + renderFooter(row,po);
     document.getElementById("paper").innerHTML = html;
 
-    // 5. Render QR codes
-    setTimeout(() => renderQRAll(row), 300);
+    // 6. QR codes
+    setTimeout(()=>renderQRAll(row,extraData), 300);
 
-    // 6. UI
+    // 7. UI
     document.title = tplName;
     document.getElementById("tb-title").textContent = (PREVIEW?"[XEM THỬ] ":"")+tplName;
-    if (PREVIEW) document.getElementById("preview-badge").style.display = "";
-    if (AUTOPRINT || po.autoprint) setTimeout(()=>window.print(), 800);
+    if (PREVIEW) document.getElementById("preview-badge").style.display="";
+    if (AUTOPRINT||po.autoprint) setTimeout(()=>window.print(), 800);
 
   } catch(e) {
     document.getElementById("paper").innerHTML =
-      `<div class="err"><strong>Lỗi tải báo cáo:</strong><br>${e.message}<br>
-       <small style="color:#9b9b96">Kiểm tra URL · API · tên sheet · ID block template</small></div>`;
+      `<div class="err"><strong>Lỗi:</strong> ${esc(e.message)}<br>
+       <small style="color:#9b9b96">Kiểm tra URL · API · tplId · sheet</small></div>`;
   }
 }
 
-// ── PAGE STYLE ──
 function applyPageStyle(po) {
-  const sizes = {
-    A4:{w:"210mm",h:"297mm"},A5:{w:"148mm",h:"210mm"},
-    letter:{w:"216mm",h:"279mm"},"80mm":{w:"80mm",h:"auto"},K57:{w:"57mm",h:"auto"}
-  };
-  const sz = sizes[po.paper||"A4"]||sizes.A4;
-  const isL = po.orient==="landscape";
-  const w = isL&&sz.h!=="auto"?sz.h:sz.w;
-  const h = isL&&sz.h!=="auto"?sz.w:sz.h;
-  const s = document.createElement("style");
-  s.textContent = `
-    @page{size:${w} ${h==="auto"?"":h};margin:${po.marginTop||12}mm ${po.marginRight||14}mm ${po.marginBottom||12}mm ${po.marginLeft||14}mm}
-    .paper{width:${w};${h!=="auto"?`min-height:${h}`:""};}
-  `;
-  if (po.fontFamily) s.textContent += `.paper{font-family:${po.fontFamily};}`;
-  if (po.baseFontSize) s.textContent += `.paper{font-size:${po.baseFontSize}px;}`;
-  if (po.css) s.textContent += "
-"+po.css;
+  const sizes={A4:{w:"210mm",h:"297mm"},A5:{w:"148mm",h:"210mm"},letter:{w:"216mm",h:"279mm"},"80mm":{w:"80mm",h:"auto"},K57:{w:"57mm",h:"auto"}};
+  const sz=sizes[po.paper||"A4"]||sizes.A4;
+  const isL=po.orient==="landscape";
+  const w=isL&&sz.h!=="auto"?sz.h:sz.w, h=sz.h==="auto"?"auto":(isL&&sz.h!=="auto"?sz.w:sz.h);
+  const s=document.createElement("style");
+  s.textContent=`@page{size:${w} ${h==="auto"?"":h};margin:${po.marginTop||12}mm ${po.marginRight||14}mm ${po.marginBottom||12}mm ${po.marginLeft||14}mm}.paper{width:${w};${h!=="auto"?`min-height:${h}`:""};}`;
+  if (po.fontFamily) s.textContent+=`.paper{font-family:${po.fontFamily};}`;
+  if (po.baseFontSize) s.textContent+=`.paper{font-size:${po.baseFontSize}px;}`;
   document.head.appendChild(s);
 }
 
-// ── RENDER ENGINE ──
-function renderBlock(b, row) {
-  if (!b || !b.type) return "";
-  const wbg = (html) => {
-    const bg=b.bgColor||"transparent";
-    const pt=b.paddingTop||0,pb2=b.paddingBottom||0,pl=b.paddingLeft||0,pr=b.paddingRight||0;
+function renderBlock(b, row, extraData) {
+  if (!b||!b.type) return "";
+  extraData = extraData||{};
+  const wbg = html => {
+    const bg=b.bgColor||"transparent",pt=b.paddingTop||0,pb2=b.paddingBottom||0,pl=b.paddingLeft||0,pr=b.paddingRight||0;
     if (bg==="transparent"&&!pt&&!pb2&&!pl&&!pr) return html;
     return `<div style="background:${bg};padding:${pt}px ${pr}px ${pb2}px ${pl}px;border-radius:4px">${html}</div>`;
   };
@@ -253,144 +220,125 @@ function renderBlock(b, row) {
   });
   const txSt = b => {
     let s="";
-    if(b.bold)s+="font-weight:700;";if(b.italic)s+="font-style:italic;";
+    if(b.bold)s+="font-weight:700;"; if(b.italic)s+="font-style:italic;";
     if(b.underline)s+="text-decoration:underline;";
     if(b.fontFamily)s+=`font-family:${b.fontFamily};`;
     if(b.lineHeight)s+=`line-height:${b.lineHeight};`;
     return s;
   };
 
-  let html = "";
+  let html="";
   switch(b.type) {
     case "docheader":
-      html=`<div class="bp-dochd">
+      html=`<div class="b-dochd">
         <div class="dhl"><strong>${esc(b.companyName||"")}</strong>${esc(b.companyInfo||"").replace(/\n/g,"<br>")}</div>
         <div class="dhr"><strong>${fv(b.docNumField||"MaDonHang")}</strong>${esc(b.docTitle||"")}<br>Ngày: ${fv(b.dateField||"NgayTao")}</div>
       </div>`; break;
 
     case "logo": {
       const al=b.logoAlign||"left";
-      const logoEl=b.logoData
+      const lgEl=b.logoData
         ?`<img src="${b.logoData}" style="width:${b.logoWidth||80}px;height:auto;max-height:80px;object-fit:contain">`
         :`<div style="width:${b.logoWidth||80}px;height:50px;border:1px solid #ddd;display:flex;align-items:center;justify-content:center;font-size:9px;color:#aaa">LOGO</div>`;
-      html=`<div class="bp-logo" style="justify-content:${al==="right"?"flex-end":al==="center"?"center":"flex-start"}">
-        ${logoEl}
-        <div style="margin-left:10px">
-          <div style="font-size:16px;font-weight:700">${esc(b.companyName||"")}</div>
-          <div style="font-size:11px;color:var(--tx2)">${esc(b.subTitle||"")}</div>
-        </div>
-      </div>`; break; }
+      html=`<div class="b-logo" style="justify-content:${al==="right"?"flex-end":al==="center"?"center":"flex-start"}">${lgEl}<div style="margin-left:10px"><div style="font-size:16px;font-weight:700">${esc(b.companyName||"")}</div><div style="font-size:11px;color:#6b6b67">${esc(b.subTitle||"")}</div></div></div>`; break; }
 
     case "heading":
-      html=`<div class="bp-heading" style="text-align:${b.align||"center"};color:${b.color||"#1a1a18"};font-size:${b.size||20}px;${txSt(b)}">${tpl(b.text)}</div>`; break;
+      html=`<div style="text-align:${b.align||"center"};color:${b.color||"#1a1a18"};font-size:${b.size||20}px;font-weight:700;line-height:1.3;${txSt(b)}">${tpl(b.text)}</div>`; break;
     case "subheading":
-      html=`<div class="bp-sub" style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||15}px;${txSt(b)}">${tpl(b.text)}</div>`; break;
+      html=`<div style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||15}px;font-weight:600;line-height:1.4;${txSt(b)}">${tpl(b.text)}</div>`; break;
     case "text":
-      html=`<div class="bp-text" style="text-align:${b.align||"left"};color:${b.color||"#6b6b67"};font-size:${b.size||13}px;${txSt(b)}">${tpl(b.text)}</div>`; break;
-
+      html=`<div style="text-align:${b.align||"left"};color:${b.color||"#6b6b67"};font-size:${b.size||13}px;line-height:1.7;white-space:pre-wrap;${txSt(b)}">${tpl(b.text)}</div>`; break;
     case "richtext":
-      html=`<div class="bp-richtext" style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||13}px;${txSt(b)}">${tpl(b.content||"")}</div>`; break;
+      html=`<div style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||13}px;line-height:1.7;${txSt(b)}">${tpl(b.content||"")}</div>`; break;
 
     case "field":
-      html=`<div style="font-size:12px;margin:2px 0">
-        ${b.showLabel&&b.label?`<span style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--tx3);margin-right:6px">${esc(b.label)}:</span>`:""}
-        <span style="font-weight:500">${fv(b.fieldName)}</span>
-      </div>`; break;
-
+      html=`<div style="font-size:12px;margin:2px 0">${b.showLabel&&b.label?`<span style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9b9b96;margin-right:6px">${esc(b.label)}:</span>`:""}<span style="font-weight:500">${fv(b.fieldName)}</span></div>`; break;
     case "fieldrow":
-      html=`<div class="bp-fr"><span class="lbl">${esc(b.label||b.fieldName||"")}:</span><span class="val">${fv(b.fieldName)}</span></div>`; break;
+      html=`<div style="display:flex;gap:8px;align-items:baseline;font-size:12px;margin:2px 0"><span style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9b9b96;white-space:nowrap;min-width:80px">${esc(b.label||b.fieldName||"")}:</span><span style="font-weight:500">${fv(b.fieldName)}</span></div>`; break;
 
     case "infogrid": {
       const fields=b.fields||[];
-      html=`<dl class="bp-ig">${fields.map(f=>`<div><dt>${esc(f.label||f.field)}</dt><dd>${fv(f.field)}</dd></div>`).join("")}</dl>`; break; }
+      html=`<dl style="display:grid;grid-template-columns:1fr 1fr;gap:0 22px;margin:6px 0">${fields.map(f=>`<div><dt style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9b9b96;margin-top:7px">${esc(f.label||f.field)}</dt><dd style="font-size:12px;font-weight:500">${fv(f.field)}</dd></div>`).join("")}</dl>`; break; }
 
-    case "datatable": {
-      const dc=b.columns||[],ts=b.tblStyle||{};
-      const hbg=ts.headerBg||"#1a1a18",hcl=ts.headerColor||"#fff";
-      const bs=ts.borderStyle||"all",bw=ts.borderWidth||1,bc=ts.borderColor||"rgba(0,0,0,.1)";
+    case "datatable": case "subtable": {
+      const dc=b.columns||[], ts=b.tblStyle||{};
+      const hbg=ts.headerBg||"#1a1a18", hcl=ts.headerColor||"#fff";
+      const bs=ts.borderStyle||"all", bw=ts.borderWidth||1, bc=ts.borderColor||"rgba(0,0,0,.1)";
       const thB=bs==="none"?"border:none":`border:${bw}px solid ${bc}`;
       const tdB=bs==="none"?"border:none":`border-bottom:${bw}px solid ${bc}`;
-      // Demo row hoặc row thật
-      const rows = PREVIEW ? [row] : [row];
-      html=`<table class="bp-tbl" style="${bs==="outer"?`border:${bw}px solid ${bc}`:""}">
-        <thead><tr style="background:${hbg};color:${hcl}">${dc.map(c=>`<th style="${thB}">${esc(c)}</th>`).join("")}</tr></thead>
-        <tbody>${rows.map(r=>`<tr>${dc.map(c=>`<td style="${tdB}">${String(r[c]||"—")}</td>`).join("")}</tr>`).join("")}</tbody>
-        ${b.showTotal&&dc.length?`<tfoot><tr>
-          ${dc.slice(0,-1).map(c=>`<td style="${tdB}"></td>`).join("")}
-          <td style="${tdB};font-weight:700">${fmtMoney(row[dc[dc.length-1]])}</td>
-        </tr></tfoot>`:""}
-      </table>`; break; }
+      // Lấy rows: subtable dùng extraData, datatable dùng row chính
+      let rows=[row];
+      if (b.type==="subtable"&&b.dsAlias&&extraData[b.dsAlias]) {
+        const ed=extraData[b.dsAlias];
+        rows=ed.rows?.length?ed.rows:(ed.row?[ed.row]:[row]);
+      }
+      const tfoot = b.showTotal&&dc.length ? (() => {
+        const sums=dc.map(c=>{const ns=rows.map(r=>parseNum(r[c])).filter(n=>!isNaN(n)&&n!==0);return ns.length?ns.reduce((a,x)=>a+x,0):null;});
+        return `<tfoot><tr>${sums.map((s,i)=>`<td style="${tdB}">${i===0?"Tổng":s!=null?fmtMoney(s):""}</td>`).join("")}</tr></tfoot>`;
+      })() : "";
+      html=`<table class="b-tbl" style="${bs==="outer"?`border:${bw}px solid ${bc}`:""}">
+        <thead><tr style="background:${hbg};color:${hcl}">${dc.length?dc.map(c=>`<th style="${thB}">${esc(c)}</th>`).join(""):"<th>Cột 1</th><th>Cột 2</th>"}</tr></thead>
+        <tbody>${rows.map((r,ri)=>`<tr style="${ri%2===1?`background:${ts.stripeBg||"#f7f7f5"}`:""}">
+          ${dc.map(c=>`<td style="${tdB}">${esc(String(r[c]??'—'))}</td>`).join("")}
+        </tr>`).join("")}</tbody>${tfoot}</table>`; break; }
 
     case "amount": {
       const amt=row[b.fieldName]||"0";
-      html=`<div class="bp-amt"><div class="bp-amt-inner">
-        <div class="bp-amt-lbl">${esc(b.label||"TỔNG CỘNG")}</div>
-        <div class="bp-amt-val">${fmtMoney(amt)} ₫</div>
-        ${b.showWords?`<div class="bp-amt-wrd">(${soThanhChu(amt)})</div>`:""}
-      </div></div>`; break; }
+      html=`<div class="b-amt"><div class="b-amt-in"><div class="b-amt-lbl">${esc(b.label||"TỔNG CỘNG")}</div><div class="b-amt-val">${fmtMoney(amt)} ₫</div>${b.showWords?`<div class="b-amt-wrd">(${soThanhChu(amt)})</div>`:""}</div></div>`; break; }
 
     case "custom": {
-      const val = calcFormula(b.formula||"0", row);
-      html=`<div class="bp-fr"><span class="lbl">${esc(b.label||"")}:</span><span class="val">${fmtMoney(val)} ₫</span></div>`; break; }
+      const val=calcFormula(b.formula||"0",row);
+      html=`<div style="display:flex;gap:8px;align-items:baseline;font-size:12px;margin:2px 0"><span style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9b9b96;white-space:nowrap;min-width:80px">${esc(b.label||"")}:</span><span style="font-weight:500">${fmtMoney(val)} ₫</span></div>`; break; }
 
     case "sign": {
-      const labels=(b.labels||["Người lập","Người duyệt","Người nhận"]).slice(0,b.count||3);
-      html=`<div class="bp-sign">${labels.map(l=>`<div class="bp-sc">
-        <div class="bp-sl"></div>
-        <div class="bp-sn">${esc(l)}</div>
-        <div style="font-size:10px;margin-top:2px">(Ký, ghi rõ họ tên)</div>
-      </div>`).join("")}</div>`; break; }
+      const lbs=(b.labels||["Người lập","Người duyệt","Người nhận"]).slice(0,b.count||3);
+      html=`<div class="b-sign">${lbs.map(l=>`<div class="sc"><div class="sl"></div><div class="sn">${esc(l)}</div><div style="font-size:10px;margin-top:2px">(Ký, ghi rõ họ tên)</div></div>`).join("")}</div>`; break; }
 
-    case "divider":      html=`<hr class="bp-div">`; break;
-    case "dividerlight": html=`<hr class="bp-divl">`; break;
+    case "divider":      html=`<hr class="b-div">`; break;
+    case "dividerlight": html=`<hr class="b-divl">`; break;
     case "spacer":       html=`<div style="height:${b.height||20}px"></div>`; break;
     case "pagebreak":    html=`<div style="page-break-after:always"></div>`; break;
 
     case "pagenum":
-      html=`<div class="bp-pagenum ${b.format&&b.format.includes("total")?"with-total":""}"
-        style="text-align:${b.align||"center"};font-size:${b.size||11}px">
-        ${esc((b.format||"Trang {{page}} / {{total}}").replace("{{page}}","").replace("{{total}}","")).trim()||"Trang "}
+      html=`<div class="b-pagenum ${b.format&&b.format.includes("total")?"with-total":""}"
+        style="text-align:${b.align||"center"};font-size:${b.size||11}px;font-style:italic;color:#9b9b96;margin:4px 0">
+        ${esc((b.format||"Trang {{page}}").replace("{{page}}","").replace("{{total}}","")).trim()||"Trang "}
       </div>`; break;
 
     case "qrcode": {
-      const sz=b.size||80,al=b.align||"center";
+      const sz=b.size||80, al=b.align||"center";
       const qrId="qr-"+Math.random().toString(36).slice(2,7);
-      html=`<div class="bp-qr-wrap" style="align-items:${al==="right"?"flex-end":al==="left"?"flex-start":"center"}">
+      html=`<div class="b-qr-wrap" style="align-items:${al==="right"?"flex-end":al==="left"?"flex-start":"center"}">
         <div id="${qrId}" data-field="${esc(b.fieldName||"")}" data-size="${sz}"
              style="width:${sz}px;height:${sz}px;display:inline-block"></div>
-        ${b.label?`<div class="bp-qr-label">${esc(b.label)}</div>`:""}
+        ${b.label?`<div style="font-size:10px;color:#6b6b67">${esc(b.label)}</div>`:""}
       </div>`; break; }
 
     case "condition": {
-      // Evaluate condition
-      const val=String(row[b.condField]||"");
-      const cval=String(b.condValue||"");
+      const val=String(row[b.condField]||""), cval=String(b.condValue||"");
       let show=false;
       switch(b.condOp){
-        case "eq":       show=val===cval; break;
-        case "neq":      show=val!==cval; break;
-        case "gt":       show=parseFloat(val)>parseFloat(cval); break;
-        case "lt":       show=parseFloat(val)<parseFloat(cval); break;
+        case "eq": show=val===cval; break; case "neq": show=val!==cval; break;
+        case "gt": show=parseFloat(val)>parseFloat(cval); break;
+        case "lt": show=parseFloat(val)<parseFloat(cval); break;
         case "contains": show=val.includes(cval); break;
-        case "empty":    show=!val||val.trim()===""; break;
+        case "empty": show=!val||val.trim()===""; break;
         case "notempty": show=!!val&&val.trim()!==""; break;
-        default:         show=true;
+        default: show=true;
       }
       if (!show) return "";
-      html=(b.innerBlocks||[]).map(cb=>renderBlock(cb,row)).join(""); break; }
+      html=(b.innerBlocks||[]).map(cb=>renderBlock(cb,row,extraData)).join(""); break; }
 
     case "highlight": {
       const bg=b.bgColor||"#faeeda",brd=b.borderColor||"#854F0B",tc=b.textColor||"#854F0B";
-      html=`<div class="bp-hl" style="background:${bg};border:1.5px solid ${brd}">
-        ${b.icon?`<span style="font-size:16px;flex-shrink:0">${b.icon}</span>`:""}
-        <span style="font-size:${b.size||13}px;color:${tc};font-weight:${b.bold?"700":"400"}">${tpl(b.text||"")}</span>
-      </div>`; break; }
+      html=`<div class="b-hl" style="background:${bg};border:1.5px solid ${brd}">${b.icon?`<span style="font-size:16px;flex-shrink:0">${b.icon}</span>`:""}<span style="font-size:${b.size||13}px;color:${tc};font-weight:${b.bold?"700":"400"}">${tpl(b.text||"")}</span></div>`; break; }
 
     case "twocol": {
-      const r=(b.ratio||"50:50").split(":");const l=parseInt(r[0]),ri=100-l;
-      const lHtml=(b.leftBlocks||[]).map(cb=>renderBlock(cb,row)).join("");
-      const rHtml=(b.rightBlocks||[]).map(cb=>renderBlock(cb,row)).join("");
-      html=`<div class="bp-2col" style="grid-template-columns:${l}fr ${ri}fr">${lHtml}${rHtml}</div>`; break; }
+      const parts=(b.ratio||"50:50").split(":"), l=parseInt(parts[0]), ri=100-l;
+      html=`<div class="b-2col" style="grid-template-columns:${l}fr ${ri}fr">
+        ${(b.leftBlocks||[]).map(cb=>renderBlock(cb,row,extraData)).join("")}
+        ${(b.rightBlocks||[]).map(cb=>renderBlock(cb,row,extraData)).join("")}
+      </div>`; break; }
 
     default: html=""; break;
   }
@@ -399,35 +347,29 @@ function renderBlock(b, row) {
 
 function renderFooter(row, po) {
   const parts=[];
-  if (po.footer)  parts.push(esc(po.footer));
-  if (po.showDate!==false) parts.push(`In lúc: ${new Date().toLocaleString("vi-VN")}`);
-  if (PREVIEW) parts.push(`<strong style="color:#b45309">[DỮ LIỆU XEM THỬ]</strong>`);
-  return parts.length ? `<div class="bp-footer">${parts.join(" &nbsp;·&nbsp; ")}</div>` : "";
+  if (po.footer) parts.push(esc(po.footer));
+  if (po.showDate!==false) parts.push("In lúc: "+new Date().toLocaleString("vi-VN"));
+  if (PREVIEW) parts.push("<strong style='color:#b45309'>[DỮ LIỆU XEM THỬ]</strong>");
+  return parts.length?`<div class="b-footer">${parts.join(" &nbsp;·&nbsp; ")}</div>`:"";
 }
 
-// ── QR CODE RENDER ──
-function renderQRAll(row) {
+function renderQRAll(row, extraData) {
   document.querySelectorAll("[data-field][data-size]").forEach(el => {
     const field=el.dataset.field, sz=parseInt(el.dataset.size)||80;
     const val=row[field]?String(row[field]):"";
-    if (!val || !window.QRCode) { el.innerHTML=`<div style="font-size:8px;color:#aaa;text-align:center;padding:4px">QR<br>${esc(field)}</div>`; return; }
-    try {
-      el.innerHTML="";
-      new QRCode(el,{text:val,width:sz,height:sz,
-        colorDark:"#000000",colorLight:"#ffffff",
-        correctLevel:QRCode.CorrectLevel.M});
-    } catch(e) { el.textContent="QR: "+val; }
+    if (!val||!window.QRCode) { el.innerHTML=`<div style="font-size:8px;color:#aaa;text-align:center;padding:4px">QR<br>${esc(field)}</div>`; return; }
+    try { el.innerHTML=""; new QRCode(el,{text:val,width:sz,height:sz,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M}); }
+    catch(e) { el.textContent="QR: "+val; }
   });
 }
 
-// ── HELPERS ──
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function fmtMoney(v){const n=parseFloat(String(v||"0").replace(/[^0-9.\-]/g,""));return isNaN(n)?String(v||"—"):n.toLocaleString("vi-VN");}
 function parseNum(v){return parseFloat(String(v||"0").replace(/[^0-9.\-]/g,""))||0;}
 function calcFormula(formula,row){
   try{
     let expr=String(formula).replace(/([0-9]),([0-9])/g,"$1.$2")
-      .replace(/\{([^}]+)\}/g,(_,k)=>{const v=parseNum(row[k.trim()]);return v;});
+      .replace(/\{([^}]+)\}/g,(_,k)=>{const v=parseNum(row[k.trim()]);return isNaN(v)?0:v;});
     const val=Function('"use strict";return('+expr+')')();
     return isNaN(val)?formula:val;
   }catch(e){return formula;}
@@ -441,7 +383,7 @@ function _d3(n){if(!n)return"";const t=Math.floor(n/100),c=Math.floor((n%100)/10
 function soThanhChu(raw){let n=parseInt(String(raw||"0").replace(/[^0-9]/g,""))||0;
   if(!n)return"không đồng";let res="",i=0;
   while(n>0){const p=n%1000;if(p)res=_d3(p)+(_h[i]?" "+_h[i]+" ":"")+res;n=Math.floor(n/1000);i++;}
-  res=res.trim();return res.charAt(0).toUpperCase()+res.slice(1)+" đồng";}
+  return(res.trim().charAt(0).toUpperCase()+res.trim().slice(1))+" đồng";}
 
 main();
 </script>
