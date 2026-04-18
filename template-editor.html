@@ -404,6 +404,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
         <div class="pal-item" onclick="addBlock('datatable')"><div class="pi-icon">&#128200;</div><div class="pi-lbl">Bảng dữ liệu</div></div>
         <div class="pal-item" onclick="addBlock('amount')"><div class="pi-icon">&#128176;</div><div class="pi-lbl">Tổng tiền</div></div>
         <div class="pal-item" onclick="addBlock('custom')"><div class="pi-icon">&#128295;</div><div class="pi-lbl">Tính toán</div></div>
+        <div class="pal-item" onclick="addBlock('subtable')"><div class="pi-icon">&#128203;</div><div class="pi-lbl">Bảng sheet phụ</div></div>
       </div>
     </div>
     <div class="pal-sec">
@@ -429,13 +430,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
     <!-- Tab: AppSheet Action URL -->
     <div class="pg-pane" id="pt-action">
       <div class="ps-title">Tạo URL AppSheet Action</div>
-      <div class="pr"><label>Cột ID (key column)</label>
-        <div class="fld-pick" id="action-col-pick" style="max-height:90px">
+
+      <div class="pr"><label>Cột ID dòng (key column)</label>
+        <div class="fld-pick" id="action-col-pick" style="max-height:80px">
           <div class="no-col">Chọn sheet để xem cột</div>
         </div>
         <input type="text" id="action-keycol" placeholder="Để trống = [_UNIQUEID]"
                oninput="updateActionURL()" style="margin-top:4px">
       </div>
+
       <div class="pr">
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:400">
           <input type="checkbox" id="action-autoprint" onchange="updateActionURL()"> Auto-print khi mở
@@ -444,8 +447,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
           <input type="checkbox" id="action-useblock" checked onchange="updateActionURL()"> Dùng Block Template
         </label>
       </div>
+
+      <div class="props-sub" style="display:flex;align-items:center;justify-content:space-between">
+        Sheet dữ liệu phụ (join nhiều bảng)
+        <button onclick="addDSRow()"
+          style="font-size:10px;padding:2px 8px;border-radius:5px;border:1px solid var(--blue-bd);
+          background:var(--blue-bg);color:var(--blue);cursor:pointer;font-family:inherit">
+          + Thêm sheet phụ
+        </button>
+      </div>
+      <div id="ds-list" style="display:flex;flex-direction:column;gap:5px;margin-bottom:6px">
+        <div style="font-size:11px;color:var(--tx3);padding:4px">Chưa có sheet phụ</div>
+      </div>
+      <div style="font-size:10px;color:var(--tx3);line-height:1.6;margin-bottom:8px">
+        Ví dụ: join <strong>KhachHang</strong> theo cột <code>MaKhachHang</code>
+      </div>
+
       <div style="border:1px solid var(--bd);border-radius:var(--r);padding:9px;
-                  background:var(--bg2);font-size:11px;line-height:1.8;min-height:50px"
+                  background:var(--bg2);font-size:11px;line-height:1.9;min-height:50px"
            id="action-url-box">
         <em style="color:var(--tx3)">Chọn template để xem URL</em>
       </div>
@@ -453,7 +472,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
         <button id="btn-copy-url" onclick="copyActionURL()"
           style="flex:1;padding:7px;border-radius:var(--r);border:1px solid var(--blue-bd);
           background:var(--blue-bg);color:var(--blue);cursor:pointer;font-size:12px;font-family:inherit">
-          &#128203; Copy công thức
+          &#128203; Copy công thức AppSheet
         </button>
         <button onclick="openPreviewURL()"
           style="padding:7px 10px;border-radius:var(--r);border:1px solid var(--bd2);
@@ -461,62 +480,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
           &#128065; Test
         </button>
       </div>
+
       <div class="props-sep"></div>
       <div class="props-sub">Hướng dẫn gắn vào AppSheet</div>
       <div style="font-size:11px;color:var(--tx2);line-height:1.7;background:var(--bg2);
                   border-radius:var(--r);padding:8px 10px;margin-bottom:8px">
-        1. AppSheet Editor → Table → <strong>Behavior → Actions → Add</strong><br>
+        1. AppSheet → Table → <strong>Behavior → Actions → Add</strong><br>
         2. <strong>Do this:</strong> <code>Open a link</code><br>
-        3. Ô <strong>URL</strong>: dán công thức<br>
+        3. Ô <strong>URL</strong>: dán công thức bên trên<br>
         4. Save → Deploy → Test trên app
       </div>
-      <div class="props-sub">Tham số URL</div>
-      <div style="font-size:10px;color:var(--tx2);line-height:1.9;background:var(--bg2);
-                  border-radius:var(--r);padding:7px 10px">
-        <code>[_UNIQUEID]</code> — ID dòng tự động<br>
-        <code>[TenCot]</code> — Giá trị cột cụ thể<br>
-        <code>preview=1</code> — Data demo để test<br>
-        <code>autoprint=1</code> — Tự mở hộp thoại in<br>
-        <code>useBlockTemplate=1</code> — Dùng Block Editor
-      </div>
 
-      <div class="props-sep"></div>
-      <div class="props-sub">Sprint 5 — Gửi Email / Lưu PDF</div>
-      <div style="font-size:11px;background:var(--amber-bg);border:1px solid rgba(133,79,11,.2);
-                  border-radius:var(--r);padding:8px 10px;color:var(--amber);line-height:1.6;margin-bottom:8px">
-        &#9888; Tính năng này cần kết nối <strong>Gmail</strong> và <strong>Google Drive</strong>
-        trong AppSheet hoặc Apps Script.
-      </div>
-      <div class="pr"><label>Email gửi đến (cột email)</label>
-        <div class="fld-pick" id="email-col-pick" style="max-height:80px">
+      <div class="props-sub">Sprint 5 — Gửi Email tự động</div>
+      <div class="pr"><label>Cột email nhận</label>
+        <div class="fld-pick" id="email-col-pick" style="max-height:70px">
           <div class="no-col">Chọn sheet để xem cột</div>
         </div>
         <input type="text" id="action-email-col" placeholder="Vd: EmailKhachHang"
-               oninput="updateEmailConfig()">
+               oninput="updateEmailConfig()" style="margin-top:4px">
       </div>
       <div class="pr"><label>Tiêu đề email</label>
-        <input type="text" id="action-email-subject"
-               placeholder="Vd: Hóa đơn {{MaDonHang}} từ Công ty ABC"
-               oninput="updateEmailConfig()" value="Tài liệu từ hệ thống">
+        <input type="text" id="action-email-subject" value="Tài liệu từ hệ thống"
+               oninput="updateEmailConfig()">
       </div>
       <div style="border:1px solid var(--bd);border-radius:var(--r);padding:9px;
-                  background:var(--bg2);font-size:11px;margin-bottom:8px" id="email-config-box">
-        <em style="color:var(--tx3)">Chọn cột email để xem cấu hình</em>
-      </div>
-      <div style="font-size:10px;color:var(--tx2);line-height:1.7;background:var(--bg2);
-                  border-radius:var(--r);padding:7px 10px">
-        <strong>Cách tích hợp gửi email:</strong><br>
-        1. Tạo <strong>Apps Script Automation</strong><br>
-        2. Trigger: khi dòng được đánh dấu gửi<br>
-        3. Script gọi <code>print-block.html</code> → chụp HTML → gửi Gmail<br>
-        4. Hoặc dùng AppSheet Automation → Webhook → Apps Script
-      </div>
-      <div style="font-size:10px;color:var(--tx2);line-height:1.7;background:var(--bg2);
-                  border-radius:var(--r);padding:7px 10px;margin-top:6px">
-        <strong>Cách lưu PDF lên Drive:</strong><br>
-        1. AppSheet → Automation → gọi Apps Script<br>
-        2. Script: <code>DriveApp.createFile(blob)</code><br>
-        3. Hoặc dùng <strong>Print to PDF</strong> trong Chrome → Save to Drive
+                  background:var(--bg2);font-size:11px;line-height:1.8;min-height:36px"
+           id="email-config-box">
+        <em style="color:var(--tx3)">Điền cột email để xem cấu hình</em>
       </div>
       <button onclick="showEmailScriptCode()"
         style="width:100%;padding:7px;border-radius:var(--r);border:1px solid var(--bd2);
@@ -695,6 +685,9 @@ const DEF={
   divider:{type:"divider"},dividerlight:{type:"dividerlight"},
   spacer:{type:"spacer",height:20},pagebreak:{type:"pagebreak"},
   twocol:{type:"twocol",ratio:"50:50",leftBlocks:[],rightBlocks:[]},
+  subtable:{type:"subtable",dsAlias:"",columns:[],showTotal:false,
+    tblStyle:{headerBg:"#185FA5",headerColor:"#ffffff",stripeBg:"#f0f7ff",
+              borderStyle:"all",borderWidth:1,borderColor:"rgba(0,0,0,.1)"}},
   pagenum:{type:"pagenum",format:"Trang {{page}} / {{total}}",align:"center",size:11},
   qrcode:{type:"qrcode",fieldName:"",size:80,label:"",align:"center"},
   condition:{type:"condition",condField:"",condOp:"eq",condValue:"",
@@ -988,27 +981,114 @@ function addFRBlock(col) {
 }
 
 // ════════════════════ ACTION URL GENERATOR (Sprint 4) ════════════════════
+// ── actionDS state (sheet phụ cho action URL) ──
+let actionDS = [];
+
+function addDSRow() {
+  actionDS.push({sheet:'', joinCol:'', as:'ds'+(actionDS.length+1), cols:''});
+  renderDSList(); updateActionURL();
+}
+function removeDSRow(i) {
+  actionDS.splice(i,1); renderDSList(); updateActionURL();
+}
+function setDSProp(i,key,val) {
+  actionDS[i][key]=val; updateActionURL();
+}
+function renderDSList() {
+  const el=document.getElementById('ds-list');
+  if (!el) return;
+  if (!actionDS.length) {
+    el.innerHTML='<div style="font-size:11px;color:var(--tx3);padding:4px">Chưa có sheet phụ nào</div>';
+    return;
+  }
+  // Lấy danh sách tất cả sheet từ select
+  const sheetOpts = Array.from(document.getElementById('sheet-sel')?.options||[])
+    .slice(1).map(o=>o.value);
+  el.innerHTML = actionDS.map((ds,i) => `
+    <div style="border:1px solid var(--bd);border-radius:var(--r);padding:8px;background:var(--bg2);position:relative">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:10px;font-weight:700;color:var(--blue)">Sheet phụ #${i+1}</span>
+        <button onclick="removeDSRow(${i})"
+          style="font-size:10px;color:var(--red);background:none;border:none;cursor:pointer;padding:0">✕ Xoá</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+        <div class="pr" style="margin:0"><label>Sheet</label>
+          <select onchange="setDSProp(${i},'sheet',this.value)"
+            style="width:100%;padding:5px 6px;border:1px solid var(--bd2);border-radius:5px;font-size:11px;font-family:inherit">
+            <option value="">-- Chọn sheet --</option>
+            ${sheetOpts.map(s=>`<option value="${esc(s)}" ${ds.sheet===s?'selected':''}>${esc(s)}</option>`).join('')}
+          </select></div>
+        <div class="pr" style="margin:0"><label>Join theo cột</label>
+          <input type="text" value="${esc(ds.joinCol)}" placeholder="VD: MaKhachHang"
+                 oninput="setDSProp(${i},'joinCol',this.value)"
+                 style="width:100%;padding:5px 6px;border:1px solid var(--bd2);border-radius:5px;font-size:11px;font-family:inherit">
+        </div>
+        <div class="pr" style="margin:0"><label>Alias (tên tham chiếu)</label>
+          <input type="text" value="${esc(ds.as)}" placeholder="VD: khachhang"
+                 oninput="setDSProp(${i},'as',this.value)"
+                 style="width:100%;padding:5px 6px;border:1px solid var(--bd2);border-radius:5px;font-size:11px;font-family:inherit">
+        </div>
+        <div class="pr" style="margin:0"><label>Cột lấy (để trống = tất cả)</label>
+          <input type="text" value="${esc(ds.cols)}" placeholder="VD: TenKH,DiaChi"
+                 oninput="setDSProp(${i},'cols',this.value)"
+                 style="width:100%;padding:5px 6px;border:1px solid var(--bd2);border-radius:5px;font-size:11px;font-family:inherit">
+        </div>
+      </div>
+    </div>`).join('');
+}
+
 function updateActionURL() {
-  const el=document.getElementById("action-url-box"); if(!el) return;
-  if (!curId) { el.innerHTML="<em style='color:var(--tx3)'>Chọn template để xem URL</em>"; return; }
-  const sheet=document.getElementById("sheet-sel")?.value||tpls[curId]?.sheet||"YOUR_SHEET";
-  const keyCol=document.getElementById("action-keycol")?.value||"";
-  const idParam=keyCol?`"&[${keyCol}]&"`:'"&[_UNIQUEID]&"';
-  const extra=[];
-  if (document.getElementById("action-autoprint")?.checked) extra.push("autoprint=1");
-  if (document.getElementById("action-useblock")?.checked) extra.push("useBlockTemplate=1");
-  const extraStr=extra.length?"&"+extra.join("&"):"";
-  const formula=`"${PRINT_APP_URL}?id="${idParam}"&tpl=${curId}&sheet=${sheet}${extraStr}"`;
-  el.innerHTML=`
+  const el=document.getElementById('action-url-box');
+  if (!el) return;
+  if (!curId) {
+    el.innerHTML="<em style='color:var(--tx3)'>Chọn template để xem URL</em>"; return;
+  }
+  const sheet    = document.getElementById('sheet-sel')?.value || tpls[curId]?.sheet || 'YOUR_SHEET';
+  const keyCol   = document.getElementById('action-keycol')?.value || '';
+  const autoP    = document.getElementById('action-autoprint')?.checked || false;
+  const useBlock = document.getElementById('action-useblock')?.checked !== false;
+
+  const extra = [];
+  if (autoP)    extra.push('autoprint=1');
+  if (useBlock) extra.push('useBlockTemplate=1');
+
+  // DataSources → queries param
+  const validDS = actionDS.filter(ds => ds.sheet && ds.joinCol);
+  if (validDS.length) {
+    const dsArr = validDS.map(ds => ({
+      sheet: ds.sheet, joinOn: ds.joinCol,
+      as: ds.as || ds.sheet,
+      cols: ds.cols ? ds.cols.split(',').map(c=>c.trim()).filter(Boolean) : []
+    }));
+    extra.push('queries=' + encodeURIComponent(JSON.stringify(dsArr)));
+  }
+
+  const extraStr = extra.length ? '&' + extra.join('&') : '';
+  // Công thức AppSheet — dùng & nối chuỗi với [cột]
+  const idExpr  = keyCol ? `[${keyCol}]` : '[_UNIQUEID]';
+  const baseURL = PRINT_APP_URL + '?id=';
+  const restURL = '&tpl=' + curId + '&sheet=' + sheet + extraStr;
+  const formula = '"' + baseURL + '"&' + idExpr + '&"' + restURL + '"';
+  const testURL = PRINT_APP_URL + '?id=DEMO&tpl=' + curId + '&sheet=' + sheet + '&preview=1';
+
+  const dsHint = validDS.length
+    ? `<div style="font-size:10px;color:var(--green);margin-top:4px">✓ ${validDS.length} sheet phụ: ${validDS.map(d=>esc(d.sheet)).join(', ')}</div>`
+    : '';
+
+  el.innerHTML = `
     <div style="margin-bottom:6px">
-      <span style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--tx3)">URL test trình duyệt:</span><br>
-      <code style="font-size:11px;word-break:break-all;color:var(--blue)">${esc(PRINT_APP_URL)}?id=<b>DEMO_ID</b>&tpl=${esc(curId)}&sheet=${esc(sheet)}${esc(extraStr)}&preview=1</code>
+      <span style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--tx3)">Công thức dán vào AppSheet Action (ô URL):</span>
+      <code id="formula-code" style="display:block;margin-top:3px;font-size:11px;word-break:break-all;
+        color:var(--green);background:var(--green-bg);border:1px solid rgba(15,110,86,.2);
+        border-radius:5px;padding:5px 7px;line-height:1.7">${esc(formula)}</code>
+      ${dsHint}
     </div>
-    <div style="border-top:1px solid var(--bd);padding-top:6px;margin-top:4px">
-      <span style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--tx3)">Công thức dán vào AppSheet Action:</span><br>
-      <code id="formula-code" style="font-size:11px;word-break:break-all;color:var(--green);display:block;margin-top:3px">${esc(formula)}</code>
+    <div style="border-top:1px solid var(--bd);padding-top:5px">
+      <span style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--tx3)">URL test trình duyệt:</span>
+      <code style="display:block;margin-top:2px;font-size:10px;word-break:break-all;color:var(--tx2)">${esc(testURL)}</code>
     </div>`;
 }
+
 function copyActionURL() {
   const el=document.getElementById("formula-code"); if(!el)return;
   const txt=el.textContent;
@@ -1107,7 +1187,17 @@ function blockHTML(b){
     case "sign":{
       const lb=(b.labels||["Người lập","Người duyệt","Người nhận"]).slice(0,b.count||3);
       body=`<div class="b-sign">${lb.map(l=>`<div class="sc"><div class="sl"></div><div class="sn">${esc(l)}</div><div style="font-size:10px;margin-top:2px">(Ký, ghi rõ họ tên)</div></div>`).join("")}</div>`; break;}
-    case "divider": body=`<hr class="b-div">`; break;
+        case "subtable": {
+      const dc=b.columns||[],al=b.dsAlias||'(chưa có alias)',ts=b.tblStyle||{};
+      const hbg=ts.headerBg||"#185FA5",hcl=ts.headerColor||"#fff";
+      body=`<div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--tx3);margin-bottom:3px">BẢNG SHEET PHỤ: ${esc(al)}</div>
+        <table class="b-tbl">
+          <thead><tr style="background:${hbg};color:${hcl}">${dc.length?dc.map(c=>`<th>${esc(c)}</th>`).join(''):"<th>Cột 1</th><th>Cột 2</th><th>Cột 3</th>"}</tr></thead>
+          <tbody><tr class="ph"><td colspan="${dc.length||3}">← Dữ liệu từ sheet phụ "${esc(al)}"</td></tr></tbody>
+        </table>
+      </div>`; break; }
+case "divider": body=`<hr class="b-div">`; break;
     case "dividerlight": body=`<hr class="b-divl">`; break;
     case "spacer": body=`<div style="height:${b.height||20}px"></div>`; break;
     case "pagebreak": body=`<div class="b-pb">─── Ngắt trang ───</div>`; break;
@@ -1223,6 +1313,36 @@ function buildProps(b){
     case "amount":h+=`<div class="pr"><label>Chọn cột tiền</label>${CP(id,b.fieldName,"fieldName")}</div><div class="pr"><label>Nhãn</label><input value="${esc(b.label||"TỔNG CỘNG")}" oninput="setProp('${id}','label',this.value)"></div><div class="pr"><label>Hiện số bằng chữ</label><select onchange="setProp('${id}','showWords',this.value==='true')"><option value="true" ${b.showWords?"selected":""}>Có</option><option value="false" ${!b.showWords?"selected":""}>Không</option></select></div>`;break;
     case "custom":h+=`<div class="pr"><label>Nhãn cột</label><input value="${esc(b.label||"")}" oninput="setProp('${id}','label',this.value)"></div><div class="pr"><label>Công thức</label><input value="${esc(b.formula||"")}" placeholder="{TongTien}*0.1" oninput="setProp('${id}','formula',this.value)"></div>`;break;
     case "sign":h+=`<div class="pr"><label>Số ô</label><select onchange="setProp('${id}','count',+this.value)">${[1,2,3].map(n=>`<option value="${n}" ${b.count===n?"selected":""}>${n} ô</option>`).join("")}</select></div>${(b.labels||["Người lập","Người duyệt","Người nhận"]).slice(0,b.count||3).map((l,i)=>`<div class="pr"><label>Nhãn ô ${i+1}</label><input value="${esc(l)}" oninput="setProp('${id}','labels.${i}',this.value)"></div>`).join("")}`;break;
+    case "subtable": {
+      const ts=b.tblStyle||{};
+      h+=`<div class="pr"><label>Alias sheet phụ (đặt ở tab AppSheet)</label>
+        <input value="${esc(b.dsAlias||'')}" placeholder="VD: khachhang"
+               oninput="setProp('${id}','dsAlias',this.value)"></div>
+        <div class="pr"><label>Cột hiển thị (click để chọn/bỏ)</label>
+          <div class="fld-pick">${cols.length
+            ? cols.map(c=>`<div class="fp ${(b.columns||[]).includes(c)?'on':''}"
+                onclick="toggleDTCol('${id}','${esc(c)}')">${esc(c)}</div>`).join('')
+            : '<div class="no-col">Chọn sheet để xem cột</div>'}</div></div>
+        <div class="props-sub">Kiểu bảng</div>
+        <div class="pr2">
+          <div class="pr"><label>Màu header</label>
+            <input type="color" value="${ts.headerBg||'#185FA5'}"
+              oninput="setTblStyle('${id}','headerBg',this.value)"
+              style="height:30px;padding:1px 4px;cursor:pointer"></div>
+          <div class="pr"><label>Màu chữ header</label>
+            <input type="color" value="${ts.headerColor||'#ffffff'}"
+              oninput="setTblStyle('${id}','headerColor',this.value)"
+              style="height:30px;padding:1px 4px;cursor:pointer"></div>
+        </div>
+        <div class="pr"><label>Hiện dòng tổng</label>
+          <select onchange="setProp('${id}','showTotal',this.value==='true')">
+            <option value="false" ${!b.showTotal?'selected':''}>Không</option>
+            <option value="true" ${b.showTotal?'selected':''}>Có</option>
+          </select></div>
+        <div style="font-size:11px;background:var(--blue-bg);border-radius:var(--r);padding:7px;color:var(--tx)">
+          Alias phải khớp với alias bạn đặt ở tab AppSheet → Sheet phụ.
+        </div>`;
+      break; }
     case "spacer":h+=`<div class="pr"><label>Chiều cao (px)</label><input type="number" min="4" max="200" value="${b.height||20}" oninput="setProp('${id}','height',+this.value)"></div>`;break;
     case "pagenum":h+=`<div class="pr"><label>Định dạng</label><select onchange="setProp('${id}','format',this.value)">${["Trang {{page}} / {{total}}","Trang {{page}}","{{page}} / {{total}}"].map(f=>`<option value="${f}" ${b.format===f?"selected":""}>${f}</option>`).join("")}</select></div><div class="pr"><label>Căn lề</label><div class="fmt-row">${AB(id,b.align||"center")}</div></div><div class="pr"><label>Cỡ chữ</label><input type="number" min="8" max="20" value="${b.size||11}" oninput="setProp('${id}','size',+this.value)"></div><div style="font-size:11px;background:var(--blue-bg);border-radius:var(--r);padding:7px;color:var(--tx)">Số trang tự động khi in.</div>`;break;
     case "qrcode":h+=`<div class="pr"><label>Chọn cột tạo QR</label>${CP(id,b.fieldName,"fieldName")}</div><div class="pr2"><div class="pr"><label>Kích thước</label><input type="number" min="40" max="200" value="${b.size||80}" oninput="setProp('${id}','size',+this.value)"></div><div class="pr"><label>Căn lề</label><select onchange="setProp('${id}','align',this.value)"><option value="left" ${(b.align||"center")==="left"?"selected":""}>Trái</option><option value="center" ${(b.align||"center")==="center"?"selected":""}>Giữa</option><option value="right" ${b.align==="right"?"selected":""}>Phải</option></select></div></div><div class="pr"><label>Nhãn dưới QR</label><input value="${esc(b.label||"")}" oninput="setProp('${id}','label',this.value)"></div>`;break;
@@ -1350,7 +1470,7 @@ function typeName(t){
     infogrid:"Thông tin 2 cột",datatable:"Bảng dữ liệu",amount:"Tổng tiền",custom:"Tính toán",
     sign:"Chữ ký",divider:"Đường đậm",dividerlight:"Đường mờ",spacer:"Khoảng trống",
     pagebreak:"Ngắt trang",twocol:"2 cột tự do",pagenum:"Số trang",
-    qrcode:"QR Code",condition:"Điều kiện IF",highlight:"Box nổi bật"};
+    qrcode:"QR Code",condition:"Điều kiện IF",highlight:"Box nổi bật",subtable:"Bảng sheet phụ"};
   return m[t]||t;
 }
 
