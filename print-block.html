@@ -245,11 +245,11 @@ function renderBlock(b, row, extraData) {
       html=`<div class="b-logo" style="justify-content:${al==="right"?"flex-end":al==="center"?"center":"flex-start"}">${lgEl}<div style="margin-left:10px"><div style="font-size:16px;font-weight:700">${esc(b.companyName||"")}</div><div style="font-size:11px;color:#6b6b67">${esc(b.subTitle||"")}</div></div></div>`; break; }
 
     case "heading":
-      html=`<div style="text-align:${b.align||"center"};color:${b.color||"#1a1a18"};font-size:${b.size||20}px;font-weight:700;line-height:1.3;${txSt(b)}">${tpl(b.text)}</div>`; break;
+      html=`<div style="text-align:${b.align||"center"};color:${b.color||"#1a1a18"};font-size:${b.size||20}px;font-weight:700;line-height:1.3;${txSt(b)}">${b.html||tpl(b.text)}</div>`; break;
     case "subheading":
-      html=`<div style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||15}px;font-weight:600;line-height:1.4;${txSt(b)}">${tpl(b.text)}</div>`; break;
+      html=`<div style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||15}px;font-weight:600;line-height:1.4;${txSt(b)}">${b.html||tpl(b.text)}</div>`; break;
     case "text":
-      html=`<div style="text-align:${b.align||"left"};color:${b.color||"#6b6b67"};font-size:${b.size||13}px;line-height:1.7;white-space:pre-wrap;${txSt(b)}">${tpl(b.text)}</div>`; break;
+      html=`<div style="text-align:${b.align||"left"};color:${b.color||"#6b6b67"};font-size:${b.size||13}px;line-height:1.7;${txSt(b)}">${b.html?tpl(b.html.replace(/<[^>]+>/g,m=>m)):tpl(b.text)}</div>`; break;
     case "richblock": {
       // Rich text: render HTML trực tiếp, thay {{field}} → giá trị
       const rtHtml = (b.html||"").replace(/\{\{([^}]+)\}\}/g, (_,k)=>{
