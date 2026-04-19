@@ -218,12 +218,14 @@ function renderBlock(b, row, extraData) {
     if (k.endsWith("_words")) return soThanhChu(row[k.replace("_words","")]);
     return fv(k.trim());
   });
-  const txSt = b => {
+  const txSt = (b, sizeKey) => {
     let s="";
     if(b.bold)s+="font-weight:700;"; if(b.italic)s+="font-style:italic;";
     if(b.underline)s+="text-decoration:underline;";
     if(b.fontFamily)s+=`font-family:${b.fontFamily};`;
     if(b.lineHeight)s+=`line-height:${b.lineHeight};`;
+    const sz=sizeKey?b[sizeKey]:b.fontSize;
+    if(sz)s+=`font-size:${sz}px;`;
     return s;
   };
 
@@ -248,13 +250,20 @@ function renderBlock(b, row, extraData) {
       html=`<div style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||15}px;font-weight:600;line-height:1.4;${txSt(b)}">${tpl(b.text)}</div>`; break;
     case "text":
       html=`<div style="text-align:${b.align||"left"};color:${b.color||"#6b6b67"};font-size:${b.size||13}px;line-height:1.7;white-space:pre-wrap;${txSt(b)}">${tpl(b.text)}</div>`; break;
+    case "richblock": {
+      // Rich text: render HTML trực tiếp, thay {{field}} → giá trị
+      const rtHtml = (b.html||"").replace(/\{\{([^}]+)\}\}/g, (_,k)=>{
+        if(k.endsWith("_words")) return soThanhChu(row[k.replace("_words","")]);
+        return fv(k.trim());
+      });
+      html=`<div style="text-align:${b.align||"left"};line-height:1.7">${rtHtml}</div>`; break; }
     case "richtext":
       html=`<div style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||13}px;line-height:1.7;${txSt(b)}">${tpl(b.content||"")}</div>`; break;
 
     case "field":
       html=`<div style="font-size:12px;margin:2px 0">${b.showLabel&&b.label?`<span style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9b9b96;margin-right:6px">${esc(b.label)}:</span>`:""}<span style="font-weight:500">${fv(b.fieldName)}</span></div>`; break;
     case "fieldrow":
-      html=`<div style="display:flex;gap:8px;align-items:baseline;font-size:12px;margin:2px 0"><span style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9b9b96;white-space:nowrap;min-width:80px">${esc(b.label||b.fieldName||"")}:</span><span style="font-weight:500">${fv(b.fieldName)}</span></div>`; break;
+      html=`<div style="display:flex;gap:8px;align-items:baseline;${txSt(b,"fontSize")}margin:2px 0"><span style="font-size:${b.fontSize||10}px;font-weight:${b.labelBold?"700":"400"};font-style:${b.labelItalic?"italic":"normal"};text-transform:uppercase;color:${b.labelColor||"#9b9b96"};white-space:nowrap;min-width:80px">${esc(b.label||b.fieldName||"")}:</span><span style="font-weight:500;color:${b.color||"#1a1a18"}">${fv(b.fieldName)}</span></div>`; break;
 
     case "infogrid": {
       const fields=b.fields||[];
