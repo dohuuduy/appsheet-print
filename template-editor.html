@@ -699,11 +699,11 @@ const DEF={
   logo:{type:"logo",bold:false,italic:false,color:"#1a1a18",fontFamily:"",fontSize:13,companyName:"CÔNG TY ABC",subTitle:"Địa chỉ: 123 Đường ABC",
     logoData:"",logoWidth:80,logoAlign:"left"},
   heading:{type:"heading",text:"TIÊU ĐỀ BÁO CÁO",align:"center",color:"#1a1a18",
-    size:20,bold:true,italic:false,underline:false,fontFamily:"",lineHeight:1.3},
+    size:20,bold:true,italic:false,underline:false,fontFamily:"",lineHeight:1.3,html:""},
   subheading:{type:"subheading",text:"Tiêu đề phụ",align:"left",color:"#1a1a18",
-    size:15,bold:true,italic:false,underline:false,fontFamily:"",lineHeight:1.4},
+    size:15,bold:true,italic:false,underline:false,fontFamily:"",lineHeight:1.4,html:""},
   text:{type:"text",text:"Nhập nội dung tại đây...",align:"left",color:"#6b6b67",
-    size:13,bold:false,italic:false,underline:false,fontFamily:"",lineHeight:1.7},
+    size:13,bold:false,italic:false,underline:false,fontFamily:"",lineHeight:1.7,html:""},
   richblock:{type:"richblock",html:"<p>Nhập nội dung tại đây...</p>",align:"left"},
   richtext:{type:"richtext",content:"Kính gửi {{TenKhachHang}}, đơn hàng {{MaDonHang}} đã xác nhận.",
     align:"left",color:"#1a1a18",size:13,bold:false,italic:false,lineHeight:1.7},
@@ -915,8 +915,25 @@ function setProp(id,key,val) {
   else b[key]=val;
   markDirty();
   const el=document.getElementById("blk-"+id);
-  if(el){const t=document.createElement("div");t.innerHTML=blockHTML(b);
-    const ne=t.firstElementChild;el.replaceWith(ne);ne.classList.add("selected");attachBlock(ne,id);}
+  if(el){
+    // Contenteditable blocks: chỉ update outer style, không re-render (giữ selection)
+    if(['heading','subheading','text'].includes(b.type)) {
+      const ceEl=el.querySelector("[contenteditable]");
+      if(ceEl){
+        ceEl.style.textAlign  = b.align||"left";
+        ceEl.style.color      = b.color||"";
+        ceEl.style.fontSize   = (b.size||13)+"px";
+        ceEl.style.fontFamily = b.fontFamily||"";
+        ceEl.style.lineHeight = b.lineHeight||"";
+        // Nếu thay đổi html (undo/redo) thì sync
+        if(b.html && ceEl.innerHTML !== b.html) ceEl.innerHTML=b.html;
+        return;
+      }
+    }
+    // Block thông thường: full re-render
+    const t=document.createElement("div");t.innerHTML=blockHTML(b);
+    const ne=t.firstElementChild;el.replaceWith(ne);ne.classList.add("selected");attachBlock(ne,id);
+  }
 }
 function setTblStyle(id,key,val) {
   const b=blks.find(b=>b.id===id); if(!b) return;
@@ -1197,9 +1214,30 @@ function blockHTML(b){
           <div style="font-size:${b.fontSize||16}px;${txSt(b,'fontSize')}">${esc(b.companyName||"")}</div>
           <div style="font-size:11px;color:var(--tx2)">${esc(b.subTitle||"")}</div>
         </div></div>`; break;}
-    case "heading": body=`<div class="b-heading" style="text-align:${b.align||"center"};color:${b.color||"#1a1a18"};font-size:${b.size||20}px;${txSt(b)}">${esc(b.text||"")}</div>`; break;
-    case "subheading": body=`<div class="b-sub" style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||15}px;${txSt(b)}">${esc(b.text||"")}</div>`; break;
-    case "text": body=`<div class="b-text" style="text-align:${b.align||"left"};color:${b.color||"#6b6b67"};font-size:${b.size||13}px;${txSt(b)}">${esc(b.text||"")}</div>`; break;
+    case "heading":
+      body=`<div class="b-heading" style="text-align:${b.align||"center"};color:${b.color||"#1a1a18"};font-size:${b.size||20}px;${txSt(b)};outline:none"
+        contenteditable="true" id="ce-${id}"
+        oninput="ceAutosave('${id}',this)"
+        onblur="ceAutosave('${id}',this)"
+        onmouseup="ceUpdateFmt('${id}')"
+        onkeyup="ceUpdateFmt('${id}')"
+        >${b.html||('<b>'+esc(b.text||"TIÊU ĐỀ")+'</b>')}</div>`; break;
+    case "subheading":
+      body=`<div class="b-sub" style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||15}px;${txSt(b)};outline:none"
+        contenteditable="true" id="ce-${id}"
+        oninput="ceAutosave('${id}',this)"
+        onblur="ceAutosave('${id}',this)"
+        onmouseup="ceUpdateFmt('${id}')"
+        onkeyup="ceUpdateFmt('${id}')"
+        >${b.html||esc(b.text||"Tiêu đề phụ")}</div>`; break;
+    case "text":
+      body=`<div class="b-text" style="text-align:${b.align||"left"};color:${b.color||"#6b6b67"};font-size:${b.size||13}px;${txSt(b)};outline:none"
+        contenteditable="true" id="ce-${id}"
+        oninput="ceAutosave('${id}',this)"
+        onblur="ceAutosave('${id}',this)"
+        onmouseup="ceUpdateFmt('${id}')"
+        onkeyup="ceUpdateFmt('${id}')"
+        >${b.html||esc(b.text||"Nhập nội dung...")}</div>`; break;
         case "richblock": {
       const align = b.align||"left";
       body = `<div class="b-rte-content" style="text-align:${align}">${b.html||"<p></p>"}</div>`;
@@ -1351,28 +1389,57 @@ function FMTC(id, b, opts) {
   const colKey  = opts.colKey  || "color";
   const fontKey = opts.fontKey || "fontFamily";
   const sizeKey = opts.sizeKey || "fontSize";
-  const fonts   = [["","(Mặc định)"],["'Times New Roman',serif","Times NR"],["Arial,sans-serif","Arial"],
-                   ["'Segoe UI',sans-serif","Segoe UI"],["Georgia,serif","Georgia"],["'Courier New',monospace","Courier"]];
+  // Các block contenteditable dùng execCommand, block thường dùng setProp
+  const isCE = ['heading','subheading','text'].includes(b.type);
+  const boldFn  = isCE
+    ? `ceExecOnBlock('${id}','bold')`
+    : `setProp('${id}','${boldKey}',!blks.find(b=>b.id==='${id}')?.${boldKey})`;
+  const itFn    = isCE
+    ? `ceExecOnBlock('${id}','italic')`
+    : `setProp('${id}','${itKey}',!blks.find(b=>b.id==='${id}')?.${itKey})`;
+  const ulFn    = isCE
+    ? `ceExecOnBlock('${id}','underline')`
+    : `setProp('${id}','${ulKey}',!blks.find(b=>b.id==='${id}')?.${ulKey})`;
+  const colorFn = isCE
+    ? `ceExecOnBlock('${id}','foreColor',this.value)`
+    : `setProp('${id}','${colKey}',this.value)`;
+
+  const fonts = [["","(Mặc định)"],["'Times New Roman',serif","Times NR"],["Arial,sans-serif","Arial"],
+                 ["'Segoe UI',sans-serif","Segoe UI"],["Georgia,serif","Georgia"],["'Courier New',monospace","Courier"]];
+
   return `<div class="props-sub">${label}</div>
+    <div style="font-size:10px;color:var(--tx3);margin-bottom:5px;line-height:1.5">
+      ${isCE
+        ? "💡 <strong>Bôi chọn text</strong> rồi click nút để định dạng từng phần. Hoặc click không chọn để định dạng toàn bộ."
+        : "💡 Định dạng áp dụng cho toàn bộ block."}
+    </div>
     <div style="display:flex;flex-wrap:wrap;gap:3px;align-items:center;margin-bottom:6px">
-      <button class="ftb ${b[boldKey]?"on":""}" onclick="setProp('${id}','${boldKey}',${!b[boldKey]})" title="In đậm"><strong>B</strong></button>
-      <button class="ftb ${b[itKey]?"on":""}" onclick="setProp('${id}','${itKey}',${!b[itKey]})" title="In nghiêng"><em>I</em></button>
-      <button class="ftb ${b[ulKey]?"on":""}" onclick="setProp('${id}','${ulKey}',${!b[ulKey]})" title="Gạch chân"><u>U</u></button>
+      <button class="ftb ${b[boldKey]?"on":""}" onclick="${boldFn}" title="In đậm (Ctrl+B)"><strong>B</strong></button>
+      <button class="ftb ${b[itKey]?"on":""}"   onclick="${itFn}"   title="In nghiêng (Ctrl+I)"><em>I</em></button>
+      <button class="ftb ${b[ulKey]?"on":""}"   onclick="${ulFn}"   title="Gạch chân (Ctrl+U)"><u>U</u></button>
       <div style="width:1px;height:20px;background:var(--bd2);margin:0 2px"></div>
       <select style="height:24px;padding:0 4px;border:1px solid var(--bd2);border-radius:4px;font-size:11px;font-family:inherit"
-              onchange="setProp('${id}','${fontKey}',this.value)">
+              onchange="setProp('${id}','${fontKey}',this.value)"
+              title="Font chữ toàn block">
         ${fonts.map(([v,l])=>`<option value="${v}" ${(b[fontKey]||"")==v?"selected":""}>${l}</option>`).join("")}
       </select>
-      <input type="number" min="8" max="40" value="${b[sizeKey]||13}"
+      <input type="number" min="8" max="72" value="${b[sizeKey]||13}"
              style="width:44px;height:24px;padding:2px 4px;border:1px solid var(--bd2);border-radius:4px;font-size:11px;font-family:inherit"
-             title="Cỡ chữ" oninput="setProp('${id}','${sizeKey}',+this.value)">
+             title="Cỡ chữ toàn block" oninput="setProp('${id}','${sizeKey}',+this.value)">
       <div style="width:1px;height:20px;background:var(--bd2);margin:0 2px"></div>
-      <div style="display:flex;gap:2px;flex-wrap:wrap">${COLORS.map(c=>`<div class="csw ${(b[colKey]||"")==c?"on":""}" style="background:${c}" onclick="setProp('${id}','${colKey}','${c}')"></div>`).join("")}
-        <input type="color" value="${b[colKey]||"#1a1a18"}" title="Màu tuỳ chỉnh"
-               onchange="setProp('${id}','${colKey}',this.value)"
-               style="width:18px;height:18px;padding:0;border:1px solid var(--bd2);border-radius:3px;cursor:pointer"></div>
+      <input type="color" value="${b[colKey]||"#1a1a18"}"
+             onchange="${colorFn}"
+             title="${isCE?"Màu chữ vùng chọn (nếu không chọn thì toàn block)":"Màu chữ"}"
+             style="width:24px;height:24px;padding:1px 2px;border:1px solid var(--bd2);border-radius:4px;cursor:pointer">
+      ${isCE ? `<input type="color" value="#ffff00"
+             onchange="ceExecOnBlock('${id}','hiliteColor',this.value)"
+             title="Màu nền chữ (highlight vùng chọn)"
+             style="width:24px;height:24px;padding:1px 2px;border:1px solid var(--bd2);border-radius:4px;cursor:pointer">` : ""}
+      <div style="width:1px;height:20px;background:var(--bd2);margin:0 2px"></div>
+      ${isCE ? `<button class="ftb" onclick="ceExecOnBlock('${id}','removeFormat')" title="Xoá định dạng vùng chọn">✕</button>` : ""}
     </div>`;
 }
+
 
 function buildProps(b){
   const id=b.id;let h=`<div class="ps-title">${typeName(b.type)}</div>`;
@@ -1538,6 +1605,7 @@ function snapshot(){
 function doUndo(){
   if(histIdx<=0)return;histIdx--;blks=JSON.parse(hist[histIdx]);
   dirty=true;renderCanvas();selectBlock(null);updateBadge();updateUR();
+  setTimeout(restoreCEContent,50);
 }
 function doRedo(){
   if(histIdx>=hist.length-1)return;histIdx++;blks=JSON.parse(hist[histIdx]);
@@ -1737,6 +1805,101 @@ document.addEventListener('selectionchange', function() {
   const b = blks.find(b=>b.id===selId);
   if (b && b.type==='richblock') rteUpdateToolbar(selId);
 });
+
+// ════════════════════ CONTENTEDITABLE BLOCK HELPERS ════════════════════
+
+// Lưu HTML của contenteditable block vào blks
+function ceAutosave(id, el) {
+  const b = blks.find(b => b.id === id);
+  if (!b) return;
+  b.html = el.innerHTML;
+  // Sync text field để backward compat
+  b.text = el.textContent;
+  dirty = true;
+  updateBadge();
+  // Cập nhật canvas preview không re-render (giữ focus)
+  const preview = document.getElementById('blk-' + id);
+  if (preview) {
+    const ce = preview.querySelector('[contenteditable]');
+    // Đã là element đang edit, không cần update
+  }
+  snapshot();
+}
+
+// Thực thi execCommand lên vùng chọn trong block
+function ceExecOnBlock(id, cmd, value) {
+  const el = document.getElementById('ce-' + id);
+  if (!el) return;
+  el.focus();
+  // Nếu không có selection, chọn tất cả
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed) {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+  document.execCommand(cmd, false, value || null);
+  ceAutosave(id, el);
+  ceUpdateFmt(id);
+}
+
+// Cập nhật trạng thái toolbar B/I/U dựa theo selection hiện tại
+function ceUpdateFmt(id) {
+  const wrap = document.getElementById('rte-' + id);
+  if (wrap) {
+    // Rich text editor toolbar
+    ['bold','italic','underline','strikeThrough'].forEach(cmd => {
+      const btn = wrap.querySelector('[data-cmd="' + cmd + '"]');
+      if (btn) btn.classList.toggle('active', document.queryCommandState(cmd));
+    });
+  }
+  // Cũng cập nhật FMTC buttons nếu có
+  const propContent = document.getElementById('props-content');
+  if (propContent && selId === id) {
+    const b = blks.find(b => b.id === id);
+    if (b && ['heading','subheading','text'].includes(b.type)) {
+      // Cập nhật trạng thái bold/italic buttons trong FMTC
+      const btns = propContent.querySelectorAll('.ftb');
+      btns.forEach(btn => {
+        const cmd = btn.getAttribute('title');
+        if (cmd && (cmd.includes('đậm') || cmd.includes('Bold'))) {
+          btn.classList.toggle('on', document.queryCommandState('bold'));
+        }
+        if (cmd && (cmd.includes('nghiêng') || cmd.includes('Italic'))) {
+          btn.classList.toggle('on', document.queryCommandState('italic'));
+        }
+        if (cmd && (cmd.includes('chân') || cmd.includes('Underline'))) {
+          btn.classList.toggle('on', document.queryCommandState('underline'));
+        }
+      });
+    }
+  }
+}
+
+// Khi click vào contenteditable block → select block + không re-render
+document.addEventListener('focus', function(e) {
+  const ceEl = e.target.closest('[contenteditable="true"]');
+  if (!ceEl) return;
+  const id = ceEl.id.replace('ce-', '');
+  if (id && id !== selId) {
+    // Select block nhưng không re-render (để giữ contenteditable)
+    document.querySelectorAll('.block').forEach(el => el.classList.remove('selected'));
+    selId = id;
+    const blkEl = document.getElementById('blk-' + id);
+    if (blkEl) blkEl.classList.add('selected');
+    renderProps(id);
+  }
+}, true);
+
+function restoreCEContent() {
+  blks.forEach(b => {
+    if (['heading','subheading','text'].includes(b.type) && b.html) {
+      const el = document.getElementById('ce-' + b.id);
+      if (el && el.innerHTML !== b.html) el.innerHTML = b.html;
+    }
+  });
+}
 
 </script>
 </html>
