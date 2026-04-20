@@ -366,6 +366,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
            border-radius:4px;padding:0 4px;font-size:11px;font-weight:600;
            display:inline;white-space:nowrap;cursor:default}
 
+
+/* ── Floating format toolbar ── */
+#float-toolbar{
+  position:fixed;z-index:9000;display:none;
+  background:#1e1e1c;border-radius:8px;
+  padding:4px 6px;gap:3px;align-items:center;
+  box-shadow:0 4px 20px rgba(0,0,0,.35);
+  flex-wrap:nowrap;
+}
+#float-toolbar button{
+  width:26px;height:26px;border:1px solid rgba(255,255,255,.15);
+  border-radius:5px;background:none;color:#fff;cursor:pointer;
+  font-size:12px;display:flex;align-items:center;justify-content:center;
+  transition:all .12s;flex-shrink:0;padding:0;font-family:inherit
+}
+#float-toolbar button:hover{background:rgba(255,255,255,.15)}
+#float-toolbar button.on{background:#185FA5;border-color:#185FA5}
+#float-toolbar .ft-sep{width:1px;height:18px;background:rgba(255,255,255,.2);margin:0 2px;flex-shrink:0}
+#float-toolbar select{
+  height:24px;padding:0 4px;border:1px solid rgba(255,255,255,.2);
+  border-radius:5px;background:#2c2c2a;color:#fff;font-size:11px;font-family:inherit
+}
+#float-toolbar input[type=color]{
+  width:22px;height:22px;padding:1px 2px;border:1px solid rgba(255,255,255,.2);
+  border-radius:4px;cursor:pointer;background:none
+}
+
 @media print{
   .topbar,.palette,.props-panel,.blk-ctrl,.canvas-hint{display:none!important}
   .app{display:block}
@@ -1218,25 +1245,25 @@ function blockHTML(b){
       body=`<div class="b-heading" style="text-align:${b.align||"center"};color:${b.color||"#1a1a18"};font-size:${b.size||20}px;${txSt(b)};outline:none"
         contenteditable="true" id="ce-${id}"
         oninput="ceAutosave('${id}',this)"
-        onblur="ceAutosave('${id}',this)"
-        onmouseup="ceUpdateFmt('${id}')"
-        onkeyup="ceUpdateFmt('${id}')"
+        onblur="ceSaveSelection();ceAutosave('${id}',this)"
+        onmouseup="ceSaveSelection();ceUpdateFmt('${id}')"
+        onkeyup="ceSaveSelection();ceUpdateFmt('${id}')"
         >${b.html||('<b>'+esc(b.text||"TIÊU ĐỀ")+'</b>')}</div>`; break;
     case "subheading":
       body=`<div class="b-sub" style="text-align:${b.align||"left"};color:${b.color||"#1a1a18"};font-size:${b.size||15}px;${txSt(b)};outline:none"
         contenteditable="true" id="ce-${id}"
         oninput="ceAutosave('${id}',this)"
-        onblur="ceAutosave('${id}',this)"
-        onmouseup="ceUpdateFmt('${id}')"
-        onkeyup="ceUpdateFmt('${id}')"
+        onblur="ceSaveSelection();ceAutosave('${id}',this)"
+        onmouseup="ceSaveSelection();ceUpdateFmt('${id}')"
+        onkeyup="ceSaveSelection();ceUpdateFmt('${id}')"
         >${b.html||esc(b.text||"Tiêu đề phụ")}</div>`; break;
     case "text":
       body=`<div class="b-text" style="text-align:${b.align||"left"};color:${b.color||"#6b6b67"};font-size:${b.size||13}px;${txSt(b)};outline:none"
         contenteditable="true" id="ce-${id}"
         oninput="ceAutosave('${id}',this)"
-        onblur="ceAutosave('${id}',this)"
-        onmouseup="ceUpdateFmt('${id}')"
-        onkeyup="ceUpdateFmt('${id}')"
+        onblur="ceSaveSelection();ceAutosave('${id}',this)"
+        onmouseup="ceSaveSelection();ceUpdateFmt('${id}')"
+        onkeyup="ceSaveSelection();ceUpdateFmt('${id}')"
         >${b.html||esc(b.text||"Nhập nội dung...")}</div>`; break;
         case "richblock": {
       const align = b.align||"left";
@@ -1751,7 +1778,39 @@ function showEmailScriptCode() {
     <h3 style="font-family:sans-serif">Thêm code này vào Code.gs (Apps Script)</h3>
     <textarea style="width:100%;height:400px;font-family:monospace;font-size:12px">${code.replace(/</g,"&lt;")}</textarea>
     <br><button onclick="document.querySelector('textarea').select();document.execCommand('copy')">Copy code</button>
-  </body></html>`);
+  
+<!-- Floating format toolbar -->
+<div id="float-toolbar">
+  <button id="ft-bold"   onclick="floatCmd('bold')"        title="In đậm"><strong>B</strong></button>
+  <button id="ft-italic" onclick="floatCmd('italic')"      title="In nghiêng"><em>I</em></button>
+  <button id="ft-under"  onclick="floatCmd('underline')"   title="Gạch chân"><u>U</u></button>
+  <button id="ft-strike" onclick="floatCmd('strikeThrough')" title="Gạch ngang"><s>S</s></button>
+  <div class="ft-sep"></div>
+  <select id="ft-font" onchange="floatCmd('fontName',this.value)" title="Font chữ">
+    <option value="">Font...</option>
+    <option value="Arial">Arial</option>
+    <option value="Times New Roman">Times NR</option>
+    <option value="Courier New">Courier</option>
+    <option value="Georgia">Georgia</option>
+  </select>
+  <select id="ft-size" onchange="floatCmdSize(this.value)" title="Cỡ chữ">
+    <option value="">Cỡ...</option>
+    <option value="1">8px</option>
+    <option value="2">10px</option>
+    <option value="3">12px</option>
+    <option value="4">14px</option>
+    <option value="5">18px</option>
+    <option value="6">24px</option>
+    <option value="7">36px</option>
+  </select>
+  <div class="ft-sep"></div>
+  <input type="color" id="ft-color"   value="#1a1a18" onchange="floatCmd('foreColor',this.value)"  title="Màu chữ">
+  <input type="color" id="ft-bgcolor" value="#ffff00" onchange="floatCmd('hiliteColor',this.value)" title="Màu nền">
+  <div class="ft-sep"></div>
+  <button onclick="floatCmd('removeFormat')" title="Xoá định dạng">✕</button>
+</div>
+
+</body></html>`);
 }
 
 // ════════════════════ RICH TEXT EDITOR (Word-like) ════════════════════
@@ -1827,19 +1886,51 @@ function ceAutosave(id, el) {
 }
 
 // Thực thi execCommand lên vùng chọn trong block
+// Lưu selection toàn cục
+let _savedRange = null;
+let _savedBlockId = null;
+
+function ceSaveSelection() {
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount > 0) {
+    _savedRange   = sel.getRangeAt(0).cloneRange();
+    // Lưu block id từ container
+    const el = sel.getRangeAt(0).commonAncestorContainer;
+    const ce = el.nodeType===1 ? el.closest('[contenteditable]') : el.parentElement?.closest('[contenteditable]');
+    if (ce) _savedBlockId = ce.id.replace('ce-','');
+  }
+}
+
+function ceRestoreSelection(el) {
+  if (_savedRange) {
+    el.focus();
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(_savedRange);
+    return true;
+  }
+  return false;
+}
+
 function ceExecOnBlock(id, cmd, value) {
   const el = document.getElementById('ce-' + id);
   if (!el) return;
-  el.focus();
-  // Nếu không có selection, chọn tất cả
-  const sel = window.getSelection();
-  if (!sel || sel.isCollapsed) {
+
+  // Khôi phục selection đã lưu
+  const restored = ceRestoreSelection(el);
+
+  if (!restored) {
+    // Không có selection → focus và chọn tất cả
+    el.focus();
     const range = document.createRange();
     range.selectNodeContents(el);
+    const sel = window.getSelection();
     sel.removeAllRanges();
     sel.addRange(range);
   }
+
   document.execCommand(cmd, false, value || null);
+  _savedRange = null; // Clear sau khi dùng
   ceAutosave(id, el);
   ceUpdateFmt(id);
 }
@@ -1900,6 +1991,123 @@ function restoreCEContent() {
     }
   });
 }
+
+// ════════════════════ FLOATING TOOLBAR ════════════════════
+let _floatTarget = null;  // Block ID đang được edit
+
+function showFloatToolbar(x, y) {
+  const tb = document.getElementById('float-toolbar');
+  if (!tb) return;
+  tb.style.display = 'flex';
+  // Đặt vị trí trên selection
+  const tbW = 380, tbH = 34;
+  let left = x - tbW/2;
+  let top  = y - tbH - 8;
+  // Clamp vào viewport
+  left = Math.max(8, Math.min(left, window.innerWidth - tbW - 8));
+  top  = Math.max(8, top);
+  tb.style.left = left + 'px';
+  tb.style.top  = top  + 'px';
+  updateFloatToolbarState();
+}
+
+function hideFloatToolbar() {
+  const tb = document.getElementById('float-toolbar');
+  if (tb) tb.style.display = 'none';
+  _floatTarget = null;
+}
+
+function updateFloatToolbarState() {
+  const cmds = {
+    'ft-bold':   'bold',
+    'ft-italic': 'italic',
+    'ft-under':  'underline',
+    'ft-strike': 'strikeThrough',
+  };
+  Object.entries(cmds).forEach(([id, cmd]) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('on', document.queryCommandState(cmd));
+  });
+}
+
+function floatCmd(cmd, value) {
+  if (!_floatTarget) return;
+  const el = document.getElementById('ce-' + _floatTarget);
+  if (!el) return;
+  // Khôi phục selection đã lưu
+  ceRestoreSelection(el);
+  document.execCommand(cmd, false, value || null);
+  // Lưu lại selection sau khi execCommand
+  ceSaveSelection();
+  ceAutosave(_floatTarget, el);
+  updateFloatToolbarState();
+  // Giữ toolbar hiện
+  const sel = window.getSelection();
+  if (sel && !sel.isCollapsed) {
+    const rect = sel.getRangeAt(0).getBoundingClientRect();
+    showFloatToolbar(rect.left + rect.width/2, rect.top);
+  }
+}
+
+function floatCmdSize(val) {
+  if (!val) return;
+  floatCmd('fontSize', val);
+}
+
+// Lắng nghe sự kiện mouseup trong canvas để hiện/ẩn floating toolbar
+document.addEventListener('mouseup', function(e) {
+  // Delay nhỏ để selection được set
+  setTimeout(function() {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || sel.toString().trim() === '') {
+      // Không có selection text - ẩn toolbar (trừ khi click vào toolbar)
+      if (!e.target.closest('#float-toolbar')) {
+        hideFloatToolbar();
+      }
+      return;
+    }
+
+    // Kiểm tra selection có nằm trong contenteditable block không
+    const anchor = sel.anchorNode;
+    const ce = anchor?.nodeType===1
+      ? anchor.closest('[contenteditable="true"]')
+      : anchor?.parentElement?.closest('[contenteditable="true"]');
+
+    if (!ce) {
+      if (!e.target.closest('#float-toolbar')) hideFloatToolbar();
+      return;
+    }
+
+    // Lưu selection và block ID
+    _floatTarget = ce.id.replace('ce-', '');
+    ceSaveSelection();
+
+    // Hiện toolbar tại vị trí selection
+    const rect = sel.getRangeAt(0).getBoundingClientRect();
+    showFloatToolbar(rect.left + rect.width/2, rect.top + window.scrollY);
+  }, 10);
+});
+
+// Ẩn toolbar khi click ra ngoài
+document.addEventListener('mousedown', function(e) {
+  if (!e.target.closest('#float-toolbar') && !e.target.closest('[contenteditable]')) {
+    hideFloatToolbar();
+  }
+});
+
+// Keyboard shortcut trong contenteditable
+document.addEventListener('keydown', function(e) {
+  if (!_floatTarget) return;
+  const el = document.getElementById('ce-' + _floatTarget);
+  if (!el || document.activeElement !== el) return;
+  if (e.ctrlKey || e.metaKey) {
+    switch(e.key) {
+      case 'b': e.preventDefault(); document.execCommand('bold'); ceAutosave(_floatTarget, el); updateFloatToolbarState(); break;
+      case 'i': e.preventDefault(); document.execCommand('italic'); ceAutosave(_floatTarget, el); updateFloatToolbarState(); break;
+      case 'u': e.preventDefault(); document.execCommand('underline'); ceAutosave(_floatTarget, el); updateFloatToolbarState(); break;
+    }
+  }
+});
 
 </script>
 </html>
