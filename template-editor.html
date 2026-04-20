@@ -367,31 +367,196 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
            display:inline;white-space:nowrap;cursor:default}
 
 
-/* ── Floating format toolbar ── */
-#float-toolbar{
-  position:fixed;z-index:9000;display:none;
-  background:#1e1e1c;border-radius:8px;
-  padding:4px 6px;gap:3px;align-items:center;
-  box-shadow:0 4px 20px rgba(0,0,0,.35);
-  flex-wrap:nowrap;
+/* ═══════════ RESPONSIVE / MOBILE ═══════════ */
+@media (max-width: 768px) {
+  /* Layout: stack vertically trên mobile */
+  .app{
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto 1fr auto;
+    height: auto;
+    overflow: visible;
+  }
+  .palette{
+    display: none; /* Ẩn palette mặc định, toggle bằng nút */
+    position: fixed; bottom: 0; left: 0; right: 0;
+    z-index: 200; max-height: 55vh;
+    border-top: 2px solid var(--bd2);
+    box-shadow: 0 -4px 20px rgba(0,0,0,.15);
+    overflow-y: auto;
+  }
+  .palette.mobile-open{ display: block; }
+  .pg-panel{
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    z-index: 200; max-height: 60vh;
+    border-top: 2px solid var(--bd2);
+    box-shadow: 0 -4px 20px rgba(0,0,0,.15);
+    overflow-y: auto;
+  }
+  .pg-panel.mobile-open{ display: flex; flex-direction: column; }
+  .canvas-wrap{
+    padding: 8px;
+    min-height: 50vh;
+  }
+  .page{
+    width: 100% !important;
+    min-height: auto !important;
+    padding: 8mm 6mm !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,.1);
+  }
+  /* Topbar mobile */
+  .topbar{
+    flex-wrap: wrap;
+    height: auto;
+    padding: 6px 8px;
+    gap: 4px;
+  }
+  .topbar h1{ font-size: 12px; }
+  .tpl-sel{ min-width: 120px; font-size: 11px; }
+  .tb-btn{ padding: 4px 8px; font-size: 11px; }
+  .tb-icon{ width: 26px; height: 26px; font-size: 12px; }
+  .spacer{ display: none; }
+  .api-st{ display: none; }
+  /* Mobile action bar */
+  .mobile-bar{
+    display: flex !important;
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 199;
+    background: var(--bg); border-top: 1px solid var(--bd);
+    padding: 6px 8px; gap: 6px; box-shadow: 0 -2px 8px rgba(0,0,0,.08);
+  }
+  .mobile-bar button{
+    flex: 1; padding: 8px 4px; border-radius: var(--r);
+    border: 1px solid var(--bd2); background: var(--bg2);
+    font-size: 11px; font-weight: 600; cursor: pointer;
+    font-family: inherit; color: var(--tx);
+  }
+  .mobile-bar button.active{
+    background: var(--blue-bg); border-color: var(--blue-bd); color: var(--blue);
+  }
+  /* Float toolbar mobile: full width */
+  #float-toolbar{
+    left: 0 !important; right: 0 !important; width: 100%;
+    border-radius: 0; overflow-x: auto;
+    justify-content: flex-start; padding: 5px 8px;
+  }
+  /* Block controls mobile: bigger tap targets */
+  .cc{ width: 26px; height: 26px; }
+  .blk-ctrl{ padding: 3px; }
+  /* Props panel mobile tweaks */
+  .pr input,.pr select,.pr textarea{
+    font-size: 14px; /* Prevent iOS zoom */
+  }
 }
-#float-toolbar button{
-  width:26px;height:26px;border:1px solid rgba(255,255,255,.15);
-  border-radius:5px;background:none;color:#fff;cursor:pointer;
-  font-size:12px;display:flex;align-items:center;justify-content:center;
-  transition:all .12s;flex-shrink:0;padding:0;font-family:inherit
+
+@media (max-width: 480px) {
+  .topbar .tb-sep{ display: none; }
+  .tb-btn.dup{ display: none; }
 }
-#float-toolbar button:hover{background:rgba(255,255,255,.15)}
-#float-toolbar button.on{background:#185FA5;border-color:#185FA5}
-#float-toolbar .ft-sep{width:1px;height:18px;background:rgba(255,255,255,.2);margin:0 2px;flex-shrink:0}
-#float-toolbar select{
-  height:24px;padding:0 4px;border:1px solid rgba(255,255,255,.2);
-  border-radius:5px;background:#2c2c2a;color:#fff;font-size:11px;font-family:inherit
+
+/* Desktop: Mobile bar hidden */
+.mobile-bar{ display: none; }
+
+
+/* ── Floating toolbar ── */
+#ftb{position:fixed;z-index:9999;display:none;background:#1e1e1c;border-radius:8px;
+     padding:4px 6px;gap:3px;align-items:center;flex-wrap:nowrap;
+     box-shadow:0 4px 20px rgba(0,0,0,.4);pointer-events:all}
+#ftb button{width:26px;height:26px;border:1px solid rgba(255,255,255,.15);border-radius:5px;
+     background:none;color:#fff;cursor:pointer;font-size:12px;display:flex;
+     align-items:center;justify-content:center;flex-shrink:0;padding:0;font-family:inherit}
+#ftb button:hover{background:rgba(255,255,255,.2)}
+#ftb button.on{background:#185FA5;border-color:#185FA5}
+#ftb .fs{width:1px;height:18px;background:rgba(255,255,255,.2);margin:0 2px;flex-shrink:0}
+#ftb select,#ftb input[type=number]{height:24px;padding:0 4px;border:1px solid rgba(255,255,255,.2);
+     border-radius:5px;background:#2c2c2a;color:#fff;font-size:11px;font-family:inherit}
+#ftb input[type=number]{width:42px;text-align:center}
+#ftb input[type=color]{width:22px;height:22px;padding:1px;border:1px solid rgba(255,255,255,.2);
+     border-radius:4px;cursor:pointer;background:none}
+
+/* ── Responsive ── */
+@media(max-width:900px){
+  .app{grid-template-columns:180px 1fr 220px}
 }
-#float-toolbar input[type=color]{
-  width:22px;height:22px;padding:1px 2px;border:1px solid rgba(255,255,255,.2);
-  border-radius:4px;cursor:pointer;background:none
+@media(max-width:700px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto 1fr auto;height:auto}
+  .palette{height:auto;max-height:200px;overflow-x:auto;overflow-y:hidden;
+           display:flex;flex-direction:row;padding:6px;border-right:none;border-bottom:1px solid var(--bd)}
+  .pal-sec{flex-shrink:0;margin-right:12px;margin-bottom:0}
+  .pal-grid{grid-template-columns:repeat(4,1fr);gap:3px}
+  .canvas-wrap{padding:8px}
+  .pg-panel{max-height:300px;overflow-y:auto}
+  .topbar{flex-wrap:wrap;height:auto;padding:6px 8px;gap:4px}
+  .topbar h1{width:100%;font-size:12px}
+  .tpl-sel{min-width:120px;font-size:11px}
+  .tb-btn{padding:4px 8px;font-size:11px}
 }
+@media(max-width:480px){
+  .app{grid-template-columns:1fr}
+  .palette{max-height:160px}
+  .pal-grid{grid-template-columns:repeat(3,1fr)}
+  .page{padding:8mm 8mm!important}
+  .pg-panel{max-height:250px}
+}
+
+
+/* ════ RESPONSIVE / MOBILE ════ */
+@media (max-width: 768px) {
+  /* Topbar: ẩn bớt nút, chỉ giữ quan trọng */
+  .app { grid-template-columns: 1fr; height: auto; overflow: visible; }
+  .topbar { height: auto; flex-wrap: wrap; padding: 6px 10px; gap: 5px; }
+  .topbar h1 { width: 100%; font-size: 12px; }
+  .tb-sep { display: none; }
+  .tb-btn { font-size: 11px; padding: 4px 8px; }
+  .tpl-sel { min-width: 120px; font-size: 11px; }
+  .spacer { display: none; }
+  .api-st { display: none; }
+
+  /* 3-panel → single column tabs */
+  .palette {
+    display: none; /* ẩn trên mobile, dùng bottom sheet */
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 50vh; z-index: 200; overflow-y: auto;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,.15);
+  }
+  .palette.show { display: block; }
+  .pg-panel { display: none; }
+  .pg-panel.show { display: flex; position: fixed; bottom: 0; left: 0; right: 0;
+    height: 60vh; z-index: 200; border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,.15); }
+  .canvas-wrap { padding: 12px 8px; }
+  .page { width: 100% !important; min-height: auto !important;
+          padding: 10mm 8mm !important; }
+  /* Mobile toolbar nổi - full width bottom */
+  #ftb { 
+    position: fixed !important;
+    left: 0 !important; right: 0 !important; bottom: 0 !important; top: auto !important;
+    width: 100% !important; border-radius: 0 !important;
+    overflow-x: auto; justify-content: flex-start;
+    padding: 6px 10px; gap: 4px;
+    border-top: 1px solid rgba(255,255,255,.2);
+  }
+  /* Mobile bottom nav buttons */
+  .mobile-nav { display: flex; }
+}
+@media (min-width: 769px) {
+  .mobile-nav { display: none !important; }
+}
+
+/* Mobile nav bar */
+.mobile-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; height: 52px;
+  background: #1e1e1c; border-top: 1px solid rgba(255,255,255,.1);
+  z-index: 150; align-items: stretch; justify-content: space-around;
+}
+.mobile-nav button {
+  flex: 1; background: none; border: none; color: rgba(255,255,255,.6);
+  font-size: 10px; cursor: pointer; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2px; font-family: inherit;
+}
+.mobile-nav button .mn-icon { font-size: 18px; }
+.mobile-nav button.active { color: #fff; }
 
 @media print{
   .topbar,.palette,.props-panel,.blk-ctrl,.canvas-hint{display:none!important}
@@ -1419,16 +1584,16 @@ function FMTC(id, b, opts) {
   // Các block contenteditable dùng execCommand, block thường dùng setProp
   const isCE = ['heading','subheading','text'].includes(b.type);
   const boldFn  = isCE
-    ? `ceExecOnBlock('${id}','bold')`
+    ? `((_fid='${id}'),fc('bold'))`
     : `setProp('${id}','${boldKey}',!blks.find(b=>b.id==='${id}')?.${boldKey})`;
   const itFn    = isCE
-    ? `ceExecOnBlock('${id}','italic')`
+    ? `((_fid='${id}'),fc('italic'))`
     : `setProp('${id}','${itKey}',!blks.find(b=>b.id==='${id}')?.${itKey})`;
   const ulFn    = isCE
-    ? `ceExecOnBlock('${id}','underline')`
+    ? `((_fid='${id}'),fc('underline'))`
     : `setProp('${id}','${ulKey}',!blks.find(b=>b.id==='${id}')?.${ulKey})`;
   const colorFn = isCE
-    ? `ceExecOnBlock('${id}','foreColor',this.value)`
+    ? `((_fid='${id}'),fc('foreColor',this.value))`
     : `setProp('${id}','${colKey}',this.value)`;
 
   const fonts = [["","(Mặc định)"],["'Times New Roman',serif","Times NR"],["Arial,sans-serif","Arial"],
@@ -1779,13 +1944,6 @@ function showEmailScriptCode() {
     <textarea style="width:100%;height:400px;font-family:monospace;font-size:12px">${code.replace(/</g,"&lt;")}</textarea>
     <br><button onclick="document.querySelector('textarea').select();document.execCommand('copy')">Copy code</button>
   
-<!-- Floating format toolbar -->
-<div id="float-toolbar">
-  <button id="ft-bold"   onclick="floatCmd('bold')"        title="In đậm"><strong>B</strong></button>
-  <button id="ft-italic" onclick="floatCmd('italic')"      title="In nghiêng"><em>I</em></button>
-  <button id="ft-under"  onclick="floatCmd('underline')"   title="Gạch chân"><u>U</u></button>
-  <button id="ft-strike" onclick="floatCmd('strikeThrough')" title="Gạch ngang"><s>S</s></button>
-  <div class="ft-sep"></div>
   <select id="ft-font" onchange="floatCmd('fontName',this.value)" title="Font chữ">
     <option value="">Font...</option>
     <option value="Arial">Arial</option>
@@ -1808,6 +1966,50 @@ function showEmailScriptCode() {
   <input type="color" id="ft-bgcolor" value="#ffff00" onchange="floatCmd('hiliteColor',this.value)" title="Màu nền">
   <div class="ft-sep"></div>
   <button onclick="floatCmd('removeFormat')" title="Xoá định dạng">✕</button>
+</div>
+
+
+<div id="ftb" style="display:none">
+  <button id="fb-b" onclick="fc('bold')" title="Đậm (Ctrl+B)"><b>B</b></button>
+  <button id="fb-i" onclick="fc('italic')" title="Nghiêng (Ctrl+I)"><i>I</i></button>
+  <button id="fb-u" onclick="fc('underline')" title="Gạch chân (Ctrl+U)"><u>U</u></button>
+  <button id="fb-s" onclick="fc('strikeThrough')" title="Gạch ngang"><s>S</s></button>
+  <div class="fs"></div>
+  <input type="number" id="fb-sz" min="8" max="72" value="13" title="Cỡ chữ"
+         onchange="fcSize(+this.value)" style="width:38px">
+  <select id="fb-fn" onchange="fc('fontName',this.value)" title="Font">
+    <option value="">Font</option>
+    <option value="Arial">Arial</option>
+    <option value="Times New Roman">Times</option>
+    <option value="Courier New">Courier</option>
+    <option value="Georgia">Georgia</option>
+  </select>
+  <div class="fs"></div>
+  <input type="color" id="fb-fc" value="#1a1a18" onchange="fc('foreColor',this.value)" title="Màu chữ">
+  <input type="color" id="fb-hc" value="#ffff00" onchange="fc('hiliteColor',this.value)" title="Màu nền">
+  <div class="fs"></div>
+  <button onclick="fc('removeFormat')" title="Xoá định dạng">✕</button>
+</div>
+
+
+<!-- Mobile navigation bar -->
+<div class="mobile-nav" id="mobile-nav">
+  <button onclick="mobileTab('blocks')" id="mn-blocks" class="active">
+    <span class="mn-icon">&#9881;</span>
+    <span>Blocks</span>
+  </button>
+  <button onclick="mobileTab('canvas')" id="mn-canvas">
+    <span class="mn-icon">&#128203;</span>
+    <span>Canvas</span>
+  </button>
+  <button onclick="mobileTab('props')" id="mn-props">
+    <span class="mn-icon">&#9998;</span>
+    <span>Thuộc tính</span>
+  </button>
+  <button onclick="saveTpl()">
+    <span class="mn-icon">&#128190;</span>
+    <span>Lưu</span>
+  </button>
 </div>
 
 </body></html>`);
@@ -1992,122 +2194,181 @@ function restoreCEContent() {
   });
 }
 
-// ════════════════════ FLOATING TOOLBAR ════════════════════
-let _floatTarget = null;  // Block ID đang được edit
+// ════════ FLOATING TOOLBAR + SELECTION ════════
+let _fid = null;   // block id đang edit
+let _rng = null;   // saved Range object
 
-function showFloatToolbar(x, y) {
-  const tb = document.getElementById('float-toolbar');
-  if (!tb) return;
-  tb.style.display = 'flex';
-  // Đặt vị trí trên selection
-  const tbW = 380, tbH = 34;
-  let left = x - tbW/2;
-  let top  = y - tbH - 8;
-  // Clamp vào viewport
-  left = Math.max(8, Math.min(left, window.innerWidth - tbW - 8));
-  top  = Math.max(8, top);
-  tb.style.left = left + 'px';
-  tb.style.top  = top  + 'px';
-  updateFloatToolbarState();
+// Lưu selection hiện tại
+function saveRng() {
+  const s = window.getSelection();
+  if (s && s.rangeCount > 0 && !s.isCollapsed) {
+    try { _rng = s.getRangeAt(0).cloneRange(); } catch(e){}
+  }
 }
 
-function hideFloatToolbar() {
-  const tb = document.getElementById('float-toolbar');
-  if (tb) tb.style.display = 'none';
-  _floatTarget = null;
+// Khôi phục selection vào CE element
+function restoreRng(el) {
+  if (!_rng || !el) return false;
+  try {
+    el.focus();
+    const s = window.getSelection();
+    s.removeAllRanges();
+    s.addRange(_rng);
+    return true;
+  } catch(e){ return false; }
 }
 
-function updateFloatToolbarState() {
-  const cmds = {
-    'ft-bold':   'bold',
-    'ft-italic': 'italic',
-    'ft-under':  'underline',
-    'ft-strike': 'strikeThrough',
-  };
-  Object.entries(cmds).forEach(([id, cmd]) => {
+// Thực hiện lệnh định dạng
+function fc(cmd, val) {
+  const el = _fid ? document.getElementById('ce-'+_fid) : null;
+  if (el) {
+    // Khôi phục selection rồi execCommand
+    restoreRng(el);
+    document.execCommand(cmd, false, val||null);
+    saveRng();
+    ceAutosave(_fid, el);
+    updateFtbState();
+  }
+}
+
+function fcSize(sz) {
+  const el = _fid ? document.getElementById('ce-'+_fid) : null;
+  if (!el) return;
+  restoreRng(el);
+  // Dùng fontSize với span wrapper
+  document.execCommand('fontSize', false, '7');
+  // Thay thế size=7 bằng inline style
+  el.querySelectorAll('font[size="7"]').forEach(f => {
+    const span = document.createElement('span');
+    span.style.fontSize = sz + 'px';
+    span.innerHTML = f.innerHTML;
+    f.replaceWith(span);
+  });
+  saveRng();
+  ceAutosave(_fid, el);
+}
+
+function updateFtbState() {
+  const cmds = {bold:'fb-b',italic:'fb-i',underline:'fb-u',strikeThrough:'fb-s'};
+  Object.entries(cmds).forEach(([cmd,id]) => {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('on', document.queryCommandState(cmd));
   });
 }
 
-function floatCmd(cmd, value) {
-  if (!_floatTarget) return;
-  const el = document.getElementById('ce-' + _floatTarget);
-  if (!el) return;
-  // Khôi phục selection đã lưu
-  ceRestoreSelection(el);
-  document.execCommand(cmd, false, value || null);
-  // Lưu lại selection sau khi execCommand
-  ceSaveSelection();
-  ceAutosave(_floatTarget, el);
-  updateFloatToolbarState();
-  // Giữ toolbar hiện
-  const sel = window.getSelection();
-  if (sel && !sel.isCollapsed) {
-    const rect = sel.getRangeAt(0).getBoundingClientRect();
-    showFloatToolbar(rect.left + rect.width/2, rect.top);
-  }
+function showFtb(x, y) {
+  const tb = document.getElementById('ftb');
+  if (!tb) return;
+  tb.style.display = 'flex';
+  // Căn giữa trên selection, không ra ngoài viewport
+  const W = tb.offsetWidth || 320, H = 36;
+  const left = Math.max(4, Math.min(x - W/2, window.innerWidth - W - 4));
+  const top  = Math.max(4, y - H - 10);
+  tb.style.left = left + 'px';
+  tb.style.top  = top  + 'px';
+  updateFtbState();
 }
 
-function floatCmdSize(val) {
-  if (!val) return;
-  floatCmd('fontSize', val);
+function hideFtb() {
+  const tb = document.getElementById('ftb');
+  if (tb) tb.style.display = 'none';
 }
 
-// Lắng nghe sự kiện mouseup trong canvas để hiện/ẩn floating toolbar
+// === SỰ KIỆN ===
+
+// 1. Lắng nghe selectionchange (chuẩn nhất, không cần delay)
+document.addEventListener('selectionchange', function() {
+  const s = window.getSelection();
+  if (!s || s.isCollapsed || !s.rangeCount) return;
+
+  // Tìm CE element chứa selection
+  try {
+    const node = s.getRangeAt(0).commonAncestorContainer;
+    const ce = node.nodeType === 1
+      ? node.closest('[contenteditable]')
+      : node.parentElement && node.parentElement.closest('[contenteditable]');
+    if (!ce) return;
+
+    // Lưu
+    _fid = ce.id.replace('ce-','');
+    _rng = s.getRangeAt(0).cloneRange();
+  } catch(e){}
+});
+
+// 2. mouseup để hiện toolbar TẠI VỊ TRÍ ĐÚNG
 document.addEventListener('mouseup', function(e) {
-  // Delay nhỏ để selection được set
-  setTimeout(function() {
-    const sel = window.getSelection();
-    if (!sel || sel.isCollapsed || sel.toString().trim() === '') {
-      // Không có selection text - ẩn toolbar (trừ khi click vào toolbar)
-      if (!e.target.closest('#float-toolbar')) {
-        hideFloatToolbar();
-      }
-      return;
-    }
+  if (e.target.closest('#ftb')) return; // click vào toolbar thì bỏ qua
 
-    // Kiểm tra selection có nằm trong contenteditable block không
-    const anchor = sel.anchorNode;
-    const ce = anchor?.nodeType===1
-      ? anchor.closest('[contenteditable="true"]')
-      : anchor?.parentElement?.closest('[contenteditable="true"]');
+  const s = window.getSelection();
+  if (!s || s.isCollapsed || !s.rangeCount || !s.toString().trim()) {
+    if (!e.target.closest('#ftb')) hideFtb();
+    return;
+  }
 
-    if (!ce) {
-      if (!e.target.closest('#float-toolbar')) hideFloatToolbar();
-      return;
-    }
+  // Chỉ hiện khi selection trong CE block
+  try {
+    const node = s.getRangeAt(0).commonAncestorContainer;
+    const ce = node.nodeType === 1
+      ? node.closest('[contenteditable]')
+      : node.parentElement && node.parentElement.closest('[contenteditable]');
+    if (!ce) { hideFtb(); return; }
 
-    // Lưu selection và block ID
-    _floatTarget = ce.id.replace('ce-', '');
-    ceSaveSelection();
+    // Set active block và lưu selection
+    _fid = ce.id.replace('ce-', '');
+    saveRng();
 
     // Hiện toolbar tại vị trí selection
-    const rect = sel.getRangeAt(0).getBoundingClientRect();
-    showFloatToolbar(rect.left + rect.width/2, rect.top + window.scrollY);
-  }, 10);
+    const rect = s.getRangeAt(0).getBoundingClientRect();
+    const midX = rect.left + rect.width / 2;
+    const topY = rect.top + (window.pageYOffset || document.documentElement.scrollTop);
+    showFtb(midX, topY);
+  } catch(err){ hideFtb(); }
 });
 
-// Ẩn toolbar khi click ra ngoài
+// 3. Ẩn khi click ra ngoài
 document.addEventListener('mousedown', function(e) {
-  if (!e.target.closest('#float-toolbar') && !e.target.closest('[contenteditable]')) {
-    hideFloatToolbar();
+  if (!e.target.closest('#ftb') && !e.target.closest('[contenteditable]')) {
+    hideFtb();
+    _rng = null;
   }
 });
 
-// Keyboard shortcut trong contenteditable
+// 4. Keyboard shortcut trong CE block
 document.addEventListener('keydown', function(e) {
-  if (!_floatTarget) return;
-  const el = document.getElementById('ce-' + _floatTarget);
-  if (!el || document.activeElement !== el) return;
-  if (e.ctrlKey || e.metaKey) {
-    switch(e.key) {
-      case 'b': e.preventDefault(); document.execCommand('bold'); ceAutosave(_floatTarget, el); updateFloatToolbarState(); break;
-      case 'i': e.preventDefault(); document.execCommand('italic'); ceAutosave(_floatTarget, el); updateFloatToolbarState(); break;
-      case 'u': e.preventDefault(); document.execCommand('underline'); ceAutosave(_floatTarget, el); updateFloatToolbarState(); break;
-    }
+  if (!document.activeElement || !document.activeElement.closest('[contenteditable]')) return;
+  if (!(e.ctrlKey || e.metaKey)) return;
+  const ceEl = document.activeElement.closest('[contenteditable]');
+  if (!ceEl) return;
+  const id = ceEl.id.replace('ce-','');
+  switch(e.key) {
+    case 'b': e.preventDefault(); document.execCommand('bold');      ceAutosave(id,ceEl); updateFtbState(); break;
+    case 'i': e.preventDefault(); document.execCommand('italic');    ceAutosave(id,ceEl); updateFtbState(); break;
+    case 'u': e.preventDefault(); document.execCommand('underline'); ceAutosave(id,ceEl); updateFtbState(); break;
   }
 });
+
+// ════════════════════ MOBILE NAV ════════════════════
+function mobileTab(tab) {
+  const palette  = document.querySelector('.palette');
+  const pgPanel  = document.querySelector('.pg-panel');
+  const canvasW  = document.querySelector('.canvas-wrap');
+  const btns     = document.querySelectorAll('.mobile-nav button');
+  btns.forEach(b => b.classList.remove('active'));
+  
+  if (palette)  palette.classList.remove('show');
+  if (pgPanel)  pgPanel.classList.remove('show');
+  
+  if (tab === 'blocks') {
+    if (palette) palette.classList.add('show');
+    document.getElementById('mn-blocks')?.classList.add('active');
+  } else if (tab === 'canvas') {
+    document.getElementById('mn-canvas')?.classList.add('active');
+    // close panels, show canvas
+  } else if (tab === 'props') {
+    if (pgPanel) pgPanel.classList.add('show');
+    document.getElementById('mn-props')?.classList.add('active');
+  }
+}
 
 </script>
 </html>
