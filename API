@@ -1,0 +1,2 @@
+const API_URL       = "https://script.google.com/macros/s/AKfycbwqwRgBqKmL5yGY8YD0MrJi-iQUusgQPplEOfqzWsXHpDf-HZus900DueXzxYIe9V-i/exec";
+const PRINT_APP_URL = "https://dohuuduy.github.io/appsheet-print/print-block.html";
